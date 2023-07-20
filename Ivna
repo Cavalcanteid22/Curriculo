@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currículo</title>
+</head>
+<body>
+<h1>Ivna Dutra Cavalcante</h1>
+
+<p>Email: cavanteid22@gmail.com</p>
+    <p>Telefone: (71) 99222-6887</p>
+    <p> Endereço: Salvador-BA</p>
+
+    <h2>Objetivo</h2>
+    <p>Exercer atividades de previsão, provisão, organização e controle, exercendo
+        funções na área administrativa, através do trabalho em equipe e
+        compromisso. 
+        </p>
+
+    <h2>Formação Acadêmica</h2>
+    <ul>
+        <li>
+            <strong>Curso de Graduação em:</strong> Administração de Empresas
+             -  Faculdade Estácio - em andamento 
+        </li>
+        <li>
+    </ul>
+
+        
+
+</body>
+</html>
