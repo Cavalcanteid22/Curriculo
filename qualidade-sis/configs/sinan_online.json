@@ -1,0 +1,498 @@
+{
+  "_leia_me": "Dicionário de crítica do SINAN Online (notificação de tuberculose e hanseníase). O layout de exportação do SINAN Online varia conforme o agravo e a versão: confira SEMPRE com 'python executar.py validar -s sinan_online -b sua_base.csv' e ajuste 'apelidos_colunas' e 'campos' conforme a sua exportação.",
+  "sistema": "SINAN_ONLINE",
+  "nome_completo": "SINAN Online — notificação de tuberculose e hanseníase",
+  "descricao": "Base de notificação/acompanhamento dos agravos operados no SINAN Online.",
+  "orgao": "Subcoordenadoria de Informação em Saúde — SMS Salvador",
+  "csv": {
+    "separador": null,
+    "encoding": null
+  },
+  "chave_registro": [
+    "NU_NOTIFIC",
+    "ID_AGRAVO"
+  ],
+  "data_referencia": "DT_NOTIFIC",
+  "campos_estratificacao": [
+    "ID_UNIDADE",
+    "ID_AGRAVO",
+    "SITUA_ENCE",
+    "ID_BAIRRO"
+  ],
+  "apelidos_colunas": {
+    "NUMERO_NOTIFICACAO": "NU_NOTIFIC",
+    "DATA_NOTIFICACAO": "DT_NOTIFIC",
+    "DATA_DIAGNOSTICO": "DT_DIAG",
+    "UNIDADE_NOTIFICADORA": "ID_UNIDADE",
+    "NOME_PACIENTE": "NM_PACIENT",
+    "DATA_NASCIMENTO": "DT_NASC",
+    "SITUACAO_ENCERRAMENTO": "SITUA_ENCE"
+  },
+  "parametros": {
+    "data_minima_plausivel": "1900-01-01",
+    "defasagem_aceitavel_dias": 15,
+    "campo_abrangencia": "ID_MN_RESI"
+  },
+  "chaves_duplicidade": [
+    {
+      "id": "DUP_NOTIFIC",
+      "nome": "Número de notificação repetido no mesmo agravo",
+      "campos": [
+        "NU_NOTIFIC",
+        "ID_AGRAVO"
+      ]
+    },
+    {
+      "id": "DUP_PROVAVEL",
+      "nome": "Provável duplicidade (nome + data de nascimento + agravo)",
+      "campos": [
+        "NM_PACIENT",
+        "DT_NASC",
+        "ID_AGRAVO"
+      ]
+    },
+    {
+      "id": "DUP_CNS",
+      "nome": "Provável duplicidade (CNS + agravo + ano do diagnóstico)",
+      "campos": [
+        "NU_CNS",
+        "ID_AGRAVO",
+        "DT_DIAG"
+      ]
+    }
+  ],
+  "tempestividade": [
+    {
+      "id": "NOTIFICACAO",
+      "rotulo": "Oportunidade da notificação (diagnóstico → notificação)",
+      "data_inicial": "DT_DIAG",
+      "data_final": "DT_NOTIFIC",
+      "prazo_dias": 7
+    },
+    {
+      "id": "INICIO_TRAT",
+      "rotulo": "Início do tratamento após o diagnóstico",
+      "data_inicial": "DT_DIAG",
+      "data_final": "DT_INIC_TR",
+      "prazo_dias": 7
+    },
+    {
+      "id": "ENCERRAMENTO",
+      "rotulo": "Encerramento oportuno do caso (diagnóstico → encerramento)",
+      "data_inicial": "DT_DIAG",
+      "data_final": "DT_ENCERRA",
+      "prazo_dias": 270
+    }
+  ],
+  "campos": {
+    "NU_NOTIFIC": {
+      "rotulo": "Número da notificação",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação"
+    },
+    "ID_AGRAVO": {
+      "rotulo": "Agravo (CID-10)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cid10"
+    },
+    "DT_NOTIFIC": {
+      "rotulo": "Data da notificação",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "data_minima": "2008-01-01"
+    },
+    "DT_DIAG": {
+      "rotulo": "Data do diagnóstico",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "data_minima": "2008-01-01"
+    },
+    "ID_MUNICIP": {
+      "rotulo": "Município notificante (IBGE)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "ibge"
+    },
+    "ID_UNIDADE": {
+      "rotulo": "Unidade notificadora (CNES)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cnes",
+      "ignorado": [
+        "9999999"
+      ]
+    },
+    "NM_PACIENT": {
+      "rotulo": "Nome do paciente",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "DT_NASC": {
+      "rotulo": "Data de nascimento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "CS_SEXO": {
+      "rotulo": "Sexo",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "M": "Masculino",
+        "F": "Feminino",
+        "1": "Masculino",
+        "2": "Feminino"
+      },
+      "ignorado": [
+        "I",
+        "9"
+      ]
+    },
+    "CS_RACA": {
+      "rotulo": "Raça/cor",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CS_ESCOL_N": {
+      "rotulo": "Escolaridade",
+      "tipo": "categorico",
+      "bloco": "Paciente",
+      "dominio": {
+        "0": "Analfabeto",
+        "1": "1ª a 4ª série incompleta",
+        "2": "4ª série completa",
+        "3": "5ª a 8ª série incompleta",
+        "4": "Fundamental completo",
+        "5": "Médio incompleto",
+        "6": "Médio completo",
+        "7": "Superior incompleto",
+        "8": "Superior completo",
+        "10": "Não se aplica"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "NU_CNS": {
+      "rotulo": "Cartão Nacional de Saúde",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente",
+      "validador": "cns"
+    },
+    "NM_MAE_PAC": {
+      "rotulo": "Nome da mãe",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "ID_MN_RESI": {
+      "rotulo": "Município de residência (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Residência",
+      "validador": "ibge"
+    },
+    "ID_BAIRRO": {
+      "rotulo": "Bairro de residência",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Residência"
+    },
+    "NU_CEP": {
+      "rotulo": "CEP",
+      "tipo": "texto",
+      "bloco": "Residência",
+      "validador": "cep"
+    },
+    "CS_ZONA": {
+      "rotulo": "Zona de residência",
+      "tipo": "categorico",
+      "bloco": "Residência",
+      "dominio": {
+        "1": "Urbana",
+        "2": "Rural",
+        "3": "Periurbana"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "TRATAMENTO": {
+      "rotulo": "Tipo de entrada/tratamento",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Clínico",
+      "dominio": {
+        "1": "Caso novo",
+        "2": "Recidiva",
+        "3": "Reingresso após abandono",
+        "4": "Não sabe",
+        "5": "Transferência",
+        "6": "Pós-óbito"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "FORMA": {
+      "rotulo": "Forma clínica",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Clínico",
+      "dominio": {
+        "1": "Pulmonar",
+        "2": "Extrapulmonar",
+        "3": "Pulmonar + extrapulmonar"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "BACILOSC_E": {
+      "rotulo": "Baciloscopia de escarro (diagnóstico)",
+      "tipo": "categorico",
+      "bloco": "Clínico",
+      "dominio": {
+        "1": "Positiva",
+        "2": "Negativa",
+        "3": "Não realizada",
+        "4": "Não se aplica"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "RAIOX_TORA": {
+      "rotulo": "Raio X de tórax",
+      "tipo": "categorico",
+      "bloco": "Clínico",
+      "dominio": {
+        "1": "Suspeito",
+        "2": "Normal",
+        "3": "Outra patologia",
+        "4": "Não realizado"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "HIV": {
+      "rotulo": "Resultado do teste de HIV",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Clínico",
+      "dominio": {
+        "1": "Positivo",
+        "2": "Negativo",
+        "3": "Em andamento",
+        "4": "Não realizado"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DT_INIC_TR": {
+      "rotulo": "Data de início do tratamento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Tratamento",
+      "data_minima": "2008-01-01"
+    },
+    "TRAT_SUPER": {
+      "rotulo": "Tratamento diretamente observado (TDO)",
+      "tipo": "categorico",
+      "bloco": "Tratamento",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "SITUA_ENCE": {
+      "rotulo": "Situação de encerramento",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "dominio": {
+        "1": "Cura",
+        "2": "Abandono",
+        "3": "Óbito por tuberculose",
+        "4": "Óbito por outras causas",
+        "5": "Transferência",
+        "6": "Mudança de diagnóstico",
+        "7": "TB drogarresistente",
+        "8": "Mudança de esquema",
+        "9": "Falência",
+        "10": "Abandono primário"
+      },
+      "ignorado": [
+        "99"
+      ]
+    },
+    "DT_ENCERRA": {
+      "rotulo": "Data do encerramento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "data_minima": "2008-01-01"
+    },
+    "DT_DIGITA": {
+      "rotulo": "Data da digitação",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Processamento",
+      "data_minima": "2008-01-01"
+    }
+  },
+  "regras_cruzadas": [
+    {
+      "id": "SOL001",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_DIAG",
+        "DT_NOTIFIC"
+      ],
+      "descricao": "A notificação não pode ser anterior ao diagnóstico.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SOL002",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_DIAG",
+        "DT_INIC_TR"
+      ],
+      "descricao": "O início do tratamento não pode ser anterior ao diagnóstico.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SOL003",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_INIC_TR",
+        "DT_ENCERRA"
+      ],
+      "descricao": "O encerramento não pode ser anterior ao início do tratamento.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SOL004",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NASC",
+        "DT_DIAG"
+      ],
+      "descricao": "O diagnóstico não pode ser anterior ao nascimento.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SOL010",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "SITUA_ENCE",
+        "preenchido": true
+      },
+      "entao_preenchido": [
+        "DT_ENCERRA"
+      ],
+      "descricao": "Caso com situação de encerramento exige a data do encerramento.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SOL011",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "FORMA",
+        "valores": [
+          "1",
+          "3"
+        ]
+      },
+      "entao_preenchido": [
+        "BACILOSC_E"
+      ],
+      "descricao": "Forma pulmonar exige o resultado da baciloscopia de escarro.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SOL012",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "TRATAMENTO",
+        "valores": [
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      "entao_preenchido": [
+        "DT_INIC_TR"
+      ],
+      "descricao": "Caso em tratamento exige a data de início do tratamento.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SOL020",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "SITUA_ENCE",
+        "valores": [
+          "2",
+          "10"
+        ]
+      },
+      "entao_preenchido": [
+        "TRAT_SUPER"
+      ],
+      "descricao": "Caso encerrado por abandono deve informar se houve tratamento diretamente observado (TDO).",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SOL021",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "SITUA_ENCE",
+        "valores": [
+          "3"
+        ]
+      },
+      "entao_campo": "ID_AGRAVO",
+      "valores_proibidos": [
+        "A30"
+      ],
+      "descricao": "Encerramento por 'óbito por tuberculose' em notificação de hanseníase (A30).",
+      "tipo_inconsistencia": "incoerencia"
+    }
+  ]
+}

@@ -1,0 +1,441 @@
+{
+  "_leia_me": "Dicionário de crítica do e-SUS SINAN (notificação por sistema web). O layout de exportação do e-SUS SINAN usa rótulos por extenso em várias versões; por isso este arquivo traz uma lista extensa de 'apelidos_colunas' que converte os nomes por extenso nos nomes técnicos usados nas regras. Rode 'python executar.py validar -s esus_sinan -b sua_base.csv' e complete os apelidos que faltarem — é a única coisa que precisa ser ajustada.",
+  "sistema": "ESUS_SINAN",
+  "nome_completo": "e-SUS SINAN — notificação de agravos em plataforma web",
+  "descricao": "Base de notificações registradas no e-SUS SINAN no município de Salvador.",
+  "orgao": "Subcoordenadoria de Informação em Saúde — SMS Salvador",
+  "csv": {
+    "separador": null,
+    "encoding": null
+  },
+  "chave_registro": [
+    "NU_NOTIFIC"
+  ],
+  "data_referencia": "DT_NOTIFIC",
+  "campos_estratificacao": [
+    "ID_UNIDADE",
+    "ID_AGRAVO",
+    "CLASSI_FIN",
+    "ID_BAIRRO"
+  ],
+  "apelidos_colunas": {
+    "NUMERO_NOTIFICACAO": "NU_NOTIFIC",
+    "NUMERO_DA_NOTIFICACAO": "NU_NOTIFIC",
+    "DATA_NOTIFICACAO": "DT_NOTIFIC",
+    "DATA_DA_NOTIFICACAO": "DT_NOTIFIC",
+    "DATA_PRIMEIROS_SINTOMAS": "DT_SIN_PRI",
+    "DATA_DOS_PRIMEIROS_SINTOMAS": "DT_SIN_PRI",
+    "DATA_DIGITACAO": "DT_DIGITA",
+    "DATA_DA_DIGITACAO": "DT_DIGITA",
+    "DATA_ENCERRAMENTO": "DT_ENCERRA",
+    "DATA_DO_ENCERRAMENTO": "DT_ENCERRA",
+    "DATA_NASCIMENTO": "DT_NASC",
+    "DATA_DE_NASCIMENTO": "DT_NASC",
+    "AGRAVO": "ID_AGRAVO",
+    "CID10": "ID_AGRAVO",
+    "CID_10": "ID_AGRAVO",
+    "UNIDADE_NOTIFICADORA": "ID_UNIDADE",
+    "CNES_UNIDADE_NOTIFICADORA": "ID_UNIDADE",
+    "MUNICIPIO_NOTIFICACAO": "ID_MUNICIP",
+    "MUNICIPIO_RESIDENCIA": "ID_MN_RESI",
+    "MUNICIPIO_DE_RESIDENCIA": "ID_MN_RESI",
+    "BAIRRO_RESIDENCIA": "ID_BAIRRO",
+    "BAIRRO": "ID_BAIRRO",
+    "NOME_PACIENTE": "NM_PACIENT",
+    "NOME_DO_PACIENTE": "NM_PACIENT",
+    "NOME_DA_MAE": "NM_MAE_PAC",
+    "NOME_MAE": "NM_MAE_PAC",
+    "SEXO": "CS_SEXO",
+    "RACA_COR": "CS_RACA",
+    "RACA": "CS_RACA",
+    "ESCOLARIDADE": "CS_ESCOL_N",
+    "GESTANTE": "CS_GESTANT",
+    "CNS": "NU_CNS",
+    "CARTAO_SUS": "NU_CNS",
+    "CPF": "NU_CPF",
+    "CEP": "NU_CEP",
+    "CLASSIFICACAO_FINAL": "CLASSI_FIN",
+    "CRITERIO_CONFIRMACAO": "CRITERIO",
+    "EVOLUCAO_CASO": "EVOLUCAO",
+    "TELEFONE": "NU_TELEFON",
+    "ZONA": "CS_ZONA"
+  },
+  "parametros": {
+    "data_minima_plausivel": "1900-01-01",
+    "defasagem_aceitavel_dias": 10,
+    "campo_abrangencia": "ID_MN_RESI"
+  },
+  "chaves_duplicidade": [
+    {
+      "id": "DUP_NOTIFIC",
+      "nome": "Número de notificação repetido",
+      "campos": [
+        "NU_NOTIFIC"
+      ]
+    },
+    {
+      "id": "DUP_CPF",
+      "nome": "Provável duplicidade (CPF + agravo + data dos primeiros sintomas)",
+      "campos": [
+        "NU_CPF",
+        "ID_AGRAVO",
+        "DT_SIN_PRI"
+      ]
+    },
+    {
+      "id": "DUP_PROVAVEL",
+      "nome": "Provável duplicidade (nome + data de nascimento + agravo)",
+      "campos": [
+        "NM_PACIENT",
+        "DT_NASC",
+        "ID_AGRAVO"
+      ]
+    }
+  ],
+  "tempestividade": [
+    {
+      "id": "NOTIFICACAO",
+      "rotulo": "Oportunidade da notificação (1º sintoma → notificação)",
+      "data_inicial": "DT_SIN_PRI",
+      "data_final": "DT_NOTIFIC",
+      "prazo_dias": 7
+    },
+    {
+      "id": "DIGITACAO",
+      "rotulo": "Oportunidade do registro no sistema (notificação → digitação)",
+      "data_inicial": "DT_NOTIFIC",
+      "data_final": "DT_DIGITA",
+      "prazo_dias": 2
+    },
+    {
+      "id": "ENCERRAMENTO",
+      "rotulo": "Oportunidade do encerramento (notificação → encerramento)",
+      "data_inicial": "DT_NOTIFIC",
+      "data_final": "DT_ENCERRA",
+      "prazo_dias": 60
+    }
+  ],
+  "campos": {
+    "NU_NOTIFIC": {
+      "rotulo": "Número da notificação",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação"
+    },
+    "ID_AGRAVO": {
+      "rotulo": "Agravo (CID-10)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cid10"
+    },
+    "DT_NOTIFIC": {
+      "rotulo": "Data da notificação",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "data_minima": "2015-01-01"
+    },
+    "DT_SIN_PRI": {
+      "rotulo": "Data dos primeiros sintomas",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Caso",
+      "data_minima": "2015-01-01"
+    },
+    "ID_MUNICIP": {
+      "rotulo": "Município notificante (IBGE)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "ibge"
+    },
+    "ID_UNIDADE": {
+      "rotulo": "Unidade notificadora (CNES)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cnes",
+      "ignorado": [
+        "9999999"
+      ]
+    },
+    "NM_PACIENT": {
+      "rotulo": "Nome do paciente",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "DT_NASC": {
+      "rotulo": "Data de nascimento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "CS_SEXO": {
+      "rotulo": "Sexo",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "M": "Masculino",
+        "F": "Feminino",
+        "1": "Masculino",
+        "2": "Feminino",
+        "MASCULINO": "Masculino",
+        "FEMININO": "Feminino"
+      },
+      "ignorado": [
+        "I",
+        "9",
+        "INDEFINIDO"
+      ]
+    },
+    "CS_GESTANT": {
+      "rotulo": "Gestante",
+      "tipo": "categorico",
+      "bloco": "Paciente",
+      "dominio": {
+        "1": "1º trimestre",
+        "2": "2º trimestre",
+        "3": "3º trimestre",
+        "4": "Idade gestacional ignorada",
+        "5": "Não",
+        "6": "Não se aplica"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CS_RACA": {
+      "rotulo": "Raça/cor",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena",
+        "BRANCA": "Branca",
+        "PRETA": "Preta",
+        "AMARELA": "Amarela",
+        "PARDA": "Parda",
+        "INDIGENA": "Indígena"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CS_ESCOL_N": {
+      "rotulo": "Escolaridade",
+      "tipo": "texto",
+      "bloco": "Paciente",
+      "ignorado": [
+        "9",
+        "99"
+      ]
+    },
+    "NU_CNS": {
+      "rotulo": "Cartão Nacional de Saúde",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente",
+      "validador": "cns"
+    },
+    "NU_CPF": {
+      "rotulo": "CPF",
+      "tipo": "texto",
+      "bloco": "Paciente",
+      "validador": "cpf"
+    },
+    "NM_MAE_PAC": {
+      "rotulo": "Nome da mãe",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "NU_TELEFON": {
+      "rotulo": "Telefone de contato",
+      "tipo": "texto",
+      "bloco": "Paciente",
+      "regex": "^[0-9]{10,11}$",
+      "so_digitos": true,
+      "formato_descricao": "DDD + número (10 ou 11 dígitos)"
+    },
+    "ID_MN_RESI": {
+      "rotulo": "Município de residência (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Residência",
+      "validador": "ibge"
+    },
+    "ID_BAIRRO": {
+      "rotulo": "Bairro de residência",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Residência"
+    },
+    "NU_CEP": {
+      "rotulo": "CEP",
+      "tipo": "texto",
+      "bloco": "Residência",
+      "validador": "cep"
+    },
+    "CS_ZONA": {
+      "rotulo": "Zona de residência",
+      "tipo": "categorico",
+      "bloco": "Residência",
+      "dominio": {
+        "1": "Urbana",
+        "2": "Rural",
+        "3": "Periurbana",
+        "URBANA": "Urbana",
+        "RURAL": "Rural"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CLASSI_FIN": {
+      "rotulo": "Classificação final",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CRITERIO": {
+      "rotulo": "Critério de confirmação",
+      "tipo": "texto",
+      "bloco": "Encerramento",
+      "ignorado": [
+        "9"
+      ]
+    },
+    "EVOLUCAO": {
+      "rotulo": "Evolução do caso",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DT_ENCERRA": {
+      "rotulo": "Data do encerramento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "data_minima": "2015-01-01"
+    },
+    "DT_DIGITA": {
+      "rotulo": "Data da digitação/registro",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Processamento",
+      "data_minima": "2015-01-01"
+    }
+  },
+  "regras_cruzadas": [
+    {
+      "id": "ESN001",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_SIN_PRI",
+        "DT_NOTIFIC"
+      ],
+      "descricao": "A notificação não pode ser anterior aos primeiros sintomas.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "ESN002",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NOTIFIC",
+        "DT_DIGITA"
+      ],
+      "descricao": "O registro no sistema não pode ser anterior à notificação.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "ESN003",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NOTIFIC",
+        "DT_ENCERRA"
+      ],
+      "descricao": "O encerramento não pode ser anterior à notificação.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "ESN004",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NASC",
+        "DT_NOTIFIC"
+      ],
+      "descricao": "A notificação não pode ser anterior ao nascimento do paciente.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "ESN010",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "CS_SEXO",
+        "valores": [
+          "M",
+          "1",
+          "MASCULINO"
+        ]
+      },
+      "entao_campo": "CS_GESTANT",
+      "valores_proibidos": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "descricao": "Paciente do sexo masculino marcado como gestante.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "ESN011",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "CLASSI_FIN",
+        "preenchido": true
+      },
+      "entao_preenchido": [
+        "DT_ENCERRA",
+        "EVOLUCAO"
+      ],
+      "descricao": "Caso classificado exige data de encerramento e evolução.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "ESN012",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "ID_MN_RESI",
+        "valores": [
+          "292740"
+        ]
+      },
+      "entao_preenchido": [
+        "ID_BAIRRO"
+      ],
+      "descricao": "Residente em Salvador deve ter o bairro informado (necessário para a territorialização por distrito sanitário).",
+      "tipo_inconsistencia": "em_branco"
+    }
+  ]
+}

@@ -1,0 +1,855 @@
+{
+  "_leia_me": "Dicionário de crítica do SIM. Confira os nomes das colunas com a SUA exportação antes do primeiro uso: rode 'python executar.py validar -s sim -b sua_base.csv'. Campos ausentes são simplesmente ignorados; nomes diferentes podem ser resolvidos em 'apelidos_colunas'.",
+  "sistema": "SIM",
+  "nome_completo": "Sistema de Informação sobre Mortalidade",
+  "descricao": "Base de Declarações de Óbito (DO) do município de Salvador.",
+  "orgao": "Subcoordenadoria de Informação em Saúde — SMS Salvador",
+  "csv": {
+    "separador": null,
+    "encoding": null
+  },
+  "chave_registro": [
+    "NUMERODO"
+  ],
+  "data_referencia": "DTOBITO",
+  "campos_estratificacao": [
+    "CODESTAB",
+    "LOCOCOR",
+    "CIRCOBITO"
+  ],
+  "apelidos_colunas": {
+    "NUMERO_DO": "NUMERODO",
+    "DT_OBITO": "DTOBITO",
+    "DT_NASC": "DTNASC",
+    "DT_CADASTRO": "DTCADASTRO",
+    "CAUSA_BASICA": "CAUSABAS",
+    "COD_MUN_RES": "CODMUNRES",
+    "COD_ESTAB": "CODESTAB"
+  },
+  "parametros": {
+    "data_minima_plausivel": "1890-01-01",
+    "defasagem_aceitavel_dias": 60,
+    "campo_abrangencia": "CODMUNRES",
+    "estratos_esperados": []
+  },
+  "chaves_duplicidade": [
+    {
+      "id": "DUP_NUMERODO",
+      "nome": "Número da DO repetido",
+      "campos": [
+        "NUMERODO"
+      ]
+    },
+    {
+      "id": "DUP_PROVAVEL",
+      "nome": "Provável duplicidade (nome + data do óbito + data de nascimento)",
+      "campos": [
+        "NOME",
+        "DTOBITO",
+        "DTNASC"
+      ]
+    },
+    {
+      "id": "DUP_NOME_MAE",
+      "nome": "Provável duplicidade (nome + nome da mãe + data do óbito)",
+      "campos": [
+        "NOME",
+        "NOMEMAE",
+        "DTOBITO"
+      ]
+    }
+  ],
+  "tempestividade": [
+    {
+      "id": "DIGITACAO",
+      "rotulo": "Oportunidade da digitação (óbito → cadastro no SIM)",
+      "data_inicial": "DTOBITO",
+      "data_final": "DTCADASTRO",
+      "prazo_dias": 30
+    },
+    {
+      "id": "INVESTIGACAO",
+      "rotulo": "Oportunidade da investigação (óbito → conclusão da investigação)",
+      "data_inicial": "DTOBITO",
+      "data_final": "DTCONINV",
+      "prazo_dias": 120
+    }
+  ],
+  "campos": {
+    "NUMERODO": {
+      "rotulo": "Número da DO",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "regex": "^[0-9]{6,12}$",
+      "formato_descricao": "6 a 12 dígitos"
+    },
+    "TIPOBITO": {
+      "rotulo": "Tipo de óbito",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "dominio": {
+        "1": "Fetal",
+        "2": "Não fetal"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DTOBITO": {
+      "rotulo": "Data do óbito",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "data_minima": "1996-01-01"
+    },
+    "HORAOBITO": {
+      "rotulo": "Hora do óbito",
+      "tipo": "texto",
+      "bloco": "Identificação",
+      "regex": "^([01][0-9]|2[0-3])[0-5][0-9]$",
+      "formato_descricao": "HHMM",
+      "ignorado": [
+        "9999"
+      ]
+    },
+    "NATURAL": {
+      "rotulo": "Naturalidade",
+      "tipo": "texto",
+      "bloco": "Identificação",
+      "ignorado": [
+        "999"
+      ]
+    },
+    "DTNASC": {
+      "rotulo": "Data de nascimento",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação"
+    },
+    "IDADE": {
+      "rotulo": "Idade (código SIM)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "regex": "^[0-5][0-9]{2}$",
+      "formato_descricao": "3 dígitos: unidade (0=minutos,1=horas,2=dias,3=meses,4=anos,5=100+) + quantidade",
+      "ignorado": [
+        "999",
+        "000"
+      ]
+    },
+    "SEXO": {
+      "rotulo": "Sexo",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "dominio": {
+        "1": "Masculino",
+        "2": "Feminino",
+        "M": "Masculino",
+        "F": "Feminino"
+      },
+      "ignorado": [
+        "0",
+        "9",
+        "I"
+      ]
+    },
+    "RACACOR": {
+      "rotulo": "Raça/cor",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "ESTCIV": {
+      "rotulo": "Estado civil",
+      "tipo": "categorico",
+      "bloco": "Identificação",
+      "dominio": {
+        "1": "Solteiro",
+        "2": "Casado",
+        "3": "Viúvo",
+        "4": "Separado judicialmente/divorciado",
+        "5": "União estável"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "ESC": {
+      "rotulo": "Escolaridade (anos de estudo)",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Identificação",
+      "dominio": {
+        "1": "Nenhuma",
+        "2": "1 a 3 anos",
+        "3": "4 a 7 anos",
+        "4": "8 a 11 anos",
+        "5": "12 anos e mais"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "ESC2010": {
+      "rotulo": "Escolaridade (série/2010)",
+      "tipo": "categorico",
+      "bloco": "Identificação",
+      "dominio": {
+        "0": "Sem escolaridade",
+        "1": "Fundamental I (1ª a 4ª)",
+        "2": "Fundamental II (5ª a 8ª)",
+        "3": "Médio",
+        "4": "Superior incompleto",
+        "5": "Superior completo"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "OCUP": {
+      "rotulo": "Ocupação (CBO)",
+      "tipo": "texto",
+      "bloco": "Identificação",
+      "regex": "^[0-9]{4,6}$",
+      "formato_descricao": "código CBO de 4 a 6 dígitos",
+      "ignorado": [
+        "999999",
+        "0000"
+      ]
+    },
+    "CODMUNRES": {
+      "rotulo": "Município de residência (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Residência",
+      "validador": "ibge",
+      "ignorado": [
+        "999999",
+        "000000"
+      ]
+    },
+    "CODBAIRRES": {
+      "rotulo": "Bairro de residência",
+      "tipo": "texto",
+      "bloco": "Residência"
+    },
+    "LOCOCOR": {
+      "rotulo": "Local de ocorrência",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Ocorrência",
+      "dominio": {
+        "1": "Hospital",
+        "2": "Outro estabelecimento de saúde",
+        "3": "Domicílio",
+        "4": "Via pública",
+        "5": "Outros",
+        "6": "Aldeia indígena"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CODESTAB": {
+      "rotulo": "Estabelecimento de ocorrência (CNES)",
+      "tipo": "texto",
+      "bloco": "Ocorrência",
+      "validador": "cnes",
+      "ignorado": [
+        "9999999",
+        "0000000"
+      ]
+    },
+    "CODMUNOCOR": {
+      "rotulo": "Município de ocorrência (IBGE)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Ocorrência",
+      "validador": "ibge",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "IDADEMAE": {
+      "rotulo": "Idade da mãe",
+      "tipo": "inteiro",
+      "bloco": "Óbito fetal/infantil",
+      "min": 10,
+      "max": 60,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "ESCMAE": {
+      "rotulo": "Escolaridade da mãe",
+      "tipo": "categorico",
+      "bloco": "Óbito fetal/infantil",
+      "dominio": {
+        "1": "Nenhuma",
+        "2": "1 a 3 anos",
+        "3": "4 a 7 anos",
+        "4": "8 a 11 anos",
+        "5": "12 anos e mais"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "QTDFILVIVO": {
+      "rotulo": "Filhos nascidos vivos",
+      "tipo": "inteiro",
+      "bloco": "Óbito fetal/infantil",
+      "min": 0,
+      "max": 20,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "QTDFILMORT": {
+      "rotulo": "Perdas fetais/abortos",
+      "tipo": "inteiro",
+      "bloco": "Óbito fetal/infantil",
+      "min": 0,
+      "max": 20,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "GRAVIDEZ": {
+      "rotulo": "Tipo de gravidez",
+      "tipo": "categorico",
+      "bloco": "Óbito fetal/infantil",
+      "dominio": {
+        "1": "Única",
+        "2": "Dupla",
+        "3": "Tripla e mais"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "GESTACAO": {
+      "rotulo": "Semanas de gestação",
+      "tipo": "categorico",
+      "bloco": "Óbito fetal/infantil",
+      "dominio": {
+        "1": "Menos de 22 semanas",
+        "2": "22 a 27",
+        "3": "28 a 31",
+        "4": "32 a 36",
+        "5": "37 a 41",
+        "6": "42 e mais"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "PARTO": {
+      "rotulo": "Tipo de parto",
+      "tipo": "categorico",
+      "bloco": "Óbito fetal/infantil",
+      "dominio": {
+        "1": "Vaginal",
+        "2": "Cesáreo"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "OBITOPARTO": {
+      "rotulo": "Morte em relação ao parto",
+      "tipo": "categorico",
+      "bloco": "Óbito fetal/infantil",
+      "dominio": {
+        "1": "Antes",
+        "2": "Durante",
+        "3": "Depois"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "PESO": {
+      "rotulo": "Peso ao nascer (g)",
+      "tipo": "inteiro",
+      "bloco": "Óbito fetal/infantil",
+      "min": 100,
+      "max": 7000,
+      "ignorado": [
+        "9999",
+        "0"
+      ]
+    },
+    "OBITOGRAV": {
+      "rotulo": "Óbito na gravidez",
+      "tipo": "categorico",
+      "bloco": "Óbito materno",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "OBITOPUERP": {
+      "rotulo": "Óbito no puerpério",
+      "tipo": "categorico",
+      "bloco": "Óbito materno",
+      "dominio": {
+        "1": "Sim, até 42 dias",
+        "2": "Sim, de 43 dias a 1 ano",
+        "3": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "ASSISTMED": {
+      "rotulo": "Recebeu assistência médica",
+      "tipo": "categorico",
+      "bloco": "Assistência",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "EXAME": {
+      "rotulo": "Exame complementar",
+      "tipo": "categorico",
+      "bloco": "Assistência",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CIRURGIA": {
+      "rotulo": "Cirurgia",
+      "tipo": "categorico",
+      "bloco": "Assistência",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "NECROPSIA": {
+      "rotulo": "Necropsia",
+      "tipo": "categorico",
+      "bloco": "Assistência",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "LINHAA": {
+      "rotulo": "Causa terminal (linha A)",
+      "tipo": "texto",
+      "bloco": "Causas",
+      "essencial": true
+    },
+    "LINHAB": {
+      "rotulo": "Causa antecedente (linha B)",
+      "tipo": "texto",
+      "bloco": "Causas"
+    },
+    "LINHAC": {
+      "rotulo": "Causa antecedente (linha C)",
+      "tipo": "texto",
+      "bloco": "Causas"
+    },
+    "LINHAD": {
+      "rotulo": "Causa básica declarada (linha D)",
+      "tipo": "texto",
+      "bloco": "Causas"
+    },
+    "CAUSABAS": {
+      "rotulo": "Causa básica (CID-10)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Causas",
+      "validador": "cid10"
+    },
+    "CAUSABAS_O": {
+      "rotulo": "Causa básica original (antes da investigação)",
+      "tipo": "texto",
+      "bloco": "Causas",
+      "validador": "cid10"
+    },
+    "CIRCOBITO": {
+      "rotulo": "Circunstância do óbito (causas externas)",
+      "tipo": "categorico",
+      "bloco": "Causas externas",
+      "dominio": {
+        "1": "Acidente",
+        "2": "Suicídio",
+        "3": "Homicídio",
+        "4": "Outros"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "ACIDTRAB": {
+      "rotulo": "Acidente de trabalho",
+      "tipo": "categorico",
+      "bloco": "Causas externas",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "FONTE": {
+      "rotulo": "Fonte da informação (causas externas)",
+      "tipo": "categorico",
+      "bloco": "Causas externas",
+      "dominio": {
+        "1": "Ocorrência policial",
+        "2": "Hospital",
+        "3": "Família",
+        "4": "Outra"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "ATESTANTE": {
+      "rotulo": "Médico atestante",
+      "tipo": "categorico",
+      "bloco": "Assistência",
+      "dominio": {
+        "1": "Assistente",
+        "2": "Substituto",
+        "3": "IML",
+        "4": "SVO",
+        "5": "Outro"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "TPPOS": {
+      "rotulo": "Óbito investigado",
+      "tipo": "categorico",
+      "bloco": "Investigação",
+      "dominio": {
+        "S": "Sim",
+        "N": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DTINVESTIG": {
+      "rotulo": "Data da investigação",
+      "tipo": "data",
+      "bloco": "Investigação",
+      "data_minima": "1996-01-01"
+    },
+    "DTCONINV": {
+      "rotulo": "Data da conclusão da investigação",
+      "tipo": "data",
+      "bloco": "Investigação",
+      "data_minima": "1996-01-01"
+    },
+    "FONTEINV": {
+      "rotulo": "Fonte da investigação",
+      "tipo": "categorico",
+      "bloco": "Investigação",
+      "dominio": {
+        "1": "Comitê de mortalidade",
+        "2": "Visita domiciliar",
+        "3": "Estabelecimento de saúde",
+        "4": "Relacionamento com SIH/SINAN",
+        "5": "SVO",
+        "6": "IML",
+        "7": "Outra",
+        "8": "Múltiplas fontes"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DTCADASTRO": {
+      "rotulo": "Data do cadastro no sistema",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Processamento",
+      "data_minima": "1996-01-01"
+    },
+    "DTRECEBIM": {
+      "rotulo": "Data do recebimento",
+      "tipo": "data",
+      "bloco": "Processamento",
+      "data_minima": "1996-01-01"
+    },
+    "NOME": {
+      "rotulo": "Nome do falecido",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação"
+    },
+    "NOMEMAE": {
+      "rotulo": "Nome da mãe",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Identificação"
+    }
+  },
+  "regras_cruzadas": [
+    {
+      "id": "SIM001",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTNASC",
+        "DTOBITO"
+      ],
+      "descricao": "Data de nascimento deve ser anterior ou igual à data do óbito.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SIM002",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTOBITO",
+        "DTCADASTRO"
+      ],
+      "descricao": "O cadastro no sistema não pode ser anterior ao óbito.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SIM003",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTOBITO",
+        "DTCONINV"
+      ],
+      "descricao": "A conclusão da investigação não pode ser anterior ao óbito.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SIM004",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTNASC",
+        "DTOBITO"
+      ],
+      "max_dias": 44000,
+      "descricao": "Idade implausível: mais de 120 anos entre nascimento e óbito.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SIM010",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "SEXO",
+        "valores": [
+          "1",
+          "M"
+        ]
+      },
+      "entao_campo": "OBITOGRAV",
+      "valores_proibidos": [
+        "1"
+      ],
+      "descricao": "Sexo masculino não pode ter óbito na gravidez.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SIM011",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "SEXO",
+        "valores": [
+          "1",
+          "M"
+        ]
+      },
+      "entao_campo": "OBITOPUERP",
+      "valores_proibidos": [
+        "1",
+        "2"
+      ],
+      "descricao": "Sexo masculino não pode ter óbito no puerpério.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SIM012",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "SEXO",
+        "valores": [
+          "1",
+          "M"
+        ]
+      },
+      "entao_campo": "GESTACAO",
+      "valores_proibidos": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "descricao": "Semanas de gestação preenchidas para óbito de sexo masculino (fora óbito fetal).",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SIM020",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "TIPOBITO",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_preenchido": [
+        "GESTACAO",
+        "PESO",
+        "OBITOPARTO"
+      ],
+      "descricao": "Óbito fetal deve informar semanas de gestação, peso e momento do óbito em relação ao parto.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SIM021",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "CIRCOBITO",
+        "valores": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ]
+      },
+      "entao_preenchido": [
+        "FONTE"
+      ],
+      "descricao": "Óbito por causa externa deve informar a fonte da informação.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SIM022",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "ASSISTMED",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_preenchido": [
+        "ATESTANTE"
+      ],
+      "descricao": "Com assistência médica declarada, o médico atestante deve estar informado.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SIM030",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "TIPOBITO",
+        "valores": [
+          "2"
+        ]
+      },
+      "entao_campo": "OBITOPARTO",
+      "valores_proibidos": [
+        "1",
+        "2"
+      ],
+      "descricao": "Óbito não fetal marcado como ocorrido antes/durante o parto — verificar.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SIM040",
+      "tipo": "faixa_condicional",
+      "se": {
+        "campo": "TIPOBITO",
+        "valores": [
+          "1"
+        ]
+      },
+      "campo": "PESO",
+      "min": 100,
+      "max": 7000,
+      "descricao": "Peso ao nascer fora da faixa plausível para óbito fetal.",
+      "tipo_inconsistencia": "fora_de_faixa"
+    },
+    {
+      "id": "SIM050",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "TPPOS",
+        "valores": [
+          "S"
+        ]
+      },
+      "entao_preenchido": [
+        "DTCONINV",
+        "FONTEINV"
+      ],
+      "descricao": "Óbito marcado como investigado deve ter data de conclusão e fonte da investigação.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SIM060",
+      "tipo": "coerencia_valores",
+      "combinacoes_proibidas": [
+        {
+          "OBITOGRAV": "1",
+          "OBITOPUERP": "1"
+        }
+      ],
+      "descricao": "Óbito não pode ser simultaneamente na gravidez e no puerpério.",
+      "tipo_inconsistencia": "incoerencia"
+    }
+  ],
+  "pesos_atributos": {}
+}

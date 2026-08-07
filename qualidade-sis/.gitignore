@@ -1,0 +1,8 @@
+# Produtos de cada execução e histórico — contêm dados da Secretaria
+saida/
+historico/
+exemplos/bases/
+
+# Python
+__pycache__/
+*.pyc
