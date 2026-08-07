@@ -19,6 +19,9 @@ Lê as bases em fluxo, então funciona com arquivos grandes e acumulativos em m�
 
 ---
 
+> **Nunca usou?** Comece por [`COMECE_AQUI.md`](COMECE_AQUI.md) — passo a passo
+> ilustrado, do download à primeira análise, sem linha de comando.
+
 ## Instalação
 
 Só é preciso ter Python 3.8 ou superior (Windows: baixe em python.org e marque
@@ -138,6 +141,7 @@ Casos comuns:
 
 | Documento | Conteúdo |
 |---|---|
+| [`COMECE_AQUI.md`](COMECE_AQUI.md) | **passo a passo para quem nunca usou** — download, instalação do Python, primeiro teste |
 | [`docs/metodologia.md`](docs/metodologia.md) | **como conduzir o trabalho**: os 40 atributos organizados em blocos, indicadores e fórmulas, rotina mensal/trimestral, fluxo de devolutiva, amostra de verificação, governança |
 | [`docs/guia_rapido.md`](docs/guia_rapido.md) | passo a passo operacional, do export do sistema à devolutiva à unidade |
 | [`docs/dicionario_regras.md`](docs/dicionario_regras.md) | referência técnica dos arquivos de configuração |
