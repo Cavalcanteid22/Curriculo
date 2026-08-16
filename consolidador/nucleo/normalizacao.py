@@ -351,9 +351,15 @@ def mapear_campos_entre_sistemas(
     valores_a = {c: _amostra_normalizada(consolidado_a, c) for c in consolidado_a.colunas_dados}
     valores_b = {c: _amostra_normalizada(consolidado_b, c) for c in consolidado_b.colunas_dados}
 
+    # Campos nomeados no perfil sao decisao do usuario: 'Data de atualizacao'
+    # de um sistema nao pode ser casada com 'Data da notificacao' do outro so
+    # porque as duas sao datas.
+    canonicos = {c.nome for c in perfil.campos}
     candidatos: List[Tuple[float, str, str, str]] = []
     for coluna_a in consolidado_a.colunas_dados:
         for coluna_b in consolidado_b.colunas_dados:
+            if coluna_a != coluna_b and coluna_a in canonicos and coluna_b in canonicos:
+                continue
             nota, motivo = _pontuar_par(
                 coluna_a, coluna_b, consolidado_a, consolidado_b, valores_a, valores_b
             )

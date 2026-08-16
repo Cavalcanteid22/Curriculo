@@ -161,6 +161,22 @@ Perfis prontos incluídos:
 | --- | --- |
 | `perfis/exemplo_dois_sistemas.json` | Modelo comentado, com todas as opções |
 | `perfis/siclom_cadastrados_x_ativos.json` | Cruzamento entre o relatório de usuários cadastrados (`.xls` que é HTML) e a planilha de usuários ativos, pareando por nome + data de nascimento + nome da mãe, já que não há CPF nos dois lados |
+| `perfis/siclom_hepatites_x_sinan.json` | Conferência "todo paciente ativo no SICLOM Hepatites deveria estar notificado no SINAN": pareia por CPF e, na falta dele, por nome + data de nascimento ou nome + nome da mãe |
+
+### A conferência SICLOM × SINAN, passo a passo
+
+1. No SICLOM Hepatites, exporte o relatório de usuários (cadastrados ou ativos) **do agravo que
+   vai conferir** — HBV ou HCV — e do período desejado. O arquivo vem como `RELATORIO_N.xls`.
+2. No SINAN/Hepatonet, exporte as notificações **do mesmo agravo e do mesmo período**.
+3. Abra o aplicativo, adicione os dois arquivos, escolha o perfil
+   `perfis/siclom_hepatites_x_sinan.json` e execute.
+4. A aba **"Somente em SICLOM Hepatites"** é a resposta da rotina: os pacientes que retiram
+   medicamento e não foram localizados nas notificações. A coluna "Por que consta como ausente"
+   distingue quem simplesmente não existe no SINAN de quem tem lá um registro parecido (provável
+   erro de digitação no nome ou na data), que aparece com o percentual de semelhança.
+
+> Exporte os dois lados para o **mesmo agravo**. Uma lista de HCV comparada com uma de HBV não
+> tem interseção nenhuma, e o resultado será "tudo exclusivo dos dois lados".
 
 ## Dados pessoais e sigilo
 

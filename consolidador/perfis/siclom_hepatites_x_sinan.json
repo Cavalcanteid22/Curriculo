@@ -1,0 +1,302 @@
+{
+  "nome": "SICLOM Hepatites x SINAN (notificacoes)",
+  "observacoes": "Conferencia da rotina: todo paciente ativo no SICLOM Hepatites deveria ter notificacao no SINAN. O sistema A e o SICLOM (relatorio de usuarios cadastrados ou de usuarios ativos, exportado como .xls, que na verdade e HTML); o sistema B e o SINAN/Hepatonet. Os apelidos do lado do SINAN cobrem tanto os nomes tecnicos da exportacao (NM_PACIENT, DT_NASC...) quanto os rotulos por extenso; se a sua exportacao usar outro nome de coluna, acrescente-o na lista do campo correspondente. IMPORTANTE: exporte os dois lados para o mesmo agravo (HBV ou HCV) e para o mesmo periodo, senao as listas nao se cruzam. O campo 'Agravo' fica fora da comparacao porque os dois sistemas usam vocabularios diferentes ('HCV' x 'HEPATITE C'); ele continua na consolidacao e na analise de qualidade.",
+  "sistemas": [
+    {
+      "id": "A",
+      "nome": "SICLOM Hepatites",
+      "padroes_arquivo": [
+        "RELATORIO",
+        "siclom",
+        "usuarios_ativos",
+        "cadastrad"
+      ],
+      "padroes_aba": [],
+      "colunas_esperadas": [
+        "NOME",
+        "NOME DA MÃE",
+        "CPF",
+        "DATA NASC",
+        "SINAN HBV",
+        "SINAN HCV"
+      ],
+      "mapeamento": {
+        "Nome": [
+          "NOME",
+          "nm_pac",
+          "Nome completo",
+          "Nome do usuário"
+        ],
+        "Nome da mae": [
+          "NOME DA MÃE",
+          "NOME DA MAE",
+          "Nome Mãe",
+          "nm_mae"
+        ],
+        "CPF": [
+          "CPF",
+          "num_cpf_pac",
+          "Nr. CPF"
+        ],
+        "Data de nascimento": [
+          "DATA NASC",
+          "DATA NASCIMENTO",
+          "dt_nasc",
+          "Data de Nascimento"
+        ],
+        "Municipio de residencia": [
+          "CIDADE RESIDÊNCIA",
+          "CIDADE RESIDENCIA"
+        ],
+        "Municipio de nascimento": [
+          "CIDADE NASCIMENTO"
+        ],
+        "Notificacao SINAN HBV": [
+          "SINAN HBV"
+        ],
+        "Notificacao SINAN HCV": [
+          "SINAN HCV"
+        ],
+        "Data de cadastro": [
+          "DATA CADASTRO"
+        ],
+        "Data de atualizacao": [
+          "DATA ATUALIZAÇÃO",
+          "DATA ATUALIZACAO"
+        ],
+        "Ultima dispensa": [
+          "ÚLTIMA DISPENSA",
+          "ULTIMA DISPENSA",
+          "DATA DISPENSA",
+          "dt_dispensa_sol"
+        ],
+        "Agravo": [
+          "TIPO"
+        ],
+        "Esquema": [
+          "ESQUEMA ATUAL"
+        ],
+        "Endereco": [
+          "ENDEREÇO",
+          "ENDERECO"
+        ],
+        "Bairro": [
+          "BAIRRO"
+        ],
+        "Telefones": [
+          "TELEFONES"
+        ],
+        "Email": [
+          "EMAIL",
+          "E-mail"
+        ],
+        "Sexo": [
+          "sexo",
+          "SEXO"
+        ]
+      },
+      "ignorar_colunas": [
+        "Data de Emissão",
+        "Total de usuários"
+      ]
+    },
+    {
+      "id": "B",
+      "nome": "SINAN",
+      "padroes_arquivo": [
+        "sinan",
+        "hepatonet",
+        "notifica"
+      ],
+      "padroes_aba": [],
+      "colunas_esperadas": [
+        "NM_PACIENT",
+        "DT_NASC",
+        "NU_NOTIFIC"
+      ],
+      "mapeamento": {
+        "Nome": [
+          "NM_PACIENT",
+          "NOME DO PACIENTE",
+          "NOME",
+          "Nome do paciente",
+          "Paciente"
+        ],
+        "Nome da mae": [
+          "NM_MAE_PAC",
+          "NOME DA MÃE",
+          "NOME DA MAE",
+          "Nome da mãe"
+        ],
+        "CPF": [
+          "NU_CPF",
+          "CPF",
+          "Nº CPF"
+        ],
+        "Data de nascimento": [
+          "DT_NASC",
+          "DATA DE NASCIMENTO",
+          "DATA NASCIMENTO",
+          "Data de nascimento"
+        ],
+        "Numero da notificacao": [
+          "NU_NOTIFIC",
+          "Nº DA NOTIFICAÇÃO",
+          "NUMERO DA NOTIFICACAO",
+          "Nº NOTIFICAÇÃO",
+          "Notificação"
+        ],
+        "Data da notificacao": [
+          "DT_NOTIFIC",
+          "DATA DA NOTIFICAÇÃO",
+          "Data da notificação"
+        ],
+        "Municipio de residencia": [
+          "ID_MN_RESI",
+          "MUNICÍPIO DE RESIDÊNCIA",
+          "Município de residência"
+        ],
+        "Agravo": [
+          "ID_AGRAVO",
+          "AGRAVO",
+          "Agravo",
+          "CLASSIFICAÇÃO"
+        ],
+        "Classificacao final": [
+          "CLASSI_FIN",
+          "CLASSIFICAÇÃO FINAL"
+        ],
+        "Evolucao": [
+          "EVOLUCAO",
+          "EVOLUÇÃO"
+        ],
+        "Sexo": [
+          "CS_SEXO",
+          "SEXO",
+          "Sexo"
+        ]
+      },
+      "ignorar_colunas": []
+    }
+  ],
+  "campos": [
+    {
+      "nome": "Nome",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "tamanho_minimo": 5
+    },
+    {
+      "nome": "Nome da mae",
+      "tipo": "texto",
+      "descricao": "Confirma a identidade quando ha homonimos"
+    },
+    {
+      "nome": "Data de nascimento",
+      "tipo": "data",
+      "obrigatorio": true
+    },
+    {
+      "nome": "CPF",
+      "tipo": "cpf",
+      "unico": true
+    },
+    {
+      "nome": "Notificacao SINAN HBV",
+      "tipo": "codigo"
+    },
+    {
+      "nome": "Notificacao SINAN HCV",
+      "tipo": "codigo"
+    },
+    {
+      "nome": "Numero da notificacao",
+      "tipo": "codigo",
+      "unico": true
+    },
+    {
+      "nome": "Data da notificacao",
+      "tipo": "data"
+    },
+    {
+      "nome": "Data de cadastro",
+      "tipo": "data"
+    },
+    {
+      "nome": "Ultima dispensa",
+      "tipo": "data"
+    },
+    {
+      "nome": "Agravo",
+      "tipo": "categoria"
+    },
+    {
+      "nome": "Sexo",
+      "tipo": "categoria"
+    },
+    {
+      "nome": "Municipio de residencia",
+      "tipo": "categoria"
+    },
+    {
+      "nome": "Telefones",
+      "tipo": "telefone"
+    },
+    {
+      "nome": "Email",
+      "tipo": "email"
+    }
+  ],
+  "pareamento": {
+    "chaves_primarias": [
+      "CPF"
+    ],
+    "chaves_alternativas": [
+      [
+        "Nome",
+        "Data de nascimento"
+      ],
+      [
+        "Nome",
+        "Nome da mae"
+      ]
+    ],
+    "campos_similaridade": [
+      "Nome",
+      "Nome da mae"
+    ],
+    "campos_comparacao": [
+      "Nome",
+      "Nome da mae",
+      "Data de nascimento",
+      "Municipio de residencia",
+      "Sexo",
+      "CPF"
+    ],
+    "limiar_provavel": 0.92,
+    "limiar_duvidoso": 0.85,
+    "bloqueio": "auto"
+  },
+  "qualidade": {
+    "regras_consistencia": [
+      {
+        "nome": "notificacao_apos_nascimento",
+        "campo_a": "Data da notificacao",
+        "operador": ">=",
+        "campo_b": "Data de nascimento",
+        "descricao": "Data da notificacao anterior a data de nascimento"
+      },
+      {
+        "nome": "dispensa_apos_cadastro",
+        "campo_a": "Ultima dispensa",
+        "operador": ">=",
+        "campo_b": "Data de cadastro",
+        "descricao": "Dispensa registrada antes do cadastro do usuario"
+      }
+    ],
+    "data_minima": "1900-01-01",
+    "data_maxima": "",
+    "detectar_outliers": true,
+    "limite_categorias": 40
+  }
+}

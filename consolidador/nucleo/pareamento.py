@@ -105,6 +105,14 @@ def parear(
         resultado.somente_b = [NaoPareado(l, "Sistema oposto sem registros") for l in consolidado_b.tabela.linhas]
         return resultado
 
+    escolhidos = set(perfil.pareamento.campos_comparacao)
+    if escolhidos:
+        # O perfil pode restringir o que e comparado: comparar campos que os
+        # dois sistemas preenchem com vocabularios diferentes so gera ruido.
+        comparaveis = [p for p in resultado.mapa_campos if p.campo_a in escolhidos]
+    else:
+        comparaveis = list(resultado.mapa_campos)
+
     chaves = _definir_chaves(consolidado_a, consolidado_b, perfil, resultado)
     if not chaves:
         resultado.avisos.append(
@@ -119,7 +127,7 @@ def parear(
         tipo = TIPO_CHAVE if ordem == 0 else TIPO_ALTERNATIVA
         _parear_por_chave(
             consolidado_a, consolidado_b, campo_a, campo_b, rotulo, tipo,
-            resultado, pareados_a, pareados_b,
+            resultado, pareados_a, pareados_b, comparaveis,
         )
 
     restantes_a = [l for l in consolidado_a.tabela.linhas if l[COL_ID] not in pareados_a]
@@ -131,7 +139,7 @@ def parear(
 
     aproximados = _parear_por_similaridade(
         restantes_a, restantes_b, campos_sim, perfil, consolidado_a, consolidado_b,
-        resultado.mapa_campos,
+        comparaveis,
     )
     for par in aproximados:
         resultado.pares.append(par)
@@ -302,6 +310,7 @@ def _parear_por_chave(
     resultado: ResultadoPareamento,
     pareados_a: Dict[str, List[Par]],
     pareados_b: Dict[str, List[Par]],
+    comparaveis: Sequence[ParDeCampos],
 ) -> None:
     indice: Dict[str, List[Dict[str, Any]]] = {}
     for linha in consolidado_b.tabela.linhas:
@@ -327,7 +336,7 @@ def _parear_por_chave(
                 linha_a=linha_a,
                 linha_b=linha_b,
             )
-            par.divergencias = _comparar_campos(linha_a, linha_b, resultado.mapa_campos, campo_a, campo_b)
+            par.divergencias = _comparar_campos(linha_a, linha_b, comparaveis, campo_a, campo_b)
             resultado.pares.append(par)
             pareados_a.setdefault(linha_a[COL_ID], []).append(par)
             pareados_b.setdefault(linha_b[COL_ID], []).append(par)
