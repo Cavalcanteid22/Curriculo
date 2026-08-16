@@ -200,6 +200,28 @@ class TesteRelatorioDeSistema(unittest.TestCase):
         self.assertEqual(tabela.colunas[:2], ["NOME", "CPF"])
         self.assertEqual(len(tabela.linhas), 1)
 
+    def teste_zip_com_a_pasta_de_dados(self):
+        """A pagina da web + a pasta '..._arquivos' compactadas funcionam."""
+        indice = (
+            '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head>'
+            '<meta name="Excel Workbook Frameset"></head><frameset>'
+            '<frame src="REL_arquivos/sheet001.htm" name="frSheet"></frameset></html>'
+        )
+        pasta_dados = os.path.join(self.pasta, "REL_arquivos")
+        os.makedirs(pasta_dados, exist_ok=True)
+        self._gravar("REL.xls", indice)
+        with open(os.path.join(pasta_dados, "sheet001.htm"), "w", encoding="cp1252") as arquivo:
+            arquivo.write("<table><tr><td>NOME</td><td>CPF</td></tr>"
+                          "<tr><td>ANA</td><td>529.982.247-25</td></tr></table>")
+        caminho_zip = os.path.join(self.pasta, "envio.zip")
+        with zipfile.ZipFile(caminho_zip, "w") as pacote:
+            pacote.write(os.path.join(self.pasta, "REL.xls"), "REL.xls")
+            pacote.write(os.path.join(pasta_dados, "sheet001.htm"), "REL_arquivos/sheet001.htm")
+        self.assertEqual(leitores.identificar_formato(caminho_zip), "zip")
+        tabela = leitores.ler_arquivo(caminho_zip)[0]
+        self.assertEqual(tabela.colunas[:2], ["NOME", "CPF"])
+        self.assertEqual(tabela.linhas[0]["NOME"], "ANA")
+
     def teste_planilha_xml_do_excel(self):
         caminho = self._gravar("RELATORIO.xml", (
             '<?xml version="1.0"?>'

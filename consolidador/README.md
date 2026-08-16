@@ -68,7 +68,8 @@ python consolidar.py entradas --salvar-perfil perfis/meu_perfil.json
 
 ## Formatos de entrada aceitos
 
-`.xlsx`, `.xlsm`, `.xls`, `.ods`, `.csv`, `.txt`, `.tsv`, `.dbf`, `.html`, `.htm`, `.json`, `.xml`.
+`.xlsx`, `.xlsm`, `.xls`, `.ods`, `.csv`, `.txt`, `.tsv`, `.dbf`, `.html`, `.htm`, `.json`,
+`.xml` e `.zip` (pasta compactada com um ou mais dos anteriores).
 
 O formato é reconhecido **pelo conteúdo, não pela extensão** — o que resolve o caso mais comum
 dos sistemas públicos: o relatório vem com nome `RELATORIO_5.xls` mas por dentro é HTML.
@@ -87,7 +88,9 @@ A leitura já resolve as chatices do dia a dia:
 - blocos de identificação no meio do relatório (`Nome do usuário: FULANO`,
   `DISPENSADOR: ... DATA DISPENSA: ...`) viram **colunas** aplicadas aos registros seguintes;
 - planilha "salva como página da web" pelo Excel: o arquivo índice é seguido até a pasta
-  `..._arquivos/sheet001.htm`; se a pasta não estiver junto, a mensagem diz exatamente isso;
+  `..._arquivos/sheet001.htm`. Se a pasta não estiver junto, a mensagem explica as três saídas
+  (usar o arquivo como veio do sistema, salvar como `.xlsx`, ou compactar arquivo + pasta em um
+  `.zip` e usar o `.zip` como entrada);
 - `Planilha XML 2003` do Excel (SpreadsheetML).
 
 > Só não é lido o `.xls` **binário** de verdade (Excel 97-2003 salvo como pasta de trabalho):
@@ -162,6 +165,7 @@ Perfis prontos incluídos:
 | `perfis/exemplo_dois_sistemas.json` | Modelo comentado, com todas as opções |
 | `perfis/siclom_cadastrados_x_ativos.json` | Cruzamento entre o relatório de usuários cadastrados (`.xls` que é HTML) e a planilha de usuários ativos, pareando por nome + data de nascimento + nome da mãe, já que não há CPF nos dois lados |
 | `perfis/siclom_hepatites_x_sinan.json` | Conferência "todo paciente ativo no SICLOM Hepatites deveria estar notificado no SINAN": pareia por CPF e, na falta dele, por nome + data de nascimento ou nome + nome da mãe |
+| `perfis/siclom_dispensacoes_x_ativos.json` | Confere a lista de usuários ativos contra o que foi efetivamente dispensado (uma linha por dispensação × uma linha por pessoa: pareamento 1:N) |
 
 ### A conferência SICLOM × SINAN, passo a passo
 

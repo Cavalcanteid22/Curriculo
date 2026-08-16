@@ -1,0 +1,78 @@
+{
+  "nome": "SICLOM - Dispensacoes x Usuarios ativos",
+  "observacoes": "Confere a lista de usuarios ativos contra o que foi efetivamente dispensado. O relatorio de dispensacoes traz uma linha por dispensacao (o mesmo paciente aparece varias vezes), entao o pareamento e 1:N e cada par sai marcado com a multiplicidade. Exporte os dois lados para o mesmo agravo (HBV ou HCV) e para o mesmo periodo. A data da dispensa fica fora da comparacao de divergencias porque, por natureza, cada dispensacao tem a sua data e o outro sistema guarda apenas a ultima.",
+  "sistemas": [
+    {
+      "id": "A",
+      "nome": "Dispensacoes",
+      "padroes_arquivo": ["dispensa", "solicitacao", "RELATORIO_2", "RELATORIO 2"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["nm_pac", "num_cpf_pac", "dt_nasc", "dt_dispensa_sol"],
+      "mapeamento": {
+        "Nome": ["nm_pac", "NOME", "NOME DO PACIENTE"],
+        "CPF": ["num_cpf_pac", "CPF"],
+        "Data de nascimento": ["dt_nasc", "DATA NASC", "DATA NASCIMENTO"],
+        "Codigo do paciente": ["cd_pac"],
+        "Data da dispensa": ["dt_dispensa_sol", "DATA DISPENSA"],
+        "Numero da solicitacao": ["num_sol_hv"],
+        "Sexo": ["sexo", "SEXO"],
+        "Municipio de residencia": ["nm_cid", "CIDADE RESIDÊNCIA"],
+        "Peso": ["nu_peso"],
+        "CID": ["ds_cid_10"]
+      },
+      "ignorar_colunas": ["Data de Emissão"]
+    },
+    {
+      "id": "B",
+      "nome": "Ativos",
+      "padroes_arquivo": ["usuarios_ativos", "ativos"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["NOME", "NOME DA MÃE", "DATA NASCIMENTO", "ÚLTIMA DISPENSA"],
+      "mapeamento": {
+        "Nome": ["NOME"],
+        "Nome da mae": ["NOME DA MÃE", "NOME DA MAE"],
+        "Data de nascimento": ["DATA NASCIMENTO", "DATA NASC"],
+        "Ultima dispensa": ["ÚLTIMA DISPENSA", "ULTIMA DISPENSA"],
+        "Saldo atual": ["SALDO ATUAL"],
+        "Agravo": ["TIPO"],
+        "Esquema": ["ESQUEMA ATUAL"]
+      },
+      "ignorar_colunas": ["Data de Emissão"]
+    }
+  ],
+  "campos": [
+    {"nome": "Nome", "tipo": "texto", "obrigatorio": true, "tamanho_minimo": 5},
+    {"nome": "Nome da mae", "tipo": "texto"},
+    {"nome": "Data de nascimento", "tipo": "data", "obrigatorio": true},
+    {"nome": "CPF", "tipo": "cpf"},
+    {"nome": "Codigo do paciente", "tipo": "codigo"},
+    {"nome": "Data da dispensa", "tipo": "data"},
+    {"nome": "Ultima dispensa", "tipo": "data"},
+    {"nome": "Numero da solicitacao", "tipo": "codigo"},
+    {"nome": "Saldo atual", "tipo": "texto"},
+    {"nome": "Agravo", "tipo": "categoria"},
+    {"nome": "Sexo", "tipo": "categoria"},
+    {"nome": "Municipio de residencia", "tipo": "categoria"},
+    {"nome": "Peso", "tipo": "numero", "minimo": 1, "maximo": 400}
+  ],
+  "pareamento": {
+    "chaves_primarias": ["Nome+Data de nascimento"],
+    "chaves_alternativas": [["CPF"], ["Nome"]],
+    "campos_similaridade": ["Nome"],
+    "campos_comparacao": ["Nome", "Data de nascimento", "Sexo", "Municipio de residencia"],
+    "limiar_provavel": 0.92,
+    "limiar_duvidoso": 0.85,
+    "bloqueio": "auto"
+  },
+  "qualidade": {
+    "regras_consistencia": [
+      {"nome": "dispensa_apos_nascimento", "campo_a": "Data da dispensa", "operador": ">=",
+       "campo_b": "Data de nascimento",
+       "descricao": "Data da dispensa anterior a data de nascimento"}
+    ],
+    "data_minima": "1900-01-01",
+    "data_maxima": "",
+    "detectar_outliers": true,
+    "limite_categorias": 40
+  }
+}

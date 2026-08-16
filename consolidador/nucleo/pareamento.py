@@ -630,15 +630,18 @@ def _listar_nao_pareados(
 
 
 def _motivo_ausencia(linha, campo_chave: str, nome_oposto: str, escore: float) -> str:
-    valor = tx.limpar(linha.get(campo_chave)) if campo_chave else ""
-    if campo_chave and not valor:
+    partes = [c for c in campo_chave.split("+") if c] if campo_chave else []
+    vazios = [c for c in partes if not tx.limpar(linha.get(c))]
+    if vazios:
         return (
-            f"Registro sem valor no campo-chave '{campo_chave}', o que impede a busca "
-            f"em {nome_oposto}."
+            f"Registro sem valor em {', '.join(repr(c) for c in vazios)}, que compoe a "
+            f"chave de busca, o que impede localiza-lo em {nome_oposto}."
         )
+    valor = " + ".join(tx.limpar(linha.get(c)) for c in partes)
+    rotulo = " + ".join(partes)
     inicio = (
-        f"Chave '{campo_chave}' = {valor} nao encontrada em {nome_oposto}"
-        if campo_chave else f"Nenhuma correspondencia encontrada em {nome_oposto}"
+        f"Chave '{rotulo}' = {valor} nao encontrada em {nome_oposto}"
+        if partes else f"Nenhuma correspondencia encontrada em {nome_oposto}"
     )
     if escore >= 0.60:
         return f"{inicio}; ha um registro parecido ({escore:.0%}), abaixo do limite de aceite."

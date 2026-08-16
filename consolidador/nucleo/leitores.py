@@ -25,7 +25,7 @@ from .tabela import Tabela
 
 EXTENSOES_SUPORTADAS = (
     ".xlsx", ".xlsm", ".xltx", ".xls", ".ods", ".csv", ".txt", ".tsv",
-    ".dbf", ".html", ".htm", ".json", ".xml",
+    ".dbf", ".html", ".htm", ".json", ".xml", ".zip",
 )
 
 CODIFICACOES = ("utf-8-sig", "utf-8", "cp1252", "latin-1")
@@ -47,6 +47,7 @@ def ler_arquivo(caminho: str) -> List[Tabela]:
         "json": lambda c: [ler_json(c)],
         "xml": lambda c: [ler_xml(c)],
         "spreadsheetml": ler_spreadsheetml,
+        "zip": ler_zip,
     }
     if formato == "ole2":
         raise ErroLeitura(
@@ -83,7 +84,7 @@ def identificar_formato(caminho: str) -> str:
             return "xlsx"
         if "content.xml" in nomes:
             return "ods"
-        raise ErroLeitura("Arquivo compactado que nao e uma planilha (.xlsx ou .ods).")
+        return "zip"
     if inicio[:4] == b"\xd0\xcf\x11\xe0":
         return "ole2"
     if extensao == ".dbf" or (inicio[:1] in (b"\x02", b"\x03", b"\x04", b"\x05", b"\x30", b"\x31",
@@ -532,11 +533,57 @@ def _ler_quadros_html(caminho: str, conteudo: str, visitados: set) -> List[Tabel
         except ErroLeitura:
             continue
     if not tabelas and faltando:
+        pasta_dados = faltando[0].split("/")[0]
         raise ErroLeitura(
-            "Este arquivo e apenas o indice de uma planilha salva como pagina da web: "
-            f"os dados ficam em {faltando[0]}, que nao esta junto do arquivo. "
-            "Copie a pasta '..._arquivos' para o mesmo local ou salve o relatorio como .xlsx."
+            "Este arquivo nao contem dados: ele e so o indice de uma planilha que foi aberta no "
+            "Excel e salva como 'Pagina da Web'. Os dados ficam na pasta "
+            f"'{pasta_dados}', que precisa estar no mesmo local. Como resolver, do mais simples "
+            "para o mais trabalhoso: (1) use o arquivo como veio do sistema, sem reabrir e salvar "
+            "pelo Excel; (2) abra no Excel e salve com 'Salvar como' -> 'Pasta de Trabalho do "
+            f"Excel (*.xlsx)'; (3) compacte o arquivo junto com a pasta '{pasta_dados}' em um .zip "
+            "e use o .zip como entrada."
         )
+    return tabelas
+
+
+def ler_zip(caminho: str) -> List[Tabela]:
+    """Le uma pasta compactada.
+
+    Serve para o caso em que a planilha foi salva como pagina da web e precisa
+    viajar junto com a pasta '..._arquivos': basta compactar os dois e enviar.
+    """
+    import tempfile
+
+    with zipfile.ZipFile(caminho) as pacote:
+        nomes = [n for n in pacote.namelist() if not n.endswith("/")]
+        suportados = [
+            n for n in nomes
+            if os.path.splitext(n)[1].lower() in EXTENSOES_SUPORTADAS
+        ]
+        if not suportados:
+            raise ErroLeitura("O arquivo compactado nao contem nenhum arquivo de dados.")
+        # Um indice de pagina da web e suas partes: le so o indice, que ja
+        # aponta para as partes.
+        principais = [n for n in suportados if "_arquivos/" not in n and "_files/" not in n]
+        escolhidos = principais or suportados
+        with tempfile.TemporaryDirectory(prefix="consolidador_zip_") as pasta:
+            pacote.extractall(pasta)
+            tabelas: List[Tabela] = []
+            erros: List[str] = []
+            for nome in escolhidos:
+                completo = os.path.join(pasta, *nome.split("/"))
+                if not os.path.isfile(completo):
+                    continue
+                try:
+                    for tabela in ler_arquivo(completo):
+                        tabela.origem = caminho
+                        tabela.aba = f"{os.path.basename(nome)}"
+                        tabelas.append(tabela)
+                except ErroLeitura as erro:
+                    erros.append(f"{os.path.basename(nome)}: {erro}")
+    if not tabelas:
+        detalhe = " ".join(erros) if erros else ""
+        raise ErroLeitura(f"Nenhuma tabela foi encontrada dentro do arquivo compactado. {detalhe}")
     return tabelas
 
 
