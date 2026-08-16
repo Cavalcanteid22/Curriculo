@@ -258,6 +258,21 @@ def _classificar_por_agrupamento(
         )
 
 
+def _nome_pelos_arquivos(do_grupo: List[TabelaDetectada]) -> str:
+    """Usa o nome do arquivo (ou o prefixo comum) como nome do sistema."""
+    nomes = [os.path.splitext(d.arquivo)[0] for d in do_grupo]
+    if not nomes:
+        return ""
+    if len(nomes) == 1:
+        base = nomes[0]
+    else:
+        base = os.path.commonprefix(nomes).strip(" -_.")
+        if len(base) < 3:
+            base = nomes[0]
+    base = re.sub(r"[_\-.]+", " ", base).strip()
+    return base[:24].strip() if base else ""
+
+
 def _nomear_sistemas(detectadas: List[TabelaDetectada], perfil: Perfil) -> Dict[str, str]:
     nomes: Dict[str, str] = {}
     for identificador in ("A", "B"):
@@ -284,10 +299,9 @@ def _nomear_sistemas(detectadas: List[TabelaDetectada], perfil: Perfil) -> Dict[
             if melhor[1] >= max(1, len(do_grupo) // 2):
                 nomes[identificador] = melhor[0].upper()
                 continue
-        if padrao in (f"Sistema {identificador}", "Sistema"):
-            nomes[identificador] = f"Sistema {identificador}"
-        else:
-            nomes[identificador] = padrao
+        # Sem palavra distintiva, o nome do proprio arquivo diz mais ao usuario
+        # do que um generico "Sistema A".
+        nomes[identificador] = _nome_pelos_arquivos(do_grupo) or f"Sistema {identificador}"
     if nomes.get("A") == nomes.get("B"):
         nomes = {"A": "Sistema A", "B": "Sistema B"}
     return nomes

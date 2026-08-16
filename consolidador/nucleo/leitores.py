@@ -16,14 +16,15 @@ import re
 import struct
 import zipfile
 from html.parser import HTMLParser
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import unquote
 from xml.etree import ElementTree as ET
 
 from . import texto as tx
 from .tabela import Tabela
 
 EXTENSOES_SUPORTADAS = (
-    ".xlsx", ".xlsm", ".xltx", ".ods", ".csv", ".txt", ".tsv",
+    ".xlsx", ".xlsm", ".xltx", ".xls", ".ods", ".csv", ".txt", ".tsv",
     ".dbf", ".html", ".htm", ".json", ".xml",
 )
 
@@ -36,29 +37,80 @@ class ErroLeitura(Exception):
 
 def ler_arquivo(caminho: str) -> List[Tabela]:
     """Devolve todas as tabelas encontradas no arquivo informado."""
-    extensao = os.path.splitext(caminho)[1].lower()
-    if extensao in (".xlsx", ".xlsm", ".xltx"):
-        tabelas = ler_xlsx(caminho)
-    elif extensao == ".ods":
-        tabelas = ler_ods(caminho)
-    elif extensao in (".csv", ".txt", ".tsv"):
-        tabelas = [ler_csv(caminho)]
-    elif extensao == ".dbf":
-        tabelas = [ler_dbf(caminho)]
-    elif extensao in (".html", ".htm"):
-        tabelas = ler_html(caminho)
-    elif extensao == ".json":
-        tabelas = [ler_json(caminho)]
-    elif extensao == ".xml":
-        tabelas = [ler_xml(caminho)]
-    elif extensao == ".xls":
+    formato = identificar_formato(caminho)
+    leitura = {
+        "xlsx": ler_xlsx,
+        "ods": ler_ods,
+        "csv": lambda c: [ler_csv(c)],
+        "dbf": lambda c: [ler_dbf(c)],
+        "html": ler_html,
+        "json": lambda c: [ler_json(c)],
+        "xml": lambda c: [ler_xml(c)],
+        "spreadsheetml": ler_spreadsheetml,
+    }
+    if formato == "ole2":
         raise ErroLeitura(
-            "Arquivos .xls (Excel 97-2003) nao sao lidos diretamente. "
+            "Este arquivo esta no formato binario do Excel 97-2003. "
             "Abra no Excel e salve como .xlsx ou .csv."
         )
-    else:
-        raise ErroLeitura(f"Extensao nao suportada: {extensao or '(sem extensao)'}")
-    return [t for t in tabelas if not t.vazia()]
+    if formato not in leitura:
+        raise ErroLeitura(f"Formato de arquivo nao reconhecido: {formato}")
+    return [t for t in leitura[formato](caminho) if not t.vazia()]
+
+
+def identificar_formato(caminho: str) -> str:
+    """Descobre o formato pelo conteudo, e nao pela extensao.
+
+    Sistemas de governo costumam exportar relatorios em HTML com o nome
+    terminado em .xls; confiar na extensao faria a leitura falhar sem motivo.
+    """
+    try:
+        with open(caminho, "rb") as arquivo:
+            inicio = arquivo.read(8192)
+    except OSError as erro:
+        raise ErroLeitura(f"Nao foi possivel abrir o arquivo: {erro}") from erro
+    if not inicio.strip():
+        raise ErroLeitura("Arquivo vazio.")
+
+    extensao = os.path.splitext(caminho)[1].lower()
+    if inicio[:4] == b"PK\x03\x04":
+        try:
+            with zipfile.ZipFile(caminho) as pacote:
+                nomes = set(pacote.namelist())
+        except zipfile.BadZipFile as erro:
+            raise ErroLeitura(f"Arquivo compactado invalido: {erro}") from erro
+        if "xl/workbook.xml" in nomes:
+            return "xlsx"
+        if "content.xml" in nomes:
+            return "ods"
+        raise ErroLeitura("Arquivo compactado que nao e uma planilha (.xlsx ou .ods).")
+    if inicio[:4] == b"\xd0\xcf\x11\xe0":
+        return "ole2"
+    if extensao == ".dbf" or (inicio[:1] in (b"\x02", b"\x03", b"\x04", b"\x05", b"\x30", b"\x31",
+                                             b"\x83", b"\x8b", b"\xf5") and extensao != ".txt"
+                              and _parece_dbf(inicio)):
+        return "dbf"
+
+    amostra = inicio.decode("latin-1", errors="replace").lstrip().lower()
+    if "urn:schemas-microsoft-com:office:spreadsheet" in amostra:
+        return "spreadsheetml"
+    if amostra.startswith("<?xml") or amostra.startswith("<!doctype") or amostra.startswith("<"):
+        if "<table" in amostra or "<html" in amostra or "<frameset" in amostra or "<frame " in amostra:
+            return "html"
+        return "xml"
+    if "<table" in amostra or "<tr" in amostra or "<html" in amostra:
+        return "html"
+    if amostra.startswith("{") or amostra.startswith("["):
+        return "json"
+    return "csv"
+
+
+def _parece_dbf(inicio: bytes) -> bool:
+    if len(inicio) < 32:
+        return False
+    mes, dia = inicio[2], inicio[3]
+    tamanho_registro = int.from_bytes(inicio[10:12], "little")
+    return 1 <= mes <= 12 and 1 <= dia <= 31 and 0 < tamanho_registro < 65536
 
 
 # --------------------------------------------------------------------------
@@ -380,14 +432,19 @@ class _ExtratorTabelasHTML(HTMLParser):
                 self._rowspan_atual = 1
         elif tag in ("script", "style"):
             self._ignorar += 1
-        elif tag == "br" and self._em_celula:
-            self._celula.append(" ")
+        elif tag in ("br", "p", "div", "li") and self._em_celula:
+            # A quebra de linha separa rotulos dentro da mesma celula
+            # ("DISPENSADOR: X<br>MEDICO: Y") e precisa sobreviver a leitura.
+            self._celula.append("\n")
 
     def handle_endtag(self, tag):
         if tag in ("script", "style") and self._ignorar:
             self._ignorar -= 1
         elif tag in ("td", "th") and self._em_celula:
-            texto = tx.limpar("".join(self._celula))
+            texto = "\n".join(
+                parte for parte in
+                (tx.limpar(p) for p in "".join(self._celula).split("\n")) if parte
+            )
             posicao = len(self._linha)
             while posicao in self._pendentes_rowspan:
                 restante, valor = self._pendentes_rowspan[posicao]
@@ -420,7 +477,7 @@ class _ExtratorTabelasHTML(HTMLParser):
             self._celula.append(dados)
 
 
-def ler_html(caminho: str) -> List[Tabela]:
+def ler_html(caminho: str, _visitados: Optional[set] = None) -> List[Tabela]:
     conteudo = _ler_texto(caminho)
     extrator = _ExtratorTabelasHTML()
     extrator.feed(conteudo)
@@ -433,10 +490,82 @@ def ler_html(caminho: str) -> List[Tabela]:
         if not tabela.vazia():
             tabelas.append(tabela)
     if not tabelas:
+        tabelas = _ler_quadros_html(caminho, conteudo, _visitados or {os.path.abspath(caminho)})
+    if not tabelas:
         raise ErroLeitura("Nenhuma tabela HTML com dados foi encontrada no arquivo.")
     # Relatorios costumam quebrar a mesma tabela em varios blocos por pagina:
     # se as colunas coincidem, unifica.
     return _unir_tabelas_equivalentes(tabelas)
+
+
+_RE_QUADRO = re.compile(r"""(?i)<frame[^>]+src\s*=\s*["']([^"']+)["']""")
+
+
+def _ler_quadros_html(caminho: str, conteudo: str, visitados: set) -> List[Tabela]:
+    """Le as paginas apontadas por um HTML de quadros (frameset).
+
+    O Excel, ao salvar como pagina da web, gera um arquivo indice com os dados
+    em uma pasta ao lado ('RELATORIO (3)_arquivos/sheet001.htm').
+    """
+    pasta = os.path.dirname(os.path.abspath(caminho))
+    tabelas: List[Tabela] = []
+    faltando: List[str] = []
+    for referencia in _RE_QUADRO.findall(conteudo):
+        alvo = unquote(referencia.split("#")[0].replace("\\", "/")).strip()
+        if not alvo or alvo.lower().startswith(("http://", "https://", "javascript:")):
+            continue
+        if os.path.splitext(alvo)[1].lower() not in (".htm", ".html", ""):
+            continue
+        completo = os.path.normpath(os.path.join(pasta, *alvo.split("/")))
+        if os.path.abspath(completo) in visitados:
+            continue
+        visitados.add(os.path.abspath(completo))
+        if not os.path.isfile(completo):
+            if "tabstrip" not in alvo.lower() and "filelist" not in alvo.lower():
+                faltando.append(alvo)
+            continue
+        try:
+            for tabela in ler_html(completo, visitados):
+                tabela.origem = caminho
+                tabela.aba = os.path.splitext(os.path.basename(completo))[0]
+                tabelas.append(tabela)
+        except ErroLeitura:
+            continue
+    if not tabelas and faltando:
+        raise ErroLeitura(
+            "Este arquivo e apenas o indice de uma planilha salva como pagina da web: "
+            f"os dados ficam em {faltando[0]}, que nao esta junto do arquivo. "
+            "Copie a pasta '..._arquivos' para o mesmo local ou salve o relatorio como .xlsx."
+        )
+    return tabelas
+
+
+def ler_spreadsheetml(caminho: str) -> List[Tabela]:
+    """Le o formato 'Planilha XML 2003' do Excel (SpreadsheetML)."""
+    ns = "{urn:schemas-microsoft-com:office:spreadsheet}"
+    raiz = ET.fromstring(_ler_texto(caminho))
+    tabelas = []
+    for indice, planilha in enumerate(raiz.iter(f"{ns}Worksheet"), start=1):
+        nome = planilha.get(f"{ns}Name", f"Planilha{indice}")
+        matriz: List[List[Any]] = []
+        for linha_xml in planilha.iter(f"{ns}Row"):
+            celulas: List[Any] = []
+            for celula_xml in linha_xml.findall(f"{ns}Cell"):
+                indice_celula = celula_xml.get(f"{ns}Index")
+                if indice_celula:
+                    while len(celulas) < int(indice_celula) - 1:
+                        celulas.append("")
+                dado = celula_xml.find(f"{ns}Data")
+                valor = "".join(dado.itertext()) if dado is not None else ""
+                repeticoes = int(celula_xml.get(f"{ns}MergeAcross", 0)) + 1
+                celulas.extend([tx.limpar(valor)] * repeticoes)
+            matriz.append(celulas)
+        tabela = Tabela.de_matriz(matriz, origem=caminho, aba=nome)
+        if not tabela.vazia():
+            tabelas.append(tabela)
+    if not tabelas:
+        raise ErroLeitura("Nenhuma planilha com dados foi encontrada no arquivo XML do Excel.")
+    return tabelas
 
 
 def _unir_tabelas_equivalentes(tabelas: List[Tabela]) -> List[Tabela]:

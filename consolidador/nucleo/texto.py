@@ -60,6 +60,21 @@ def normalizar(valor) -> str:
     return _normalizar_texto(limpar(valor))
 
 
+def chave_valor(valor) -> str:
+    """Forma canonica para comparar valores entre sistemas.
+
+    Documentos e codigos sao comparados pelos digitos, porque um sistema grava
+    '529.982.247-25' e o outro '52998224725'.
+    """
+    texto = limpar(valor)
+    if not texto:
+        return ""
+    digitos = so_digitos(texto)
+    if digitos and len(digitos) >= max(4, len(normalizar(texto).replace(" ", "")) - 2):
+        return digitos.lstrip("0") or "0"
+    return normalizar(texto)
+
+
 def chave_cabecalho(valor) -> str:
     """Forma canonica de um nome de coluna (sem espacos)."""
     return normalizar(valor).replace(" ", "")
@@ -258,7 +273,11 @@ def cep_valido(valor) -> bool:
 
 
 def telefone_valido(valor) -> bool:
-    return len(so_digitos(valor)) in (8, 9, 10, 11, 12, 13)
+    """Aceita a coluna com mais de um telefone: '(71) 99999-9999 / (71) 3333-4444'."""
+    partes = [p for p in re.split(r"[/;,]| e ", limpar(valor)) if so_digitos(p)]
+    if not partes:
+        return False
+    return all(len(so_digitos(p)) in (8, 9, 10, 11, 12, 13) for p in partes)
 
 
 def formatar_cpf(valor) -> str:

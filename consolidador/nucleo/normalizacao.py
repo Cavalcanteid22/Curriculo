@@ -106,7 +106,13 @@ def consolidar(
     unida = concatenar(preparadas, nome=nome_sistema)
     _fundir_colunas_equivalentes(unida, consolidado)
     colunas_dados = [c for c in unida.colunas if c not in COLUNAS_CONTROLE]
-    colunas_dados = [c for c in colunas_dados if _coluna_tem_conteudo(unida, c)]
+    vazias = [c for c in colunas_dados if not _coluna_tem_conteudo(unida, c)]
+    if vazias:
+        # Colunas sem nenhum preenchimento continuam na consolidacao: e a
+        # analise de qualidade que deve mostrar que o campo nunca vem cheio.
+        consolidado.avisos.append(
+            "Coluna(s) sem nenhum preenchimento: " + ", ".join(f"'{c}'" for c in vazias) + "."
+        )
     unida.colunas = [COL_ID] + colunas_dados + [COL_ARQUIVO, COL_ABA, COL_LINHA]
     for numero, linha in enumerate(unida.linhas, start=1):
         linha[COL_ID] = f"{sistema_id}{numero:06d}"
@@ -253,9 +259,22 @@ def inferir_tipo(nome_coluna: str, valores: List[str]) -> str:
     def proporcao(funcao) -> float:
         return sum(1 for v in amostra if funcao(v)) / total
 
-    if proporcao(lambda v: len(tx.so_digitos(v)) == 11 and tx.cpf_valido(v)) > 0.80:
+    nome_normalizado = tx.normalizar(nome_coluna)
+    sugere_cnpj = "cnpj" in nome_normalizado
+    sugere_cpf = "cpf" in nome_normalizado and not sugere_cnpj
+
+    # Uma coluna de CPF com parte dos valores errados continua sendo coluna de
+    # CPF: e a analise de qualidade que deve apontar os invalidos, e nao a
+    # deducao de tipo que deve desistir do campo.
+    onze_digitos = proporcao(lambda v: len(tx.so_digitos(v)) == 11)
+    catorze_digitos = proporcao(lambda v: len(tx.so_digitos(v)) == 14)
+    if onze_digitos > 0.80 and (proporcao(tx.cpf_valido) > 0.50 or sugere_cpf):
         return "cpf"
-    if proporcao(lambda v: len(tx.so_digitos(v)) == 14 and tx.cnpj_valido(v)) > 0.80:
+    if catorze_digitos > 0.80 and (proporcao(tx.cnpj_valido) > 0.50 or sugere_cnpj):
+        return "cnpj"
+    if sugere_cpf and onze_digitos > 0.50:
+        return "cpf"
+    if sugere_cnpj and catorze_digitos > 0.50:
         return "cnpj"
     if proporcao(tx.email_valido) > 0.80:
         return "email"
@@ -361,7 +380,7 @@ def mapear_campos_entre_sistemas(
 def _amostra_normalizada(consolidado: Consolidado, coluna: str) -> set:
     valores = set()
     for linha in consolidado.tabela.linhas[:800]:
-        valor = tx.normalizar(linha.get(coluna))
+        valor = tx.chave_valor(linha.get(coluna))
         if valor:
             valores.add(valor)
     return valores

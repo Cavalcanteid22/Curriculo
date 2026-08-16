@@ -130,7 +130,8 @@ def parear(
     resultado.campos_similaridade = campos_sim
 
     aproximados = _parear_por_similaridade(
-        restantes_a, restantes_b, campos_sim, perfil, consolidado_a, consolidado_b
+        restantes_a, restantes_b, campos_sim, perfil, consolidado_a, consolidado_b,
+        resultado.mapa_campos,
     )
     for par in aproximados:
         resultado.pares.append(par)
@@ -160,11 +161,15 @@ def _definir_chaves(
     chaves: List[Tuple[str, str, str]] = []
     mapa_direto = {p.campo_a: p.campo_b for p in resultado.mapa_campos}
 
-    for nome in perfil.pareamento.chaves_primarias:
-        campo_b = mapa_direto.get(nome, nome)
-        if nome in consolidado_a.tabela.colunas and campo_b in consolidado_b.tabela.colunas:
-            chaves.append((nome, campo_b, nome))
-    for grupo in perfil.pareamento.chaves_alternativas:
+    # Tanto a chave primaria quanto as alternativas podem combinar campos,
+    # escritos como "Nome+Data de nascimento" ou como lista.
+    grupos = [
+        nome.split("+") if isinstance(nome, str) else list(nome)
+        for nome in perfil.pareamento.chaves_primarias
+    ]
+    grupos += [list(g) for g in perfil.pareamento.chaves_alternativas if g]
+    for grupo in grupos:
+        grupo = [c.strip() for c in grupo if c.strip()]
         if not grupo:
             continue
         campos_b = [mapa_direto.get(c, c) for c in grupo]
@@ -181,16 +186,27 @@ def _definir_chaves(
         campo_b = consolidado_b.campo(par.campo_b)
         if not campo_a or not campo_b:
             continue
-        qualidade_a = _poder_identificador(consolidado_a, par.campo_a)
-        qualidade_b = _poder_identificador(consolidado_b, par.campo_b)
-        if qualidade_a < 0.90 or qualidade_b < 0.90:
+        completude_a, unicidade_a = _perfil_coluna(consolidado_a, par.campo_a)
+        completude_b, unicidade_b = _perfil_coluna(consolidado_b, par.campo_b)
+        if completude_a < 0.70 or completude_b < 0.70:
+            continue
+        # A chave nao precisa ser unica dos dois lados: e comum um sistema
+        # trazer uma linha por atendimento e o outro uma linha por pessoa.
+        documento = campo_a.tipo in ("cpf", "cnpj", "cpf_cnpj", "codigo")
+        if max(unicidade_a, unicidade_b) < 0.90 and not documento:
             continue
         sobreposicao = _sobreposicao_valores(consolidado_a, par.campo_a, consolidado_b, par.campo_b)
         if sobreposicao < 0.05:
             continue
         bonus = 0.35 if campo_a.tipo in ("cpf", "cnpj", "cpf_cnpj") else 0.0
         bonus += 0.15 if campo_a.chave or campo_b.chave else 0.0
-        nota = 0.45 * sobreposicao + 0.25 * qualidade_a + 0.25 * qualidade_b + bonus
+        nota = (
+            0.45 * sobreposicao
+            + 0.25 * max(unicidade_a, unicidade_b)
+            + 0.15 * min(unicidade_a, unicidade_b)
+            + 0.15 * min(completude_a, completude_b)
+            + bonus
+        )
         candidatos.append((nota, par.campo_a, par.campo_b, par.campo_a))
     candidatos.sort(key=lambda item: -item[0])
     for nota, campo_a, campo_b, rotulo in candidatos[:3]:
@@ -198,13 +214,17 @@ def _definir_chaves(
     return chaves
 
 
-def _poder_identificador(consolidado: Consolidado, coluna: str) -> float:
+def _perfil_coluna(consolidado: Consolidado, coluna: str) -> Tuple[float, float]:
+    """Devolve (completude, unicidade) da coluna, de 0 a 1."""
     valores = [tx.normalizar(l.get(coluna)) for l in consolidado.tabela.linhas]
     preenchidos = [v for v in valores if v]
     if not preenchidos:
-        return 0.0
-    completude = len(preenchidos) / len(valores)
-    unicidade = len(set(preenchidos)) / len(preenchidos)
+        return 0.0, 0.0
+    return len(preenchidos) / len(valores), len(set(preenchidos)) / len(preenchidos)
+
+
+def _poder_identificador(consolidado: Consolidado, coluna: str) -> float:
+    completude, unicidade = _perfil_coluna(consolidado, coluna)
     return unicidade * 0.7 + completude * 0.3
 
 
@@ -262,11 +282,7 @@ def _definir_campos_similaridade(
 
 
 def _chave_normalizada(valor: Any) -> str:
-    texto = tx.limpar(valor)
-    digitos = tx.so_digitos(texto)
-    if digitos and len(digitos) >= max(4, len(tx.normalizar(texto).replace(" ", "")) - 2):
-        return digitos.lstrip("0") or "0"
-    return tx.normalizar(texto)
+    return tx.chave_valor(valor)
 
 
 def _valor_chave(linha: Dict[str, Any], especificacao: str) -> str:
@@ -324,35 +340,52 @@ def _parear_por_similaridade(
     perfil: Perfil,
     consolidado_a: Consolidado,
     consolidado_b: Consolidado,
+    mapa_campos: Sequence[ParDeCampos] = (),
 ) -> List[Par]:
     if not campos_sim or not restantes_a or not restantes_b:
         return []
     limiar = perfil.pareamento.limiar_duvidoso
     indice_tokens = _indice_por_token(restantes_b, campos_sim, "b")
+    forca = _campos_discriminantes(consolidado_a, mapa_campos)
 
-    candidatos: List[Tuple[float, int, int]] = []
+    candidatos: List[Tuple[float, int, int, int, int]] = []
     for indice_a, linha_a in enumerate(restantes_a):
         for indice_b in _candidatos_do_bloco(linha_a, campos_sim, "a", indice_tokens):
             escore = _escore_similaridade(linha_a, restantes_b[indice_b], campos_sim)
-            if escore >= limiar:
-                candidatos.append((escore, indice_a, indice_b))
-    candidatos.sort(key=lambda item: -item[0])
+            if escore < limiar:
+                continue
+            fortes, concordantes, comparaveis = _corroboracao(
+                linha_a, restantes_b[indice_b], mapa_campos, campos_sim, forca
+            )
+            if not _aceitar_aproximado(escore, fortes, concordantes, comparaveis):
+                continue
+            candidatos.append((escore, indice_a, indice_b, concordantes, comparaveis))
+    candidatos.sort(key=lambda item: (-item[3], -item[0]))
 
     usados_a, usados_b = set(), set()
     pares: List[Par] = []
-    for escore, indice_a, indice_b in candidatos:
+    for escore, indice_a, indice_b, concordantes, comparaveis in candidatos:
         if indice_a in usados_a or indice_b in usados_b:
             continue
         usados_a.add(indice_a)
         usados_b.add(indice_b)
         linha_a, linha_b = restantes_a[indice_a], restantes_b[indice_b]
-        tipo = TIPO_PROVAVEL if escore >= perfil.pareamento.limiar_provavel else TIPO_DUVIDOSO
+        confirmado = concordantes >= 1 or comparaveis == 0
+        tipo = (
+            TIPO_PROVAVEL
+            if escore >= perfil.pareamento.limiar_provavel and confirmado
+            else TIPO_DUVIDOSO
+        )
         rotulo = " / ".join(f"{a}~{b}" for a, b in campos_sim)
+        confirmacao = (
+            f", confirmado por {concordantes} de {comparaveis} campo(s)"
+            if comparaveis else ", sem outro campo para confirmar"
+        )
         par = Par(
             id_a=linha_a[COL_ID],
             id_b=linha_b[COL_ID],
             tipo=tipo,
-            chave_usada=f"similaridade ({rotulo})",
+            chave_usada=f"similaridade ({rotulo}){confirmacao}",
             valor_chave=next(
                 (tx.limpar(linha_a.get(campo)) for campo, _ in campos_sim
                  if tx.limpar(linha_a.get(campo))),
@@ -410,6 +443,66 @@ def _candidatos_do_bloco(
                 if len(escolhidos) >= limite:
                     return escolhidos
     return escolhidos
+
+
+LIMIAR_SEM_CONFIRMACAO = 0.97
+
+
+def _campos_discriminantes(consolidado: Consolidado, mapa_campos) -> Dict[str, bool]:
+    """Marca quais campos servem de prova: 'ATIVO/INATIVO' nao confirma nada."""
+    forca: Dict[str, bool] = {}
+    total = max(len(consolidado.tabela.linhas), 1)
+    for par in mapa_campos:
+        valores = {
+            tx.normalizar(l.get(par.campo_a)) for l in consolidado.tabela.linhas
+            if tx.limpar(l.get(par.campo_a))
+        }
+        forca[par.campo_a] = len(valores) >= 20 or len(valores) / total >= 0.5
+    return forca
+
+
+def _corroboracao(
+    linha_a: Dict[str, Any],
+    linha_b: Dict[str, Any],
+    mapa_campos: Sequence[ParDeCampos],
+    campos_sim: List[Tuple[str, str]],
+    forca: Dict[str, bool],
+) -> Tuple[int, int, int]:
+    """Conta quantos outros campos confirmam que os dois registros sao o mesmo.
+
+    Devolve (concordancias fortes, concordancias totais, campos comparaveis).
+    """
+    usados = {campo_a for campo_a, _ in campos_sim}
+    fortes = concordantes = comparaveis = 0
+    for par in mapa_campos:
+        if par.campo_a in usados:
+            continue
+        valor_a = tx.limpar(linha_a.get(par.campo_a))
+        valor_b = tx.limpar(linha_b.get(par.campo_b))
+        if not valor_a or not valor_b:
+            continue
+        comparaveis += 1
+        if _equivalentes(valor_a, valor_b, par.tipo):
+            concordantes += 1
+            if forca.get(par.campo_a):
+                fortes += 1
+    return fortes, concordantes, comparaveis
+
+
+def _aceitar_aproximado(
+    escore: float, fortes: int, concordantes: int, comparaveis: int
+) -> bool:
+    """Semelhanca de nome, sozinha, nao basta para afirmar que e a mesma pessoa.
+
+    Homonimos e nomes proximos ('Maria dos Santos Silva' e 'Maria Santos da
+    Silva') sao comuns; por isso, havendo outros campos comparaveis, e preciso
+    ao menos uma coincidencia em campo discriminante (data de nascimento,
+    codigo, documento) ou duas coincidencias em campos fracos. Sem nenhum campo
+    de apoio, so um casamento praticamente perfeito e aceito.
+    """
+    if comparaveis == 0:
+        return escore >= LIMIAR_SEM_CONFIRMACAO
+    return fortes >= 1 or concordantes >= 2
 
 
 def _tokens_bloqueio(linha: Dict[str, Any], campos_sim, lado: str) -> List[str]:

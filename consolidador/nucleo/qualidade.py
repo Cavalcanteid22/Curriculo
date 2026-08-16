@@ -79,6 +79,8 @@ class MetricaCampo:
 
     @property
     def nota(self) -> float:
+        if self.total and not self.preenchidos:
+            return 0.0
         nota = 0.45 * self.completude + 0.35 * self.validade
         nota += 0.10 * (100.0 - min(100.0, 100.0 * self.variacoes_grafia / max(self.preenchidos, 1)))
         nota += 0.10 * (100.0 - min(100.0, 100.0 * self.implausiveis / max(self.preenchidos, 1)))
@@ -219,6 +221,11 @@ def _analisar_campo(
                            f"{limite_superior:%d/%m/%Y})", bruto)
         elif campo.tipo == "numero":
             numero = tx.para_numero(bruto)
+            if numero is None and tx.para_numero(re.sub(r"[A-Za-zÀ-ÿ%º°.\s]+$", "", bruto)) is not None:
+                metrica.variacoes_grafia += 1
+                _registrar(resultado, linha, campo.nome, "Padronizacao", GRAVIDADE_BAIXA,
+                           "Numero com a unidade escrita junto, enquanto a mesma coluna traz "
+                           "valores apenas numericos", bruto)
             if numero is not None:
                 numeros.append((numero, linha))
                 if campo.minimo is not None and numero < campo.minimo:
@@ -243,6 +250,17 @@ def _analisar_campo(
             contagem_chave.setdefault(chave, []).append(linha)
 
     metrica.distintos = len(vistos)
+
+    if metrica.total and not metrica.preenchidos:
+        # Campo que existe na estrutura mas nunca e preenchido: o sistema
+        # promete a informacao e nao entrega.
+        resultado.ocorrencias.append(Ocorrencia(
+            id_registro="", arquivo="(todos os registros)", linha="",
+            campo=campo.nome, dimensao="Completude", gravidade=GRAVIDADE_MEDIA,
+            descricao=f"Campo existe na base mas nunca foi preenchido "
+                      f"({metrica.total} registros em branco)",
+            valor="",
+        ))
 
     for chave, linhas in contagem_chave.items():
         if len(linhas) > 1:
@@ -298,6 +316,8 @@ def _validar_valor(valor: str, campo: CampoConfig) -> str:
             return "Data em formato nao reconhecido"
     elif tipo == "numero":
         if tx.para_numero(valor) is None:
+            if tx.para_numero(re.sub(r"[A-Za-zÀ-ÿ%º°.\s]+$", "", valor)) is not None:
+                return ""  # '90 Dias' e problema de padronizacao, nao de validade
             return "Valor numerico em formato nao reconhecido"
     if re.search(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", valor):
         return "Contem caracteres de controle invalidos"

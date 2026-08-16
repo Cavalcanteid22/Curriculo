@@ -68,7 +68,10 @@ python consolidar.py entradas --salvar-perfil perfis/meu_perfil.json
 
 ## Formatos de entrada aceitos
 
-`.xlsx`, `.xlsm`, `.ods`, `.csv`, `.txt`, `.tsv`, `.dbf`, `.html`, `.htm`, `.json`, `.xml`.
+`.xlsx`, `.xlsm`, `.xls`, `.ods`, `.csv`, `.txt`, `.tsv`, `.dbf`, `.html`, `.htm`, `.json`, `.xml`.
+
+O formato é reconhecido **pelo conteúdo, não pela extensão** — o que resolve o caso mais comum
+dos sistemas públicos: o relatório vem com nome `RELATORIO_5.xls` mas por dentro é HTML.
 
 A leitura já resolve as chatices do dia a dia:
 
@@ -78,10 +81,17 @@ A leitura já resolve as chatices do dia a dia:
 - relatórios em HTML quebrados em vários blocos por página, com `colspan` e `rowspan`;
 - DBF com nomes de campo truncados em 10 caracteres (`NOMECOMPL` é reconhecido como
   `Nome completo`), datas `AAAAMMDD` e registros marcados como excluídos;
-- números no padrão brasileiro (`1.234,56`, `R$ 2.000,00`, `(150,25)` como negativo).
+- números no padrão brasileiro (`1.234,56`, `R$ 2.000,00`, `(150,25)` como negativo);
+- relatórios de sistema com brasão, título do órgão e data de emissão antes do cabeçalho real,
+  e com o cabeçalho repetido a cada quebra de página (as repetições não viram registros);
+- blocos de identificação no meio do relatório (`Nome do usuário: FULANO`,
+  `DISPENSADOR: ... DATA DISPENSA: ...`) viram **colunas** aplicadas aos registros seguintes;
+- planilha "salva como página da web" pelo Excel: o arquivo índice é seguido até a pasta
+  `..._arquivos/sheet001.htm`; se a pasta não estiver junto, a mensagem diz exatamente isso;
+- `Planilha XML 2003` do Excel (SpreadsheetML).
 
-> Arquivos `.xls` antigos (Excel 97-2003) não são lidos diretamente: abra no Excel e salve como
-> `.xlsx` ou `.csv`.
+> Só não é lido o `.xls` **binário** de verdade (Excel 97-2003 salvo como pasta de trabalho):
+> nesse caso a mensagem pede para abrir no Excel e salvar como `.xlsx` ou `.csv`.
 
 ## Como o aplicativo sabe qual arquivo é de qual sistema
 
@@ -118,8 +128,20 @@ Três passadas, da mais segura para a mais tolerante:
 2. **Chaves alternativas** — outros campos (ou combinação de campos) definidos no perfil ou
    deduzidos automaticamente.
 3. **Similaridade** — comparação aproximada (Jaro-Winkler + palavras) para os registros que
-   sobraram, com bloqueio por palavra para não comparar todos contra todos. Acima de 90% o par é
-   *provável*; entre 78% e 90% é marcado como **duvidoso, para conferência manual**.
+   sobraram, com bloqueio pelas palavras mais raras para não comparar todos contra todos.
+
+**Semelhança de nome, sozinha, não fecha um par.** Homônimos e nomes próximos são comuns
+(`MARIA DOS SANTOS SILVA` × `MARIA SANTOS DA SILVA`), e em base de saúde ou de pessoal um
+falso par é pior do que nenhum. Por isso, havendo outro campo comparável, ao menos um precisa
+coincidir — de preferência um campo discriminante (data de nascimento, código, documento);
+campos com poucos valores possíveis, como `TIPO` ou `SITUAÇÃO`, contam menos e sozinhos não
+confirmam nada. Sem nenhum campo de apoio, só um casamento praticamente perfeito é aceito.
+Acima de 90% e confirmado, o par é *provável*; o resto é marcado como
+**duvidoso, para conferência manual**.
+
+A chave **não precisa ser única nos dois sistemas**: é comum um deles trazer uma linha por
+atendimento/dispensação e o outro uma linha por pessoa. Nesse caso o pareamento é 1:N e cada
+par sai marcado com a multiplicidade.
 
 Registros que casam com mais de um do outro lado são marcados com a multiplicidade
 (ex.: `2:1 (revisar duplicidade)`), porque isso indica duplicidade na origem.
@@ -132,6 +154,23 @@ as regras de consistência. Veja `perfis/exemplo_dois_sistemas.json`.
 
 O caminho mais curto: rode uma vez sem perfil, confira o resultado e depois gere o ponto de partida
 com `--salvar-perfil`; em seguida ajuste os nomes dos campos canônicos no arquivo gerado.
+
+Perfis prontos incluídos:
+
+| Perfil | Para que serve |
+| --- | --- |
+| `perfis/exemplo_dois_sistemas.json` | Modelo comentado, com todas as opções |
+| `perfis/siclom_cadastrados_x_ativos.json` | Cruzamento entre o relatório de usuários cadastrados (`.xls` que é HTML) e a planilha de usuários ativos, pareando por nome + data de nascimento + nome da mãe, já que não há CPF nos dois lados |
+
+## Dados pessoais e sigilo
+
+O aplicativo funciona inteiramente na sua máquina: não envia nada para a internet, não usa
+serviço externo e não guarda cópia dos arquivos. Ainda assim, **os arquivos de entrada e os
+resultados costumam conter dados pessoais e de saúde** — nome, CPF, endereço, telefone,
+diagnóstico. Guarde as pastas de entrada e de saída fora de qualquer pasta sincronizada
+publicamente (e nunca dentro de um repositório do GitHub), e compartilhe os relatórios apenas
+com quem tem competência para vê-los. Por isso as pastas `dados/`, `entradas/` e `saidas/` na
+raiz do aplicativo já estão ignoradas pelo controle de versão.
 
 ## Volume suportado
 
@@ -151,7 +190,7 @@ consolidador/
 ├── exemplos/entradas/           # arquivos de demonstração (CSV, XLSX, HTML, DBF)
 ├── testes/
 │   ├── gerar_dados_exemplo.py   # recria os arquivos de demonstração
-│   └── teste_ponta_a_ponta.py   # 29 testes automatizados
+│   └── teste_ponta_a_ponta.py   # 36 testes automatizados
 └── nucleo/
     ├── leitores.py              # leitura de cada formato
     ├── deteccao.py              # de qual sistema é cada arquivo
@@ -170,7 +209,7 @@ consolidador/
 ```bash
 python testes/gerar_dados_exemplo.py exemplos/entradas   # recria os arquivos de exemplo
 python consolidar.py exemplos/entradas -s exemplos/saidas
-python testes/teste_ponta_a_ponta.py                     # 29 testes
+python testes/teste_ponta_a_ponta.py                     # 36 testes
 ```
 
 Os arquivos de exemplo trazem problemas de propósito (CPF inválido, chave em branco, registro

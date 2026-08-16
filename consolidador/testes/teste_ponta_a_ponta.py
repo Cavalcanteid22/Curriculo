@@ -112,6 +112,122 @@ class TesteLeitores(unittest.TestCase):
             leitores.ler_arquivo(caminho)
 
 
+class TesteRelatorioDeSistema(unittest.TestCase):
+    """Relatorios de sistema: .xls que e HTML, com brasao, titulo e blocos."""
+
+    CABECALHO_ORGAO = (
+        "<tr><td colspan=4 bgcolor='#36a9e1'><b>Ministerio da Saude<br>"
+        "Secretaria de Vigilancia em Saude<br>SISTEMA DE CONTROLE LOGISTICO"
+        "<p align=right>Data de Emissao: 12/08/2026</p></b></td></tr>"
+        "<tr><td align='center' colspan=4><b>Relatorio de usuarios<br>"
+        "Salvador - UDM Comercio</b></td></tr>"
+    )
+
+    def setUp(self):
+        self.pasta = tempfile.mkdtemp(prefix="consolidador_sistema_")
+
+    def tearDown(self):
+        shutil.rmtree(self.pasta, ignore_errors=True)
+
+    def _gravar(self, nome: str, conteudo: str) -> str:
+        caminho = os.path.join(self.pasta, nome)
+        with open(caminho, "w", encoding="cp1252", errors="replace") as arquivo:
+            arquivo.write(conteudo)
+        return caminho
+
+    def teste_xls_que_e_html(self):
+        linhas = "".join(
+            f"<tr><td>{nome}</td><td>{cpf}</td><td>{data}</td><td>ATIVO</td></tr>"
+            for nome, cpf, data in (
+                ("ANA MARIA SOUZA", "529.982.247-25", "04/11/1973"),
+                ("BRUNO LIMA", "111.444.777-35", "19/08/1972"),
+            )
+        )
+        caminho = self._gravar("RELATORIO_1.xls", (
+            "<TABLE BORDER='1'>" + self.CABECALHO_ORGAO
+            + "<tr><td>NOME</td><td>CPF</td><td>DATA NASC</td><td>SITUACAO</td></tr>"
+            + linhas + "</TABLE>"
+        ))
+        self.assertEqual(leitores.identificar_formato(caminho), "html")
+        tabela = leitores.ler_arquivo(caminho)[0]
+        # o cabecalho real vem depois do brasao e do titulo
+        self.assertEqual(tabela.colunas[:4], ["NOME", "CPF", "DATA NASC", "SITUACAO"])
+        self.assertEqual(len(tabela.linhas), 2)
+        self.assertEqual(tabela.linhas[0]["NOME"], "ANA MARIA SOUZA")
+        # a data de emissao do relatorio vira coluna de contexto
+        self.assertEqual(tabela.linhas[0]["Data de Emissao"], "12/08/2026")
+
+    def teste_cabecalho_repetido_e_blocos_de_contexto(self):
+        caminho = self._gravar("RELATORIO_HIST.xls", (
+            "<TABLE>" + self.CABECALHO_ORGAO
+            + "<tr><td>Nome do usuario: </td><td>MARCOS PEREIRA DEMONSTRACAO</td>"
+              "<td>CPF: </td><td>52998224725</td></tr>"
+            + "<tr><td>MEDICAMENTO</td><td>LOTE</td><td>VALIDADE</td><td>TOTAL</td></tr>"
+            + "<tr><td colspan=4>DISPENSADOR: UDM COMERCIO<br>DATA DISPENSA: 11/08/2026</td></tr>"
+            + "<tr><td>ENTECAVIR</td><td>25120074</td><td>31/12/2028</td><td>60</td></tr>"
+            + "<tr><td>MEDICAMENTO</td><td>LOTE</td><td>VALIDADE</td><td>TOTAL</td></tr>"
+            + "<tr><td colspan=4>DISPENSADOR: UDM COMERCIO<br>DATA DISPENSA: 27/01/2026</td></tr>"
+            + "<tr><td>TENOFOVIR</td><td>FD250997</td><td>31/01/2027</td><td>90</td></tr>"
+            + "</TABLE>"
+        ))
+        tabela = leitores.ler_arquivo(caminho)[0]
+        self.assertEqual(len(tabela.linhas), 2, "cabecalho repetido nao pode virar registro")
+        for linha in tabela.linhas:
+            self.assertEqual(linha["Nome do usuario"], "MARCOS PEREIRA DEMONSTRACAO")
+            self.assertEqual(linha["CPF"], "52998224725")
+            self.assertEqual(linha["DISPENSADOR"], "UDM COMERCIO")
+        self.assertEqual(tabela.linhas[0]["DATA DISPENSA"], "11/08/2026")
+        self.assertEqual(tabela.linhas[1]["DATA DISPENSA"], "27/01/2026")
+
+    def teste_planilha_salva_como_pagina_da_web(self):
+        caminho = self._gravar("RELATORIO_3.xls", (
+            '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head>'
+            '<meta name="Excel Workbook Frameset"></head>'
+            '<frameset><frame src="RELATORIO%20(3)_arquivos/sheet001.htm" name="frSheet">'
+            "</frameset></html>"
+        ))
+        with self.assertRaises(leitores.ErroLeitura) as capturado:
+            leitores.ler_arquivo(caminho)
+        self.assertIn("_arquivos", str(capturado.exception))
+
+        # com a pasta ao lado, os dados sao lidos normalmente
+        pasta_dados = os.path.join(self.pasta, "RELATORIO (3)_arquivos")
+        os.makedirs(pasta_dados, exist_ok=True)
+        with open(os.path.join(pasta_dados, "sheet001.htm"), "w", encoding="cp1252") as arquivo:
+            arquivo.write("<table><tr><td>NOME</td><td>CPF</td></tr>"
+                          "<tr><td>ANA</td><td>529.982.247-25</td></tr></table>")
+        tabela = leitores.ler_arquivo(caminho)[0]
+        self.assertEqual(tabela.colunas[:2], ["NOME", "CPF"])
+        self.assertEqual(len(tabela.linhas), 1)
+
+    def teste_planilha_xml_do_excel(self):
+        caminho = self._gravar("RELATORIO.xml", (
+            '<?xml version="1.0"?>'
+            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" '
+            'xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+            '<Worksheet ss:Name="Dados"><Table>'
+            '<Row><Cell><Data ss:Type="String">NOME</Data></Cell>'
+            '<Cell><Data ss:Type="String">VALOR</Data></Cell></Row>'
+            '<Row><Cell><Data ss:Type="String">ANA</Data></Cell>'
+            '<Cell><Data ss:Type="Number">150.5</Data></Cell></Row>'
+            "</Table></Worksheet></Workbook>"
+        ))
+        self.assertEqual(leitores.identificar_formato(caminho), "spreadsheetml")
+        tabela = leitores.ler_arquivo(caminho)[0]
+        self.assertEqual(tabela.colunas, ["NOME", "VALOR"])
+        self.assertEqual(tabela.linhas[0]["VALOR"], "150.5")
+
+    def teste_telefone_com_dois_numeros(self):
+        self.assertTrue(tx.telefone_valido("(71) 99174-7881 / (71) 98628-5009"))
+        self.assertTrue(tx.telefone_valido("71991747881"))
+        self.assertFalse(tx.telefone_valido("123"))
+
+    def teste_cpf_continua_sendo_cpf_mesmo_com_invalidos(self):
+        from nucleo.normalizacao import inferir_tipo
+        valores = ["52998224725", "11144477735", "39053344705", "00000000000"]
+        self.assertEqual(inferir_tipo("NR CPF", valores), "cpf")
+
+
 class TestePlanilhaEscritaLeitura(unittest.TestCase):
     """A planilha gerada precisa ser relida corretamente (ida e volta)."""
 
@@ -165,6 +281,35 @@ class TesteRegrasDeConsistencia(unittest.TestCase):
             ]
             self.assertEqual(len(inconsistentes), 1)
             self.assertIn("anterior ao inicio", inconsistentes[0].descricao)
+        finally:
+            shutil.rmtree(pasta, ignore_errors=True)
+
+
+class TesteRelacaoUmParaVarios(unittest.TestCase):
+    """Um sistema com uma linha por atendimento e outro com uma por pessoa."""
+
+    def teste_chave_repetida_de_um_lado(self):
+        pasta = tempfile.mkdtemp(prefix="consolidador_1n_")
+        try:
+            cpfs = ["529.982.247-25", "111.444.777-35", "390.533.447-05"]
+            with open(os.path.join(pasta, "ATEND_movimento.csv"), "w", encoding="utf-8") as arquivo:
+                arquivo.write("CPF;NOME;DATA ATENDIMENTO\n")
+                for indice, cpf in enumerate(cpfs * 3):  # cada pessoa atendida 3 vezes
+                    arquivo.write(f"{cpf};PACIENTE {cpfs.index(cpf)};0{indice % 9 + 1}/03/2026\n")
+            with open(os.path.join(pasta, "CADASTRO_pessoas.csv"), "w", encoding="utf-8") as arquivo:
+                arquivo.write("NR CPF;NOME COMPLETO;SITUACAO\n")
+                for indice, cpf in enumerate(cpfs + ["085.994.257-92"]):
+                    arquivo.write(f"{cpf.replace('.', '').replace('-', '')};PACIENTE {indice};ATIVO\n")
+            resultado = executar([pasta], os.path.join(pasta, "saidas"))
+            chaves = resultado.pareamento.chaves_usadas
+            self.assertTrue(chaves, "o CPF deveria ter sido aceito como chave")
+            self.assertIn("cpf", tx.normalizar(chaves[0][0]))
+            # 9 atendimentos casam com 3 pessoas; o quarto cadastro fica sozinho
+            self.assertEqual(len(resultado.pareamento.pares), 9)
+            multiplos = [p for p in resultado.pareamento.pares if p.multiplicidade != "1:1"]
+            self.assertEqual(len(multiplos), 9, "a relacao 1:N precisa ficar sinalizada")
+            estatisticas = resultado.estatisticas()
+            self.assertEqual(estatisticas["somente_a"] + estatisticas["somente_b"], 1)
         finally:
             shutil.rmtree(pasta, ignore_errors=True)
 

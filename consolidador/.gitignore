@@ -1,2 +1,7 @@
 __pycache__/
 *.pyc
+
+# Pastas de trabalho: nao versionar dados pessoais nem resultados
+/dados/
+/entradas/
+/saidas/

@@ -1,0 +1,89 @@
+{
+  "nome": "SICLOM - Usuarios cadastrados x Usuarios ativos",
+  "observacoes": "Perfil para o cruzamento entre o 'Relatorio Usuarios SUS Cadastrados' (exportado como .xls, que na verdade e HTML) e a planilha de usuarios ativos. Nao ha CPF nos dois lados, entao o pareamento usa nome + data de nascimento + nome da mae. Ajuste os padroes de nome de arquivo conforme os nomes que voce salva.",
+  "sistemas": [
+    {
+      "id": "A",
+      "nome": "Cadastrados",
+      "padroes_arquivo": ["RELATORIO", "cadastrad"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["NOME", "NOME DA MÃE", "CPF", "DATA NASC", "SINAN HBV", "SINAN HCV"],
+      "mapeamento": {
+        "Nome": ["NOME", "nm_pac", "Nome completo", "Nome do usuário"],
+        "Nome da mae": ["NOME DA MÃE", "NOME DA MAE", "Nome Mãe", "nm_mae"],
+        "CPF": ["CPF", "num_cpf_pac", "Nr. CPF"],
+        "Data de nascimento": ["DATA NASC", "DATA NASCIMENTO", "dt_nasc", "Data de Nascimento"],
+        "Cidade de residencia": ["CIDADE RESIDÊNCIA", "CIDADE RESIDENCIA"],
+        "Cidade de nascimento": ["CIDADE NASCIMENTO"],
+        "Sinan HBV": ["SINAN HBV"],
+        "Sinan HCV": ["SINAN HCV"],
+        "Data de cadastro": ["DATA CADASTRO"],
+        "Data de atualizacao": ["DATA ATUALIZAÇÃO", "DATA ATUALIZACAO"],
+        "Tipo": ["TIPO"],
+        "Endereco": ["ENDEREÇO", "ENDERECO"],
+        "Bairro": ["BAIRRO"],
+        "Telefones": ["TELEFONES"],
+        "Email": ["EMAIL", "E-mail"]
+      },
+      "ignorar_colunas": ["Data de Emissão", "Total de usuários"]
+    },
+    {
+      "id": "B",
+      "nome": "Ativos",
+      "padroes_arquivo": ["usuarios_ativos", "ativos"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["NOME", "NOME DA MÃE", "DATA NASCIMENTO", "ÚLTIMA DISPENSA", "ESQUEMA ATUAL"],
+      "mapeamento": {
+        "Nome": ["NOME"],
+        "Nome da mae": ["NOME DA MÃE", "NOME DA MAE"],
+        "Data de nascimento": ["DATA NASCIMENTO", "DATA NASC"],
+        "Ultima dispensa": ["ÚLTIMA DISPENSA", "ULTIMA DISPENSA"],
+        "Saldo atual": ["SALDO ATUAL"],
+        "Tipo": ["TIPO"],
+        "Esquema atual": ["ESQUEMA ATUAL"]
+      },
+      "ignorar_colunas": ["Data de Emissão"]
+    }
+  ],
+  "campos": [
+    {"nome": "Nome", "tipo": "texto", "obrigatorio": true, "tamanho_minimo": 5,
+     "descricao": "Nome do usuario, usado no pareamento"},
+    {"nome": "Nome da mae", "tipo": "texto",
+     "descricao": "Confirma a identidade quando o nome e parecido"},
+    {"nome": "Data de nascimento", "tipo": "data", "obrigatorio": true},
+    {"nome": "CPF", "tipo": "cpf", "unico": true},
+    {"nome": "Sinan HBV", "tipo": "codigo"},
+    {"nome": "Sinan HCV", "tipo": "codigo"},
+    {"nome": "Data de cadastro", "tipo": "data"},
+    {"nome": "Data de atualizacao", "tipo": "data"},
+    {"nome": "Ultima dispensa", "tipo": "data"},
+    {"nome": "Tipo", "tipo": "categoria"},
+    {"nome": "Telefones", "tipo": "telefone"},
+    {"nome": "Email", "tipo": "email"},
+    {"nome": "Cidade de residencia", "tipo": "categoria"},
+    {"nome": "Cidade de nascimento", "tipo": "categoria"}
+  ],
+  "pareamento": {
+    "chaves_primarias": ["Nome+Data de nascimento"],
+    "chaves_alternativas": [["CPF"], ["Nome", "Nome da mae"]],
+    "campos_similaridade": ["Nome", "Nome da mae"],
+    "campos_comparacao": ["Nome", "Nome da mae", "Data de nascimento", "Tipo"],
+    "limiar_provavel": 0.92,
+    "limiar_duvidoso": 0.85,
+    "bloqueio": "auto"
+  },
+  "qualidade": {
+    "regras_consistencia": [
+      {"nome": "cadastro_antes_da_atualizacao", "campo_a": "Data de atualizacao",
+       "operador": ">=", "campo_b": "Data de cadastro",
+       "descricao": "Data de atualizacao anterior a data de cadastro"},
+      {"nome": "nascimento_antes_do_cadastro", "campo_a": "Data de nascimento",
+       "operador": "<=", "campo_b": "Data de cadastro",
+       "descricao": "Data de nascimento posterior ao cadastro"}
+    ],
+    "data_minima": "1900-01-01",
+    "data_maxima": "",
+    "detectar_outliers": true,
+    "limite_categorias": 40
+  }
+}
