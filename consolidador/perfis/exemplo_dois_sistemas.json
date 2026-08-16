@@ -1,0 +1,77 @@
+{
+  "nome": "Exemplo - RHNET x SIGA",
+  "observacoes": "Modelo de perfil. Copie este arquivo, troque os nomes dos sistemas, os padroes de arquivo e a lista de apelidos de cada campo. Use 'python consolidar.py <pasta> --salvar-perfil meu_perfil.json' para gerar um ponto de partida a partir dos seus proprios arquivos.",
+  "sistemas": [
+    {
+      "id": "A",
+      "nome": "RHNET",
+      "padroes_arquivo": ["^RHNET", "rh_?net"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["Nr. CPF", "Cod. Matricula", "Nome completo", "Funcao"],
+      "mapeamento": {
+        "CPF": ["Nr. CPF", "NRCPF", "CPF"],
+        "Matricula": ["Cod. Matricula", "CODMATRIC", "MATRICULA"],
+        "Nome": ["Nome completo", "NOMECOMPL", "NOME DO SERVIDOR"],
+        "Cargo": ["Funcao", "FUNCAO", "CARGO"],
+        "Lotacao": ["Unidade", "UNIDADE", "LOTACAO"],
+        "Admissao": ["Data de admissao", "DTADMISSA", "DT_ADMISSAO"],
+        "Valor": ["Remuneracao", "REMUNERAC", "VALOR_BRUTO"],
+        "Situacao": ["Status", "STATUS", "SITUACAO"],
+        "Email": ["E-mail", "EMAIL"]
+      },
+      "ignorar_colunas": []
+    },
+    {
+      "id": "B",
+      "nome": "SIGA",
+      "padroes_arquivo": ["^SIGA"],
+      "padroes_aba": [],
+      "colunas_esperadas": ["CPF", "MATRICULA", "NOME DO SERVIDOR", "CARGO"],
+      "mapeamento": {
+        "CPF": ["CPF", "Nr. CPF"],
+        "Matricula": ["MATRICULA", "Cod. Matricula"],
+        "Nome": ["NOME DO SERVIDOR", "Nome completo"],
+        "Cargo": ["CARGO", "Funcao"],
+        "Lotacao": ["LOTACAO", "Unidade"],
+        "Admissao": ["DT_ADMISSAO", "Data de admissao"],
+        "Valor": ["VALOR_BRUTO", "Remuneracao"],
+        "Situacao": ["SITUACAO", "Status"],
+        "Email": ["EMAIL", "E-mail"]
+      },
+      "ignorar_colunas": []
+    }
+  ],
+  "campos": [
+    {"nome": "CPF", "tipo": "cpf", "obrigatorio": true, "chave": true, "unico": true,
+     "descricao": "Documento usado como chave do pareamento"},
+    {"nome": "Matricula", "tipo": "codigo", "obrigatorio": true, "unico": true},
+    {"nome": "Nome", "tipo": "texto", "obrigatorio": true, "tamanho_minimo": 5},
+    {"nome": "Cargo", "tipo": "texto"},
+    {"nome": "Lotacao", "tipo": "categoria"},
+    {"nome": "Admissao", "tipo": "data", "obrigatorio": true},
+    {"nome": "Valor", "tipo": "numero", "minimo": 0, "maximo": 100000},
+    {"nome": "Situacao", "tipo": "categoria", "dominio": ["ATIVO", "SUSPENSO", "ENCERRADO"]},
+    {"nome": "Email", "tipo": "email"}
+  ],
+  "pareamento": {
+    "chaves_primarias": ["CPF"],
+    "chaves_alternativas": [["Matricula"], ["Nome", "Admissao"]],
+    "campos_similaridade": ["Nome"],
+    "campos_comparacao": ["Nome", "Cargo", "Lotacao", "Admissao", "Valor", "Situacao", "Email"],
+    "limiar_provavel": 0.9,
+    "limiar_duvidoso": 0.78,
+    "bloqueio": "auto"
+  },
+  "qualidade": {
+    "regras_consistencia": [
+      {"nome": "admissao_nao_futura", "campo_a": "Admissao", "operador": "<=",
+       "valor": "31/12/2030", "descricao": "Data de admissao em periodo futuro"},
+      {"nome": "valor_positivo", "campo_a": "Valor", "operador": ">", "valor": "0",
+       "descricao": "Valor deve ser maior que zero"}
+    ],
+    "data_minima": "1950-01-01",
+    "data_maxima": "",
+    "detectar_outliers": true,
+    "limite_categorias": 30
+  }
+}
