@@ -148,12 +148,24 @@ def _fundir_colunas_equivalentes(tabela: Tabela, consolidado: Consolidado) -> No
         coluna: {i for i, linha in enumerate(tabela.linhas) if tx.limpar(linha.get(coluna))}
         for coluna in colunas
     }
+    # De quais arquivos cada coluna recebe conteudo. Duas colunas do mesmo
+    # arquivo sao campos diferentes por construcao - um relatorio cheio de
+    # marcadores mutuamente exclusivos ('tp_condicao_...', 'tp_uso_previo_...')
+    # tem colunas que nunca se cruzam e nomes parecidos, e seriam fundidas por
+    # engano se so a disjuncao de linhas fosse considerada.
+    origens = {
+        coluna: {tx.limpar(linha.get(COL_ARQUIVO)) for i, linha in enumerate(tabela.linhas)
+                 if i in preenchidas[coluna]}
+        for coluna in colunas
+    }
     candidatos: List[Tuple[float, str, str]] = []
     for i, coluna_a in enumerate(colunas):
         for coluna_b in colunas[i + 1:]:
             if not preenchidas[coluna_a] or not preenchidas[coluna_b]:
                 continue
             if preenchidas[coluna_a] & preenchidas[coluna_b]:
+                continue
+            if origens[coluna_a] & origens[coluna_b]:
                 continue
             nota = tx.similaridade_nomes(coluna_a, coluna_b)
             if nota >= 0.78:

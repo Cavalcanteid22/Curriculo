@@ -60,6 +60,7 @@ class MetricaCampo:
     implausiveis: int = 0
     exemplos: List[str] = field(default_factory=list)
     chave: bool = False
+    unico: bool = False
 
     @property
     def completude(self) -> float:
@@ -168,7 +169,8 @@ def _analisar_campo(
     limite_superior: _dt.date,
     perfil: Perfil,
 ) -> MetricaCampo:
-    metrica = MetricaCampo(campo=campo.nome, tipo=campo.tipo, chave=campo.chave)
+    metrica = MetricaCampo(campo=campo.nome, tipo=campo.tipo, chave=campo.chave,
+                           unico=campo.unico)
     metrica.total = len(tabela.linhas)
     vistos: Dict[str, str] = {}       # normalizado -> primeira grafia encontrada
     contagem_chave: Dict[str, List[dict]] = {}
@@ -421,9 +423,16 @@ def _calcular_notas(resultado: ResultadoQualidade, consolidado: Consolidado) -> 
 
     completude = sum(m.completude for m in resultado.metricas) / campos
     validade = sum(m.validade for m in resultado.metricas) / campos
-    chaves = [m for m in resultado.metricas if m.chave] or resultado.metricas
-    unicidade = sum(m.unicidade for m in chaves) / len(chaves)
-    unicidade = min(unicidade, 100.0 * (total - resultado.registros_duplicados) / total)
+    # Unicidade mede duplicidade indevida. Fazer a media de todos os campos
+    # puniria a base por ter campos categoricos ('Sexo', 'Situacao'), que
+    # repetem valores por natureza; sem campo-chave, o que resta medir e a
+    # repeticao do registro inteiro.
+    chaves = [m for m in resultado.metricas if m.chave or m.unico]
+    sem_duplicados = 100.0 * (total - resultado.registros_duplicados) / total
+    if chaves:
+        unicidade = min(sum(m.unicidade for m in chaves) / len(chaves), sem_duplicados)
+    else:
+        unicidade = sem_duplicados
 
     contagem = resultado.por_dimensao()
     padronizacao = 100.0 * (1 - min(1.0, contagem.get("Padronizacao", 0) / celulas))

@@ -1,0 +1,2863 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consolidador de Sistemas</title>
+<style>
+  :root {
+    --azul: #1f4e79; --azul-claro: #2e75b6; --fundo: #f4f6f9; --borda: #d7dee7;
+    --texto: #1f2937; --suave: #6b7280; --verde: #2e7d32; --ambar: #b7791f; --vermelho: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--fundo); color: var(--texto);
+    font: 15px/1.5 "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  }
+  header { background: var(--azul); color: #fff; padding: 18px 24px; }
+  header h1 { margin: 0 0 4px; font-size: 21px; }
+  header p { margin: 0; color: #d6e4f0; font-size: 13px; max-width: 70ch; }
+  main { max-width: 1120px; margin: 0 auto; padding: 20px 24px 64px; }
+  section {
+    background: #fff; border: 1px solid var(--borda); border-radius: 10px;
+    padding: 16px 18px; margin-bottom: 16px;
+  }
+  h2 { font-size: 15px; margin: 0 0 12px; color: var(--azul); }
+  .zona {
+    border: 2px dashed var(--azul-claro); border-radius: 10px; padding: 26px 16px;
+    text-align: center; color: var(--suave); background: #fbfdff; cursor: pointer;
+  }
+  .zona.sobre { background: #e8f1fb; border-color: var(--azul); color: var(--azul); }
+  .zona strong { color: var(--azul); display: block; font-size: 16px; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { border: 1px solid var(--borda); padding: 6px 8px; text-align: left; vertical-align: middle; }
+  th { background: #eef3f9; font-weight: 600; }
+  td.numero, th.numero { text-align: right; font-variant-numeric: tabular-nums; }
+  select, input[type=text] {
+    font: inherit; padding: 5px 7px; border: 1px solid var(--borda); border-radius: 6px;
+    background: #fff; color: inherit;
+  }
+  button {
+    font: inherit; padding: 8px 16px; border-radius: 7px; border: 1px solid var(--borda);
+    background: #fff; cursor: pointer;
+  }
+  button:hover:not(:disabled) { background: #eef3f9; }
+  button.principal {
+    background: var(--azul); color: #fff; border-color: var(--azul); font-weight: 600;
+    padding: 10px 22px;
+  }
+  button.principal:hover:not(:disabled) { background: #17395a; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .linha { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .linha + .linha { margin-top: 10px; }
+  label.campo { font-size: 13px; color: var(--suave); }
+  #registro {
+    background: #0f172a; color: #d8e3f0; font: 12px/1.55 Consolas, "Courier New", monospace;
+    padding: 12px; border-radius: 8px; max-height: 220px; overflow: auto; white-space: pre-wrap;
+  }
+  .cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; }
+  .cartao { border: 1px solid var(--borda); border-radius: 8px; padding: 10px 12px; background: #fbfdff; }
+  .cartao b { display: block; font-size: 24px; color: var(--azul); line-height: 1.2; }
+  .cartao span { font-size: 12px; color: var(--suave); }
+  .cartao.alerta b { color: var(--vermelho); }
+  .cartao.atencao b { color: var(--ambar); }
+  .cartao.ok b { color: var(--verde); }
+  .aviso { background: #fff8e6; border-left: 4px solid var(--ambar); padding: 8px 12px; font-size: 13px; margin: 8px 0; }
+  .erro { background: #fdecea; border-left: 4px solid var(--vermelho); padding: 8px 12px; font-size: 13px; margin: 8px 0; }
+  .ajuda { font-size: 12px; color: var(--suave); margin-top: 6px; }
+  .oculto { display: none; }
+  footer { color: var(--suave); font-size: 12px; text-align: center; padding-bottom: 28px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Consolidador de Sistemas</h1>
+  <p>Reúne os arquivos de dois sistemas, analisa a qualidade de cada base, faz o pareamento e gera
+     a planilha com todas as abas mais o relatório em Word. Tudo acontece no seu computador:
+     nenhum arquivo é enviado para a internet.</p>
+</header>
+
+<main>
+  <section>
+    <h2>1. Arquivos de entrada</h2>
+    <div class="zona" id="zona">
+      <strong>Arraste os arquivos aqui ou clique para escolher</strong>
+      .xls e .htm de relatório, .xlsx, .csv, .txt e .json — pode misturar
+    </div>
+    <input type="file" id="entrada" multiple class="oculto"
+           accept=".xls,.xlsx,.xlsm,.htm,.html,.csv,.txt,.tsv,.json">
+    <div id="listaArquivos"></div>
+  </section>
+
+  <section>
+    <h2>2. Opções</h2>
+    <div class="linha">
+      <label class="campo" for="perfil">Perfil de comparação:</label>
+      <select id="perfil"></select>
+    </div>
+    <div class="linha">
+      <label class="campo" for="nomeA">Nome do Sistema 1:</label>
+      <input type="text" id="nomeA" size="22" placeholder="deduzido do arquivo">
+      <label class="campo" for="nomeB">Nome do Sistema 2:</label>
+      <input type="text" id="nomeB" size="22" placeholder="deduzido do arquivo">
+    </div>
+    <p class="ajuda" id="descricaoPerfil"></p>
+  </section>
+
+  <section>
+    <h2>3. Execução</h2>
+    <div class="linha">
+      <button class="principal" id="executar" disabled>Executar rotina</button>
+      <span id="situacao" class="campo">Adicione os arquivos dos dois sistemas.</span>
+    </div>
+    <div id="registro" class="oculto"></div>
+    <div id="resultado"></div>
+  </section>
+
+  <footer>
+    Os arquivos de entrada e os resultados contêm dados pessoais: guarde-os em pasta local e não
+    os coloque em pasta sincronizada pública.
+  </footer>
+</main>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   Texto: limpeza, normalização, tipos e semelhança
+   ========================================================================= */
+
+const ESPACOS = /\s+/g;
+const memoNormalizar = new Map();
+
+function limpar(valor) {
+  if (valor === null || valor === undefined) return "";
+  if (valor instanceof Date) return formatarData(valor);
+  return String(valor).replace(/\u00a0/g, " ").replace(ESPACOS, " ").trim();
+}
+
+function semAcento(texto) {
+  return texto.normalize("NFKD").replace(/[̀-ͯ]/g, "");
+}
+
+function normalizar(valor) {
+  const texto = limpar(valor);
+  if (!texto) return "";
+  let pronto = memoNormalizar.get(texto);
+  if (pronto === undefined) {
+    pronto = semAcento(texto).toLowerCase().replace(/[^0-9a-z]+/g, " ").replace(ESPACOS, " ").trim();
+    if (memoNormalizar.size < 200000) memoNormalizar.set(texto, pronto);
+  }
+  return pronto;
+}
+
+const chaveCabecalho = valor => normalizar(valor).replace(/ /g, "");
+const soDigitos = valor => limpar(valor).replace(/\D/g, "");
+
+const PREPOSICOES = new Set(["de", "da", "do", "das", "dos", "e", "em", "no", "na", "a", "o"]);
+const semPreposicoes = valor =>
+  normalizar(valor).split(" ").filter(p => p && !PREPOSICOES.has(p)).join("");
+const esqueleto = valor => semPreposicoes(valor).replace(/[aeiou]/g, "");
+
+function chaveValor(valor) {
+  const texto = limpar(valor);
+  if (!texto) return "";
+  const digitos = soDigitos(texto);
+  if (digitos && digitos.length >= Math.max(4, normalizar(texto).replace(/ /g, "").length - 2)) {
+    return digitos.replace(/^0+/, "") || "0";
+  }
+  return normalizar(texto);
+}
+
+function paraNumero(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  if (typeof valor === "number") return valor;
+  let texto = limpar(valor);
+  if (!texto) return null;
+  const negativo = texto.startsWith("(") && texto.endsWith(")");
+  texto = texto.replace(/^[(]|[)]$/g, "").replace(/^(r\$|us\$|\$)\s*/i, "").replace(/\s*%$/, "").trim();
+  if (!/^[-+]?[\d.,\s]*\d(?:[.,]\d+)?$/.test(texto.replace(/ /g, ""))) return null;
+  texto = texto.replace(/ /g, "");
+  if (texto.includes(",") && texto.includes(".")) {
+    texto = texto.lastIndexOf(",") > texto.lastIndexOf(".")
+      ? texto.replace(/\./g, "").replace(",", ".")
+      : texto.replace(/,/g, "");
+  } else if (texto.includes(",")) {
+    texto = texto.replace(/\./g, "").replace(",", ".");
+  } else if ((texto.match(/\./g) || []).length > 1) {
+    texto = texto.replace(/\./g, "");
+  }
+  const numero = Number(texto);
+  if (!isFinite(numero)) return null;
+  return negativo ? -numero : numero;
+}
+
+function paraData(valor) {
+  if (valor === null || valor === undefined || valor === "") return null;
+  if (valor instanceof Date) return valor;
+  const texto = limpar(valor);
+  if (!texto) return null;
+  let casamento = texto.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2,4})/);
+  if (casamento) {
+    let [, dia, mes, ano] = casamento.map(Number);
+    if (ano < 100) ano += ano < 40 ? 2000 : 1900;
+    return montarData(ano, mes, dia);
+  }
+  casamento = texto.match(/^(\d{4})[/.-](\d{1,2})[/.-](\d{1,2})/);
+  if (casamento) return montarData(+casamento[1], +casamento[2], +casamento[3]);
+  casamento = texto.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (casamento) return montarData(+casamento[1], +casamento[2], +casamento[3]);
+  return null;
+}
+
+function montarData(ano, mes, dia) {
+  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return null;
+  const data = new Date(Date.UTC(ano, mes - 1, dia));
+  return data.getUTCMonth() === mes - 1 && data.getUTCDate() === dia ? data : null;
+}
+
+const dois = n => String(n).padStart(2, "0");
+const formatarData = d =>
+  `${dois(d.getUTCDate())}/${dois(d.getUTCMonth() + 1)}/${d.getUTCFullYear()}`;
+
+function cpfValido(valor) {
+  const n = soDigitos(valor);
+  if (n.length !== 11 || /^(\d)\1{10}$/.test(n)) return false;
+  for (const tamanho of [9, 10]) {
+    let soma = 0;
+    for (let i = 0; i < tamanho; i++) soma += +n[i] * (tamanho + 1 - i);
+    let digito = (soma * 10) % 11;
+    if (digito === 10) digito = 0;
+    if (digito !== +n[tamanho]) return false;
+  }
+  return true;
+}
+
+function cnpjValido(valor) {
+  const n = soDigitos(valor);
+  if (n.length !== 14 || /^(\d)\1{13}$/.test(n)) return false;
+  const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const pesos2 = [6, ...pesos1];
+  for (const [pesos, posicao] of [[pesos1, 12], [pesos2, 13]]) {
+    let soma = 0;
+    for (let i = 0; i < posicao; i++) soma += +n[i] * pesos[i];
+    const resto = soma % 11;
+    const digito = resto < 2 ? 0 : 11 - resto;
+    if (digito !== +n[posicao]) return false;
+  }
+  return true;
+}
+
+const emailValido = v => /^[^@\s]+@[^@\s.]+\.[^@\s]{2,}$/.test(limpar(v));
+const cepValido = v => soDigitos(v).length === 8;
+
+function telefoneValido(valor) {
+  const partes = limpar(valor).split(/[/;,]| e /).filter(p => soDigitos(p));
+  if (!partes.length) return false;
+  return partes.every(p => [8, 9, 10, 11, 12, 13].includes(soDigitos(p).length));
+}
+
+function jaro(a, b) {
+  if (a === b) return 1;
+  if (!a || !b) return 0;
+  const limite = Math.max(0, Math.floor(Math.max(a.length, b.length) / 2) - 1);
+  const marcaA = new Array(a.length).fill(false);
+  const marcaB = new Array(b.length).fill(false);
+  let comuns = 0;
+  for (let i = 0; i < a.length; i++) {
+    const inicio = Math.max(0, i - limite);
+    const fim = Math.min(i + limite + 1, b.length);
+    for (let j = inicio; j < fim; j++) {
+      if (marcaB[j] || b[j] !== a[i]) continue;
+      marcaA[i] = marcaB[j] = true;
+      comuns++;
+      break;
+    }
+  }
+  if (!comuns) return 0;
+  let transposicoes = 0, j = 0;
+  for (let i = 0; i < a.length; i++) {
+    if (!marcaA[i]) continue;
+    while (!marcaB[j]) j++;
+    if (a[i] !== b[j]) transposicoes++;
+    j++;
+  }
+  transposicoes = Math.floor(transposicoes / 2);
+  return (comuns / a.length + comuns / b.length + (comuns - transposicoes) / comuns) / 3;
+}
+
+function jaroWinkler(a, b) {
+  const base = jaro(a, b);
+  let prefixo = 0;
+  for (let i = 0; i < Math.min(4, a.length, b.length) && a[i] === b[i]; i++) prefixo++;
+  return base + prefixo * 0.1 * (1 - base);
+}
+
+function similaridadeTokens(a, b) {
+  const ta = new Set(a.split(" ").filter(Boolean));
+  const tb = new Set(b.split(" ").filter(Boolean));
+  if (!ta.size || !tb.size) return 0;
+  let intersecao = 0;
+  ta.forEach(t => { if (tb.has(t)) intersecao++; });
+  return (2 * intersecao) / (ta.size + tb.size);
+}
+
+function similaridade(valorA, valorB) {
+  const a = normalizar(valorA), b = normalizar(valorB);
+  if (!a && !b) return 0;
+  if (a === b) return 1;
+  const jw = jaroWinkler(a, b);
+  return Math.max(jw, 0.5 * similaridadeTokens(a, b) + 0.5 * jw);
+}
+
+function similaridadeNomes(a, b) {
+  const chaveA = semPreposicoes(a), chaveB = semPreposicoes(b);
+  if (!chaveA || !chaveB) return 0;
+  if (chaveA === chaveB) return 1;
+  const [menor, maior] = chaveA.length <= chaveB.length ? [chaveA, chaveB] : [chaveB, chaveA];
+  if (menor.length >= 3 && maior.includes(menor)) return maior.startsWith(menor) ? 0.9 : 0.85;
+  const esqA = esqueleto(a), esqB = esqueleto(b);
+  if (esqA && esqA === esqB) return 0.85;
+  const [menorEsq, maiorEsq] = esqA.length <= esqB.length ? [esqA, esqB] : [esqB, esqA];
+  if (menorEsq.length >= 4 && maiorEsq.startsWith(menorEsq)) return 0.8;
+  return similaridade(a, b);
+}
+
+function jaccard(a, b) {
+  if (!a.size || !b.size) return 0;
+  let intersecao = 0;
+  a.forEach(x => { if (b.has(x)) intersecao++; });
+  return intersecao / (a.size + b.size - intersecao);
+}
+
+/* =========================================================================
+   ZIP: leitura (xlsx) e escrita (xlsx e docx), sem biblioteca externa
+   ========================================================================= */
+
+const TABELA_CRC = (() => {
+  const tabela = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    tabela[i] = c >>> 0;
+  }
+  return tabela;
+})();
+
+function crc32(dados) {
+  let c = 0xffffffff;
+  for (let i = 0; i < dados.length; i++) c = TABELA_CRC[(c ^ dados[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+async function descompactar(buffer) {
+  const dados = new Uint8Array(buffer);
+  const visao = new DataView(buffer);
+  let fim = dados.length - 22;
+  while (fim >= 0 && visao.getUint32(fim, true) !== 0x06054b50) fim--;
+  if (fim < 0) throw new Error("Arquivo compactado invalido.");
+  const total = visao.getUint16(fim + 10, true);
+  let posicao = visao.getUint32(fim + 16, true);
+  const arquivos = new Map();
+  for (let i = 0; i < total; i++) {
+    if (visao.getUint32(posicao, true) !== 0x02014b50) break;
+    const metodo = visao.getUint16(posicao + 10, true);
+    const comprimido = visao.getUint32(posicao + 20, true);
+    const tamanhoNome = visao.getUint16(posicao + 28, true);
+    const tamanhoExtra = visao.getUint16(posicao + 30, true);
+    const tamanhoComentario = visao.getUint16(posicao + 32, true);
+    const inicioLocal = visao.getUint32(posicao + 42, true);
+    const nome = new TextDecoder("utf-8").decode(dados.subarray(posicao + 46, posicao + 46 + tamanhoNome));
+    const nomeLocal = visao.getUint16(inicioLocal + 26, true);
+    const extraLocal = visao.getUint16(inicioLocal + 28, true);
+    const inicioDados = inicioLocal + 30 + nomeLocal + extraLocal;
+    const bruto = dados.subarray(inicioDados, inicioDados + comprimido);
+    arquivos.set(nome, { metodo, bruto });
+    posicao += 46 + tamanhoNome + tamanhoExtra + tamanhoComentario;
+  }
+  const resultado = new Map();
+  for (const [nome, item] of arquivos) {
+    if (item.metodo === 0) {
+      resultado.set(nome, item.bruto);
+    } else if (item.metodo === 8) {
+      if (typeof DecompressionStream !== "function") {
+        throw new Error("Este navegador nao consegue abrir .xlsx. Use Chrome, Edge ou Firefox atualizados.");
+      }
+      const fluxo = new Blob([item.bruto]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+      resultado.set(nome, new Uint8Array(await new Response(fluxo).arrayBuffer()));
+    }
+  }
+  return resultado;
+}
+
+async function comprimir(conteudo) {
+  if (typeof CompressionStream !== "function" || conteudo.length < 512) return null;
+  const fluxo = new Blob([conteudo]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+  const comprimido = new Uint8Array(await new Response(fluxo).arrayBuffer());
+  return comprimido.length < conteudo.length ? comprimido : null;
+}
+
+async function compactar(entradas) {
+  const codificador = new TextEncoder();
+  const partes = [], central = [];
+  let deslocamento = 0;
+  for (const { nome, dados } of entradas) {
+    const bytesNome = codificador.encode(nome);
+    const original = typeof dados === "string" ? codificador.encode(dados) : dados;
+    const comprimido = await comprimir(original);
+    const conteudo = comprimido || original;
+    const metodo = comprimido ? 8 : 0;
+    const soma = crc32(original);
+    const local = new Uint8Array(30 + bytesNome.length);
+    const visaoLocal = new DataView(local.buffer);
+    visaoLocal.setUint32(0, 0x04034b50, true);
+    visaoLocal.setUint16(4, 20, true);
+    visaoLocal.setUint16(8, metodo, true);
+    visaoLocal.setUint32(14, soma, true);
+    visaoLocal.setUint32(18, conteudo.length, true);
+    visaoLocal.setUint32(22, original.length, true);
+    visaoLocal.setUint16(26, bytesNome.length, true);
+    local.set(bytesNome, 30);
+    partes.push(local, conteudo);
+
+    const registro = new Uint8Array(46 + bytesNome.length);
+    const visaoRegistro = new DataView(registro.buffer);
+    visaoRegistro.setUint32(0, 0x02014b50, true);
+    visaoRegistro.setUint16(4, 20, true);
+    visaoRegistro.setUint16(6, 20, true);
+    visaoRegistro.setUint16(10, metodo, true);
+    visaoRegistro.setUint32(16, soma, true);
+    visaoRegistro.setUint32(20, conteudo.length, true);
+    visaoRegistro.setUint32(24, original.length, true);
+    visaoRegistro.setUint16(28, bytesNome.length, true);
+    visaoRegistro.setUint32(42, deslocamento, true);
+    registro.set(bytesNome, 46);
+    central.push(registro);
+    deslocamento += local.length + conteudo.length;
+  }
+  const tamanhoCentral = central.reduce((soma, r) => soma + r.length, 0);
+  const fim = new Uint8Array(22);
+  const visaoFim = new DataView(fim.buffer);
+  visaoFim.setUint32(0, 0x06054b50, true);
+  visaoFim.setUint16(8, central.length, true);
+  visaoFim.setUint16(10, central.length, true);
+  visaoFim.setUint32(12, tamanhoCentral, true);
+  visaoFim.setUint32(16, deslocamento, true);
+  return new Blob([...partes, ...central, fim], { type: "application/octet-stream" });
+}
+
+const escapar = texto => String(texto)
+  .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "")
+  .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+/* =========================================================================
+   Leitura dos arquivos
+   ========================================================================= */
+
+async function lerArquivo(arquivo) {
+  const buffer = await arquivo.arrayBuffer();
+  const inicio = new Uint8Array(buffer.slice(0, 4));
+  if (inicio[0] === 0x50 && inicio[1] === 0x4b) {
+    const partes = await descompactar(buffer);
+    if (partes.has("xl/workbook.xml")) return lerXLSX(partes, arquivo.name);
+    throw new Error("Arquivo compactado que nao e uma planilha .xlsx.");
+  }
+  if (inicio[0] === 0xd0 && inicio[1] === 0xcf) {
+    throw new Error("Formato binário do Excel 97-2003. Abra no Excel e salve como .xlsx ou .csv.");
+  }
+  if (/\.dbf$/i.test(arquivo.name) || pareceDBF(new Uint8Array(buffer.slice(0, 32)))) {
+    throw new Error("Arquivos .dbf não são lidos nesta versão que roda no navegador. " +
+                    "Use a versão em Python (Consolidador.bat) ou abra o .dbf e salve como .csv.");
+  }
+  const texto = decodificar(buffer);
+  if (pareceBinario(texto)) {
+    throw new Error("Este arquivo não é texto nem planilha reconhecida: o conteúdo parece " +
+                    "binário. Confirme o formato ou exporte de novo como .xlsx ou .csv.");
+  }
+  const amostra = texto.slice(0, 4000).toLowerCase();
+  if (amostra.includes("<table") || amostra.includes("<html") || amostra.includes("<frameset")) {
+    return lerHTML(texto, arquivo.name);
+  }
+  if (amostra.trimStart().startsWith("{") || amostra.trimStart().startsWith("[")) {
+    return lerJSON(texto, arquivo.name);
+  }
+  return [lerCSV(texto, arquivo.name)];
+}
+
+function pareceDBF(inicio) {
+  if (inicio.length < 32) return false;
+  const versao = inicio[0], mes = inicio[2], dia = inicio[3];
+  const tamanhoRegistro = inicio[10] | (inicio[11] << 8);
+  return [0x02, 0x03, 0x04, 0x05, 0x30, 0x31, 0x83, 0x8b, 0xf5].includes(versao) &&
+         mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31 && tamanhoRegistro > 0;
+}
+
+function pareceBinario(texto) {
+  const amostra = texto.slice(0, 4000);
+  if (!amostra) return true;
+  let estranhos = 0;
+  for (const caractere of amostra) {
+    const codigo = caractere.codePointAt(0);
+    if (codigo === 0xfffd || (codigo < 32 && ![9, 10, 13].includes(codigo))) estranhos++;
+  }
+  return estranhos / amostra.length > 0.05;
+}
+
+function decodificar(buffer) {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(buffer);
+  } catch (erro) {
+    return new TextDecoder("windows-1252").decode(buffer);
+  }
+}
+
+function lerCSV(texto, nome) {
+  const linhas = texto.split(/\r?\n/).filter(l => l.length);
+  const amostra = linhas.slice(0, 20);
+  let delimitador = ";", melhor = -1;
+  for (const candidato of [";", ",", "\t", "|"]) {
+    const contagens = amostra.map(l => (l.split(candidato).length - 1));
+    const media = contagens.reduce((s, c) => s + c, 0) / (contagens.length || 1);
+    if (!media) continue;
+    const variacao = contagens.reduce((s, c) => s + Math.abs(c - media), 0) / contagens.length;
+    const nota = media - 2 * variacao;
+    if (nota > melhor) { melhor = nota; delimitador = candidato; }
+  }
+  const matriz = [];
+  let campo = "", registro = [], entreAspas = false;
+  const conteudo = texto.replace(/^﻿/, "");
+  for (let i = 0; i < conteudo.length; i++) {
+    const c = conteudo[i];
+    if (entreAspas) {
+      if (c === '"' && conteudo[i + 1] === '"') { campo += '"'; i++; }
+      else if (c === '"') entreAspas = false;
+      else campo += c;
+    } else if (c === '"') entreAspas = true;
+    else if (c === delimitador) { registro.push(campo); campo = ""; }
+    else if (c === "\n") { registro.push(campo); matriz.push(registro); registro = []; campo = ""; }
+    else if (c !== "\r") campo += c;
+  }
+  if (campo || registro.length) { registro.push(campo); matriz.push(registro); }
+  return deMatriz(matriz, nome, nome);
+}
+
+function lerJSON(texto, nome) {
+  const dados = JSON.parse(texto);
+  const registros = acharLista(dados);
+  if (!registros) throw new Error("O JSON nao contem uma lista de registros.");
+  const colunas = [];
+  const linhas = registros.map(item => {
+    const registro = {};
+    for (const [chave, valor] of Object.entries(item)) {
+      if (valor && typeof valor === "object") continue;
+      if (!colunas.includes(chave)) colunas.push(chave);
+      registro[chave] = limpar(valor);
+    }
+    return registro;
+  });
+  return [{ colunas, linhas, origem: nome, aba: nome }];
+}
+
+function acharLista(dados) {
+  if (Array.isArray(dados) && dados.length && typeof dados[0] === "object") return dados;
+  if (dados && typeof dados === "object") {
+    for (const valor of Object.values(dados)) {
+      const achado = acharLista(valor);
+      if (achado) return achado;
+    }
+  }
+  return null;
+}
+
+function lerHTML(texto, nome) {
+  const documento = new DOMParser().parseFromString(texto, "text/html");
+  const tabelas = [];
+  documento.querySelectorAll("table").forEach((tabela, indice) => {
+    if (tabela.querySelector("table")) return;      // usa so a tabela mais interna
+    const matriz = [];
+    const pendentes = new Map();
+    tabela.querySelectorAll("tr").forEach(tr => {
+      const celulas = [];
+      tr.querySelectorAll(":scope > td, :scope > th").forEach(td => {
+        while (pendentes.has(celulas.length)) {
+          const pendente = pendentes.get(celulas.length);
+          celulas.push(pendente.valor);
+          pendente.restante--;
+          if (pendente.restante <= 0) pendentes.delete(celulas.length - 1);
+        }
+        const texto = textoDaCelula(td);
+        const colspan = Math.min(parseInt(td.getAttribute("colspan") || "1", 10) || 1, 60);
+        const rowspan = Math.min(parseInt(td.getAttribute("rowspan") || "1", 10) || 1, 500);
+        const posicao = celulas.length;
+        for (let i = 0; i < colspan; i++) celulas.push(texto);
+        if (rowspan > 1) pendentes.set(posicao, { restante: rowspan - 1, valor: texto });
+      });
+      if (celulas.length) matriz.push(celulas);
+    });
+    if (matriz.length >= 2) tabelas.push(deMatriz(matriz, nome, `tabela_${indice + 1}`));
+  });
+  if (!tabelas.length) {
+    if (documento.querySelector("frame")) {
+      const alvo = documento.querySelector("frame").getAttribute("src") || "";
+      throw new Error(
+        "Este arquivo nao contem dados: e so o indice de uma planilha salva no Excel como " +
+        `'Pagina da Web'. Os dados ficam na pasta '${decodeURIComponent(alvo).split("/")[0]}'. ` +
+        "Use o arquivo como veio do sistema, ou abra no Excel e salve como .xlsx."
+      );
+    }
+    throw new Error("Nenhuma tabela com dados foi encontrada no arquivo.");
+  }
+  return unirEquivalentes(tabelas);
+}
+
+function textoDaCelula(td) {
+  const html = td.innerHTML
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li)>/gi, "\n");
+  const auxiliar = document.createElement("div");
+  auxiliar.innerHTML = html;
+  return auxiliar.textContent.split("\n").map(p => limpar(p)).filter(Boolean).join("\n");
+}
+
+function unirEquivalentes(tabelas) {
+  const grupos = [];
+  for (const tabela of tabelas) {
+    const assinatura = tabela.colunas.map(chaveCabecalho).join("|");
+    const grupo = grupos.find(g => g.assinatura === assinatura);
+    if (grupo) grupo.itens.push(tabela);
+    else grupos.push({ assinatura, itens: [tabela] });
+  }
+  return grupos.map(grupo => {
+    if (grupo.itens.length === 1) return grupo.itens[0];
+    const primeira = grupo.itens[0];
+    return {
+      colunas: primeira.colunas,
+      linhas: grupo.itens.flatMap(t => t.linhas),
+      origem: primeira.origem,
+      aba: `${primeira.aba} (+${grupo.itens.length - 1})`,
+    };
+  });
+}
+
+/* ---- XLSX ---------------------------------------------------------------- */
+
+function lerXLSX(partes, nome) {
+  const decodificador = new TextDecoder("utf-8");
+  const ler = caminho => partes.has(caminho) ? decodificador.decode(partes.get(caminho)) : "";
+  const textos = [];
+  const compartilhados = ler("xl/sharedStrings.xml");
+  if (compartilhados) {
+    for (const item of compartilhados.match(/<si>[\s\S]*?<\/si>/g) || []) {
+      const pedacos = item.match(/<t[^>]*>([\s\S]*?)<\/t>/g) || [];
+      textos.push(pedacos.map(p => desescapar(p.replace(/<[^>]+>/g, ""))).join(""));
+    }
+  }
+  const estilosData = estilosDeData(ler("xl/styles.xml"));
+  const relacoes = new Map();
+  for (const item of (ler("xl/_rels/workbook.xml.rels").match(/<Relationship[^>]*>/g) || [])) {
+    const id = (item.match(/Id="([^"]+)"/) || [])[1];
+    let alvo = (item.match(/Target="([^"]+)"/) || [])[1] || "";
+    alvo = alvo.startsWith("/") ? alvo.slice(1) : "xl/" + alvo.replace(/^\.\//, "");
+    relacoes.set(id, alvo.replace("xl/xl/", "xl/"));
+  }
+  const tabelas = [];
+  const abas = ler("xl/workbook.xml").match(/<sheet[^>]*>/g) || [];
+  abas.forEach((aba, indice) => {
+    if (/state="(hidden|veryHidden)"/.test(aba)) return;
+    const nomeAba = desescapar((aba.match(/name="([^"]*)"/) || [])[1] || `Planilha${indice + 1}`);
+    const id = (aba.match(/r:id="([^"]+)"/) || [])[1];
+    const caminho = relacoes.get(id) || `xl/worksheets/sheet${indice + 1}.xml`;
+    if (!partes.has(caminho)) return;
+    const matriz = lerAbaXLSX(decodificador.decode(partes.get(caminho)), textos, estilosData);
+    const tabela = deMatriz(matriz, nome, nomeAba);
+    if (tabela.linhas.length) tabelas.push(tabela);
+  });
+  return tabelas;
+}
+
+function estilosDeData(xml) {
+  const estilos = new Set();
+  if (!xml) return estilos;
+  const formatos = new Set([14, 15, 16, 17, 18, 19, 20, 21, 22, 45, 46, 47, 27, 30, 36, 50, 57]);
+  for (const item of xml.match(/<numFmt[^>]*>/g) || []) {
+    const id = +(item.match(/numFmtId="(\d+)"/) || [])[1];
+    const codigo = ((item.match(/formatCode="([^"]*)"/) || [])[1] || "").toLowerCase();
+    if (/[dmy]/.test(codigo.replace(/"[^"]*"/g, "")) && !codigo.includes("0.0")) formatos.add(id);
+  }
+  const bloco = (xml.match(/<cellXfs[\s\S]*?<\/cellXfs>/) || [""])[0];
+  (bloco.match(/<xf[^>]*\/?>/g) || []).forEach((xf, indice) => {
+    const id = +((xf.match(/numFmtId="(\d+)"/) || [])[1] || 0);
+    if (formatos.has(id)) estilos.add(indice);
+  });
+  return estilos;
+}
+
+function lerAbaXLSX(xml, textos, estilosData) {
+  const matriz = [];
+  const linhas = xml.match(/<row[^>]*>[\s\S]*?<\/row>|<row[^>]*\/>/g) || [];
+  for (const linha of linhas) {
+    const celulas = [];
+    for (const celula of linha.match(/<c[^>]*>[\s\S]*?<\/c>|<c[^>]*\/>/g) || []) {
+      const referencia = (celula.match(/ r="([A-Z]+)\d+"/) || [])[1] || "";
+      const indice = referencia ? letraParaIndice(referencia) : celulas.length;
+      while (celulas.length < indice) celulas.push("");
+      celulas.push(valorCelulaXLSX(celula, textos, estilosData));
+    }
+    matriz.push(celulas);
+  }
+  return matriz;
+}
+
+function letraParaIndice(letras) {
+  let indice = 0;
+  for (const letra of letras) indice = indice * 26 + (letra.charCodeAt(0) - 64);
+  return indice - 1;
+}
+
+function valorCelulaXLSX(celula, textos, estilosData) {
+  const tipo = (celula.match(/ t="([^"]+)"/) || [])[1] || "n";
+  if (tipo === "inlineStr") {
+    return (celula.match(/<t[^>]*>([\s\S]*?)<\/t>/g) || [])
+      .map(p => desescapar(p.replace(/<[^>]+>/g, ""))).join("");
+  }
+  const bruto = (celula.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+  if (bruto === undefined) return "";
+  if (tipo === "s") return textos[+bruto] ?? "";
+  if (tipo === "b") return bruto === "1" ? "SIM" : "NAO";
+  if (tipo === "str" || tipo === "e" || tipo === "d") return desescapar(bruto);
+  const estilo = +((celula.match(/ s="(\d+)"/) || [])[1] || 0);
+  if (estilosData.has(estilo)) {
+    const data = new Date(Date.UTC(1899, 11, 30) + Math.round(+bruto) * 86400000);
+    if (!isNaN(data)) return formatarData(data);
+  }
+  return desescapar(bruto);
+}
+
+const desescapar = texto => String(texto)
+  .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"')
+  .replace(/&apos;/g, "'").replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+  .replace(/&amp;/g, "&");
+
+/* =========================================================================
+   Tabela: cabeçalho real, cabeçalho repetido e blocos "Rótulo: valor"
+   ========================================================================= */
+
+function deMatriz(matrizBruta, origem, aba) {
+  const matriz = matrizBruta.filter(linha => linha.some(c => limpar(c)));
+  if (!matriz.length) return { colunas: [], linhas: [], origem, aba };
+  const indice = acharCabecalho(matriz);
+  const cabecalho = nomesUnicos(matriz[indice]);
+  const chaves = new Set(cabecalho.filter(c => limpar(c)).map(chaveCabecalho));
+  const contextoFixo = contextoDeRotulos(matriz.slice(0, indice));
+  const colunasContexto = Object.keys(contextoFixo);
+  let contextoAtual = {};
+  const linhas = [];
+
+  for (const bruta of matriz.slice(indice + 1)) {
+    const celulas = bruta.map(c => limpar(c));
+    if (repeteCabecalho(celulas, chaves)) continue;
+    if (linhaDeContexto(celulas, cabecalho.length)) {
+      const novos = contextoDeRotulos([bruta]);
+      if (Object.keys(novos).length) {
+        contextoAtual = { ...contextoAtual, ...novos };
+        for (const nome of Object.keys(novos)) {
+          if (!colunasContexto.includes(nome)) colunasContexto.push(nome);
+        }
+        continue;
+      }
+    }
+    const registro = {};
+    cabecalho.forEach((nome, i) => { registro[nome] = i < bruta.length ? valorBruto(bruta[i]) : ""; });
+    if (!Object.values(registro).some(v => limpar(v))) continue;
+    Object.assign(registro, contextoFixo, contextoAtual);
+    linhas.push(registro);
+  }
+  const colunas = cabecalho.concat(colunasContexto.filter(c => !cabecalho.includes(c)));
+  for (const linha of linhas) for (const coluna of colunas) if (!(coluna in linha)) linha[coluna] = "";
+  return { colunas, linhas, origem, aba };
+}
+
+const valorBruto = valor =>
+  valor === null || valor === undefined ? "" :
+  typeof valor === "string" ? valor.replace(/\u00a0/g, " ").replace(/[\r]/g, " ") : valor;
+
+function tipoCelula(valor) {
+  if (!valor) return "vazio";
+  if (pareceData(valor)) return "data";
+  if (paraNumero(valor) !== null) return "numero";
+  if ([11, 14].includes(soDigitos(valor).length) && !/[a-zA-Z]/.test(valor)) return "documento";
+  return "texto";
+}
+
+const pareceData = valor => {
+  const texto = limpar(valor);
+  return (/\d[/.\-]\d/.test(texto) || /^\d{8}$/.test(texto)) && paraData(texto) !== null;
+};
+
+function acharCabecalho(matriz, limite = 15) {
+  let melhorIndice = 0, melhorNota = -Infinity;
+  const larguraMax = Math.max(...matriz.slice(0, limite).map(l => l.length), 0);
+  for (let indice = 0; indice < Math.min(limite, matriz.length); indice++) {
+    const celulas = matriz[indice].map(c => limpar(c));
+    const preenchidas = celulas.filter(Boolean);
+    if (preenchidas.length < 2) continue;
+    let nota = (preenchidas.length / Math.max(larguraMax, 1)) * 10;
+    nota -= preenchidas.filter(c => tipoCelula(c) !== "texto").length * 2;
+    nota -= preenchidas.filter(c => c.length > 60).length * 2;
+    nota -= (preenchidas.length - new Set(preenchidas.map(chaveCabecalho)).size) * 1.5;
+    nota -= indice * 0.4;
+    const seguintes = matriz.slice(indice + 1, indice + 9);
+    if (seguintes.length) {
+      nota += seguintes.filter(s => Math.abs(s.length - celulas.length) <= 1).length;
+      nota += 8 * mudancaDeTipo(celulas, seguintes);
+    }
+    if (nota > melhorNota) { melhorNota = nota; melhorIndice = indice; }
+  }
+  return melhorIndice;
+}
+
+function mudancaDeTipo(candidata, seguintes) {
+  let divergentes = 0, consideradas = 0;
+  candidata.forEach((valor, coluna) => {
+    if (tipoCelula(valor) !== "texto") return;
+    const abaixo = seguintes
+      .filter(s => coluna < s.length && limpar(s[coluna]))
+      .map(s => tipoCelula(limpar(s[coluna])));
+    if (!abaixo.length) return;
+    consideradas++;
+    if (abaixo.filter(t => t !== "texto").length >= Math.max(1, abaixo.length * 0.6)) divergentes++;
+  });
+  return consideradas ? divergentes / candidata.length : 0;
+}
+
+function nomesUnicos(linha) {
+  const vistos = new Map(), nomes = [];
+  linha.forEach((celula, i) => {
+    let nome = limpar(celula) || `Coluna_${i + 1}`;
+    const chave = chaveCabecalho(nome);
+    const contador = vistos.get(chave) || 0;
+    if (contador) nome = `${nome}_${contador + 1}`;
+    vistos.set(chave, contador + 1);
+    nomes.push(nome);
+  });
+  return nomes;
+}
+
+function repeteCabecalho(celulas, chaves) {
+  const preenchidas = new Set(celulas.filter(Boolean).map(chaveCabecalho));
+  if (preenchidas.size < 2 || !chaves.size) return false;
+  let dentro = 0;
+  preenchidas.forEach(c => { if (chaves.has(c)) dentro++; });
+  return dentro === preenchidas.size && preenchidas.size >= chaves.size * 0.6;
+}
+
+function distintosEmOrdem(celulas) {
+  const distintos = [];
+  for (const celula of celulas) {
+    if (celula && (!distintos.length || distintos[distintos.length - 1] !== celula)) distintos.push(celula);
+  }
+  return distintos;
+}
+
+function linhaDeContexto(celulas, largura) {
+  const preenchidas = celulas.filter(Boolean);
+  if (preenchidas.length < 2 || largura < 2) return false;
+  const distintos = distintosEmOrdem(celulas);
+  if (distintos.length > 4) return false;
+  const temRotulo = distintos.some(v => v.includes(":"));
+  const mesclada = preenchidas.length >= Math.max(2, largura * 0.6) && distintos.length < largura * 0.6;
+  return temRotulo && mesclada;
+}
+
+const ROTULO = "[A-Za-zÀ-ÿ][A-Za-zÀ-ÿ0-9º°./ _-]{1,38}?";
+const RE_ROTULO = new RegExp(`^\\s*(${ROTULO})\\s*:\\s*([\\s\\S]*?)(?=\\s*${ROTULO}\\s*:|$)`);
+
+function contextoDeRotulos(linhas) {
+  const contexto = {};
+  for (const bruta of linhas) {
+    const trechos = [];
+    for (const celula of bruta) {
+      for (const pedaco of String(celula ?? "").split("\n")) {
+        const limpo = limpar(pedaco);
+        if (limpo && limpo.length <= 120) trechos.push(limpo);
+      }
+    }
+    const juntos = [];
+    for (const trecho of distintosEmOrdem(trechos)) {
+      if (juntos.length && juntos[juntos.length - 1].endsWith(":")) {
+        juntos[juntos.length - 1] += " " + trecho;
+      } else juntos.push(trecho);
+    }
+    for (const trecho of juntos) {
+      let resto = trecho;
+      while (resto) {
+        const casamento = resto.match(RE_ROTULO);
+        if (!casamento) {
+          const proximo = resto.indexOf(":");
+          if (proximo < 0) break;
+          resto = resto.slice(proximo + 1);
+          continue;
+        }
+        const rotulo = casamento[1].replace(/^[ .\-_]+|[ .\-_]+$/g, "");
+        const valor = casamento[2].trim();
+        resto = resto.slice(casamento[0].length);
+        if (!rotulo || !valor || rotulo.length > 40 || /\d$/.test(rotulo)) continue;
+        if (Object.keys(contexto).length >= 12) return contexto;
+        if (!(rotulo in contexto)) contexto[rotulo] = valor;
+      }
+    }
+  }
+  return contexto;
+}
+/* =========================================================================
+   Perfis
+   ========================================================================= */
+
+const PERFIS = {
+  automatico: {
+    nome: "Automático (descobre sozinho)",
+    descricao: "Sem regras fixas: agrupa os arquivos em dois sistemas por semelhança de cabeçalho " +
+               "e escolhe sozinho a chave do pareamento. Use quando for a primeira vez.",
+    sistemas: [{ id: "A", nome: "Sistema 1" }, { id: "B", nome: "Sistema 2" }],
+    campos: [], pareamento: {}, qualidade: {},
+  },
+  siclom_sinan: {
+    nome: "SICLOM Hepatites × SINAN (HEPANET)",
+    descricao: "Confere se todo paciente ativo no SICLOM tem notificação no SINAN. Pareia por CPF " +
+               "e, na falta dele, por nome + data de nascimento ou nome + nome da mãe. " +
+               "Exporte os dois lados do mesmo agravo (HBV ou HCV).",
+    sistemas: [
+      {
+        id: "A", nome: "SICLOM Hepatites",
+        padroes_arquivo: ["relatorio", "siclom", "usuarios_ativos", "cadastrad", "profilaxia"],
+        mapeamento: {
+          "Nome": ["NOME", "nm_pac", "Nome completo", "Nome do usuário"],
+          "Nome da mae": ["NOME DA MÃE", "NOME DA MAE", "Nome Mãe"],
+          "CPF": ["CPF", "num_cpf_pac", "Nr. CPF"],
+          "Data de nascimento": ["DATA NASC", "DATA NASCIMENTO", "dt_nasc", "Data de Nascimento"],
+          "Municipio de residencia": ["CIDADE RESIDÊNCIA", "CIDADE RESIDENCIA", "nm_cid"],
+          "Notificacao SINAN HBV": ["SINAN HBV"],
+          "Notificacao SINAN HCV": ["SINAN HCV"],
+          "Data de cadastro": ["DATA CADASTRO"],
+          "Data de atualizacao": ["DATA ATUALIZAÇÃO", "DATA ATUALIZACAO"],
+          "Ultima dispensa": ["ÚLTIMA DISPENSA", "ULTIMA DISPENSA", "dt_dispensa_sol", "DATA DISPENSA"],
+          "Agravo": ["TIPO"], "Esquema": ["ESQUEMA ATUAL"],
+          "Endereco": ["ENDEREÇO", "ENDERECO"], "Bairro": ["BAIRRO"],
+          "Telefones": ["TELEFONES"], "Email": ["EMAIL", "E-mail"], "Sexo": ["sexo", "SEXO"],
+        },
+        ignorar_colunas: ["Data de Emissão", "Total de usuários"],
+      },
+      {
+        id: "B", nome: "SINAN",
+        padroes_arquivo: ["sinan", "hepanet", "hepatonet", "notifica"],
+        mapeamento: {
+          "Nome": ["NM_PACIENT", "NOME DO PACIENTE", "Nome do paciente"],
+          "Nome da mae": ["NM_MAE_PAC", "NOME DA MÃE", "Nome da mãe"],
+          "CPF": ["NU_CPF"],
+          "Data de nascimento": ["DT_NASC", "DATA DE NASCIMENTO"],
+          "Numero da notificacao": ["NU_NOTIFIC", "Nº DA NOTIFICAÇÃO"],
+          "Data da notificacao": ["DT_NOTIFIC", "DATA DA NOTIFICAÇÃO"],
+          "Municipio de residencia": ["ID_MN_RESI", "MUNICÍPIO DE RESIDÊNCIA"],
+          "Agravo": ["ID_AGRAVO", "AGRAVO"],
+          "Classificacao final": ["CLASSI_FIN"], "Evolucao": ["EVOLUCAO"],
+          "Sexo": ["CS_SEXO"], "Cartao SUS": ["ID_CNS_SUS"], "Bairro": ["NM_BAIRRO"],
+          "Telefones": ["NU_TELEFON"], "Data de encerramento": ["DT_ENCERRA"],
+        },
+        ignorar_colunas: [],
+      },
+    ],
+    campos: [
+      { nome: "Nome", tipo: "texto", obrigatorio: true, tamanho_minimo: 5 },
+      { nome: "Nome da mae", tipo: "texto" },
+      { nome: "Data de nascimento", tipo: "data", obrigatorio: true },
+      { nome: "CPF", tipo: "cpf", unico: true },
+      { nome: "Numero da notificacao", tipo: "codigo", unico: true },
+      { nome: "Notificacao SINAN HBV", tipo: "codigo" },
+      { nome: "Notificacao SINAN HCV", tipo: "codigo" },
+      { nome: "Data da notificacao", tipo: "data" },
+      { nome: "Data de cadastro", tipo: "data" },
+      { nome: "Ultima dispensa", tipo: "data" },
+      { nome: "Agravo", tipo: "categoria" }, { nome: "Sexo", tipo: "categoria" },
+      { nome: "Municipio de residencia", tipo: "categoria" },
+      { nome: "Telefones", tipo: "telefone" }, { nome: "Email", tipo: "email" },
+      { nome: "Cartao SUS", tipo: "codigo" }, { nome: "Data de encerramento", tipo: "data" },
+      { nome: "Bairro", tipo: "texto" },
+    ],
+    pareamento: {
+      chaves_primarias: ["CPF"],
+      chaves_alternativas: [["Nome", "Data de nascimento"], ["Nome", "Nome da mae"]],
+      campos_similaridade: ["Nome", "Nome da mae"],
+      campos_comparacao: ["Nome", "Nome da mae", "Data de nascimento", "Municipio de residencia",
+                          "Sexo", "CPF"],
+      limiar_provavel: 0.92, limiar_duvidoso: 0.85,
+    },
+    qualidade: {
+      regras_consistencia: [
+        { nome: "notificacao_apos_nascimento", campo_a: "Data da notificacao", operador: ">=",
+          campo_b: "Data de nascimento", descricao: "Data da notificação anterior ao nascimento" },
+      ],
+    },
+  },
+  dispensacoes_ativos: {
+    nome: "SICLOM: Dispensações × Usuários ativos",
+    descricao: "Confere a lista de usuários ativos contra o que foi efetivamente dispensado. " +
+               "O relatório de dispensações traz uma linha por atendimento, então o pareamento " +
+               "é 1:N e cada par sai marcado com a multiplicidade.",
+    sistemas: [
+      {
+        id: "A", nome: "Dispensacoes",
+        padroes_arquivo: ["dispensa", "solicitacao", "relatorio_2", "relatorio 2"],
+        mapeamento: {
+          "Nome": ["nm_pac", "NOME"], "CPF": ["num_cpf_pac", "CPF"],
+          "Data de nascimento": ["dt_nasc", "DATA NASC"],
+          "Codigo do paciente": ["cd_pac"], "Data da dispensa": ["dt_dispensa_sol"],
+          "Numero da solicitacao": ["num_sol_hv"], "Sexo": ["sexo"],
+          "Municipio de residencia": ["nm_cid"], "Peso": ["nu_peso"],
+        },
+        ignorar_colunas: ["Data de Emissão"],
+      },
+      {
+        id: "B", nome: "Ativos",
+        padroes_arquivo: ["usuarios_ativos", "ativos"],
+        mapeamento: {
+          "Nome": ["NOME"], "Nome da mae": ["NOME DA MÃE"],
+          "Data de nascimento": ["DATA NASCIMENTO"], "Ultima dispensa": ["ÚLTIMA DISPENSA"],
+          "Saldo atual": ["SALDO ATUAL"], "Agravo": ["TIPO"], "Esquema": ["ESQUEMA ATUAL"],
+        },
+        ignorar_colunas: ["Data de Emissão"],
+      },
+    ],
+    campos: [
+      { nome: "Nome", tipo: "texto", obrigatorio: true, tamanho_minimo: 5 },
+      { nome: "Data de nascimento", tipo: "data", obrigatorio: true },
+      { nome: "CPF", tipo: "cpf" }, { nome: "Data da dispensa", tipo: "data" },
+      { nome: "Ultima dispensa", tipo: "data" }, { nome: "Agravo", tipo: "categoria" },
+      { nome: "Sexo", tipo: "categoria" }, { nome: "Peso", tipo: "numero", minimo: 1, maximo: 400 },
+    ],
+    pareamento: {
+      chaves_primarias: ["Nome+Data de nascimento"],
+      chaves_alternativas: [["CPF"], ["Nome"]],
+      campos_similaridade: ["Nome"],
+      campos_comparacao: ["Nome", "Data de nascimento", "Sexo", "Municipio de residencia"],
+      limiar_provavel: 0.92, limiar_duvidoso: 0.85,
+    },
+    qualidade: {},
+  },
+};
+
+function normalizarPerfil(bruto) {
+  const perfil = JSON.parse(JSON.stringify(bruto));
+  perfil.sistemas = (perfil.sistemas || []).map(s => ({
+    id: s.id, nome: s.nome, padroes_arquivo: s.padroes_arquivo || [],
+    mapeamento: s.mapeamento || {}, ignorar_colunas: s.ignorar_colunas || [],
+  }));
+  perfil.campos = perfil.campos || [];
+  const p = perfil.pareamento || {};
+  perfil.pareamento = {
+    chaves_primarias: p.chaves_primarias || [], chaves_alternativas: p.chaves_alternativas || [],
+    campos_similaridade: p.campos_similaridade || [], campos_comparacao: p.campos_comparacao || [],
+    limiar_provavel: p.limiar_provavel ?? 0.9, limiar_duvidoso: p.limiar_duvidoso ?? 0.78,
+  };
+  perfil.qualidade = { regras_consistencia: (perfil.qualidade || {}).regras_consistencia || [] };
+  perfil.campoPor = nome => perfil.campos.find(c => c.nome === nome) || null;
+  return perfil;
+}
+
+/* =========================================================================
+   Identificação do sistema de cada arquivo
+   ========================================================================= */
+
+const PALAVRAS_IGNORADAS = new Set(["relatorio", "relatorios", "export", "dados", "planilha",
+  "arquivo", "base", "lista", "listagem", "consulta", "geral", "final", "copia", "sistema"]);
+
+function detectar(tabelas, perfil, manuais) {
+  const detectadas = tabelas.map(t => ({ tabela: t, sistema: "", confianca: 0, motivo: "" }));
+  const temRegras = perfil.sistemas.some(s => (s.padroes_arquivo || []).length ||
+                                              Object.keys(s.mapeamento || {}).length);
+  const avisos = [];
+  if (temRegras) {
+    for (const item of detectadas) {
+      let melhor = { sistema: "", nota: 0, motivo: "" };
+      for (const sistema of perfil.sistemas) {
+        const { nota, motivos } = pontuarSistema(item.tabela, sistema);
+        if (nota > melhor.nota) melhor = { sistema: sistema.id, nota, motivo: motivos.join("; ") };
+      }
+      item.sistema = melhor.sistema;
+      item.confianca = Math.min(melhor.nota, 1);
+      item.motivo = melhor.motivo || "Nenhuma regra do perfil correspondeu.";
+    }
+    const indefinidas = detectadas.filter(d => !d.sistema);
+    if (indefinidas.length) {
+      agruparEmDois(detectadas);
+      avisos.push(`${indefinidas.length} arquivo(s) não casaram com o perfil e foram agrupados por semelhança.`);
+    }
+  } else {
+    agruparEmDois(detectadas);
+  }
+  for (const item of detectadas) {
+    const forcado = manuais[item.tabela.origem];
+    if (forcado === "A" || forcado === "B") {
+      item.sistema = forcado; item.confianca = 1; item.motivo = "Definido por você na tela.";
+    }
+  }
+  const nomes = nomearSistemas(detectadas, perfil, temRegras);
+  for (const id of ["A", "B"]) {
+    if (!detectadas.some(d => d.sistema === id)) {
+      avisos.push(`Nenhum arquivo foi identificado como '${nomes[id]}'. Ajuste a coluna Sistema.`);
+    }
+  }
+  return { detectadas, nomes, avisos };
+}
+
+function pontuarSistema(tabela, sistema) {
+  let nota = 0;
+  const motivos = [];
+  const nomeArquivo = normalizar(tabela.origem);
+  for (const padrao of sistema.padroes_arquivo || []) {
+    if (nomeArquivo.includes(normalizar(padrao))) {
+      nota += 0.55; motivos.push(`nome do arquivo contém '${padrao}'`); break;
+    }
+  }
+  const cabecalhos = new Set(tabela.colunas.map(chaveCabecalho));
+  const campos = Object.entries(sistema.mapeamento || {}).map(([canonico, apelidos]) =>
+    new Set([canonico, ...apelidos].map(chaveCabecalho)));
+  if (campos.length) {
+    let encontrados = 0;
+    for (const apelidos of campos) {
+      for (const apelido of apelidos) if (cabecalhos.has(apelido)) { encontrados++; break; }
+    }
+    nota += 0.6 * (encontrados / campos.length);
+    if (encontrados) motivos.push(`${encontrados} de ${campos.length} campos esperados presentes`);
+  }
+  return { nota, motivos };
+}
+
+function assinatura(item) {
+  return new Set(item.tabela.colunas.filter(c => limpar(c)).map(chaveCabecalho));
+}
+
+function tokensArquivo(item) {
+  const base = item.tabela.origem.replace(/\.[^.]+$/, "");
+  return new Set(normalizar(base).split(" ")
+    .filter(t => t.length > 2 && !/^\d+$/.test(t) && !PALAVRAS_IGNORADAS.has(t)));
+}
+
+function semelhanca(a, b) {
+  let nota = 0.75 * jaccard(assinatura(a), assinatura(b)) + 0.25 * jaccard(tokensArquivo(a), tokensArquivo(b));
+  if (a.tabela.origem === b.tabela.origem) nota = Math.max(nota, 0.85);
+  return nota;
+}
+
+function agruparEmDois(detectadas) {
+  if (!detectadas.length) return;
+  if (detectadas.length === 1) {
+    detectadas[0].sistema = "A"; detectadas[0].confianca = 0.4;
+    detectadas[0].motivo = "Único arquivo enviado.";
+    return;
+  }
+  let grupos = detectadas.map((_, i) => [i]);
+  while (grupos.length > 2) {
+    let melhor = { i: 0, j: 1, nota: -1 };
+    for (let i = 0; i < grupos.length; i++) {
+      for (let j = i + 1; j < grupos.length; j++) {
+        let soma = 0, contagem = 0;
+        for (const a of grupos[i]) for (const b of grupos[j]) { soma += semelhanca(detectadas[a], detectadas[b]); contagem++; }
+        const media = soma / contagem;
+        if (media > melhor.nota) melhor = { i, j, nota: media };
+      }
+    }
+    grupos[melhor.i] = grupos[melhor.i].concat(grupos[melhor.j]);
+    grupos.splice(melhor.j, 1);
+  }
+  grupos.sort((a, b) => Math.min(...a) - Math.min(...b));
+  ["A", "B"].forEach((id, posicao) => {
+    for (const indice of grupos[posicao] || []) {
+      detectadas[indice].sistema = id;
+      detectadas[indice].confianca = 0.6;
+      detectadas[indice].motivo = "Agrupado por semelhança de cabeçalho e de nome de arquivo.";
+    }
+  });
+}
+
+function nomearSistemas(detectadas, perfil, temRegras) {
+  const nomes = {};
+  for (const id of ["A", "B"]) {
+    const configurado = (perfil.sistemas.find(s => s.id === id) || {}).nome || `Sistema ${id}`;
+    if (temRegras && !/^Sistema [AB12]$/.test(configurado)) { nomes[id] = configurado; continue; }
+    const grupo = detectadas.filter(d => d.sistema === id);
+    if (!grupo.length) { nomes[id] = configurado; continue; }
+    const outros = new Set();
+    detectadas.filter(d => d.sistema !== id).forEach(d => tokensArquivo(d).forEach(t => outros.add(t)));
+    const contagem = new Map();
+    grupo.forEach(d => tokensArquivo(d).forEach(t => {
+      if (!outros.has(t)) contagem.set(t, (contagem.get(t) || 0) + 1);
+    }));
+    const melhor = [...contagem.entries()].sort((a, b) => b[1] - a[1] || b[0].length - a[0].length)[0];
+    if (melhor && melhor[1] >= Math.max(1, Math.floor(grupo.length / 2))) {
+      nomes[id] = melhor[0].toUpperCase();
+    } else {
+      nomes[id] = grupo[0].tabela.origem.replace(/\.[^.]+$/, "").replace(/[_\-.]+/g, " ").slice(0, 24).trim()
+        || configurado;
+    }
+  }
+  if (nomes.A === nomes.B) { nomes.A = "Sistema 1"; nomes.B = "Sistema 2"; }
+  return nomes;
+}
+
+/* =========================================================================
+   Consolidação
+   ========================================================================= */
+
+const COL_ID = "ID_Registro", COL_ARQUIVO = "Arquivo_Origem", COL_LINHA = "Linha_Origem";
+const CONTROLE = [COL_ID, COL_ARQUIVO, COL_LINHA];
+
+function consolidar(detectadas, perfil, id, nome) {
+  const sistemaCfg = perfil.sistemas.find(s => s.id === id) || { mapeamento: {}, ignorar_colunas: [] };
+  const apelidos = new Map();
+  for (const [canonico, lista] of Object.entries(sistemaCfg.mapeamento || {})) {
+    for (const apelido of [canonico, ...lista]) apelidos.set(chaveCabecalho(apelido), canonico);
+  }
+  for (const campo of perfil.campos) {
+    if (!apelidos.has(chaveCabecalho(campo.nome))) apelidos.set(chaveCabecalho(campo.nome), campo.nome);
+  }
+  const ignorar = new Set((sistemaCfg.ignorar_colunas || []).map(chaveCabecalho));
+
+  const colunas = [], canonicoPorChave = new Map();
+  const linhas = [], arquivos = [], avisos = [];
+  for (const item of detectadas) {
+    const tabela = item.tabela;
+    const traduzidas = tabela.colunas.map(coluna => apelidos.get(chaveCabecalho(coluna)) || coluna);
+    traduzidas.forEach(coluna => {
+      const chave = chaveCabecalho(coluna);
+      if (ignorar.has(chave)) return;
+      if (!canonicoPorChave.has(chave)) { canonicoPorChave.set(chave, coluna); colunas.push(coluna); }
+    });
+    tabela.linhas.forEach((linha, numero) => {
+      const registro = {};
+      tabela.colunas.forEach((coluna, i) => {
+        const destino = canonicoPorChave.get(chaveCabecalho(traduzidas[i]));
+        if (destino) registro[destino] = linha[coluna];
+      });
+      registro[COL_ARQUIVO] = tabela.origem;
+      registro[COL_LINHA] = numero + 2;
+      linhas.push(registro);
+    });
+    arquivos.push({ arquivo: tabela.origem, aba: tabela.aba, registros: tabela.linhas.length,
+                    confianca: item.confianca, motivo: item.motivo });
+  }
+  linhas.forEach((linha, i) => {
+    linha[COL_ID] = id + String(i + 1).padStart(6, "0");
+    for (const coluna of colunas) if (!(coluna in linha)) linha[coluna] = "";
+  });
+  const vazias = colunas.filter(c => !linhas.some(l => limpar(l[c])));
+  if (vazias.length) avisos.push(`Coluna(s) sem nenhum preenchimento: ${vazias.join(", ")}.`);
+  const campos = deduzirCampos(linhas, colunas, perfil);
+  return { id, nome, colunas, linhas, campos, arquivos, avisos,
+           campoPor: n => campos.find(c => c.nome === n) || null };
+}
+
+const PADROES_TIPO = [
+  ["cpf_cnpj", /cpf.?cnpj|cnpj.?cpf|documento/],
+  ["cpf", /cpf/], ["cnpj", /cnpj/], ["email", /e.?mail/], ["cep", /\bcep\b/],
+  ["telefone", /telefone|telefon|celular|\bfone\b/],
+  ["data", /\bdata\b|\bdt\b|nascimento|emissao|vencimento|admissao|cadastro|competencia/],
+  ["numero", /valor|preco|salario|quantidade|qtd|total|saldo|peso|percentual/],
+  ["codigo", /codigo|matricula|protocolo|processo|\bid\b|registro|inscricao|notific/],
+];
+const PADRAO_CHAVE = /cpf|cnpj|matricula|codigo|protocolo|processo|^id$|inscricao|notific|chave|nis|pis|documento/;
+
+function inferirTipo(nomeColuna, valores) {
+  const amostra = valores.filter(Boolean).slice(0, 400);
+  if (!amostra.length) return "texto";
+  const proporcao = teste => amostra.filter(teste).length / amostra.length;
+  const nome = normalizar(nomeColuna);
+  const sugereCnpj = nome.includes("cnpj"), sugereCpf = nome.includes("cpf") && !sugereCnpj;
+  const onze = proporcao(v => soDigitos(v).length === 11);
+  const catorze = proporcao(v => soDigitos(v).length === 14);
+  if (onze > 0.8 && (proporcao(cpfValido) > 0.5 || sugereCpf)) return "cpf";
+  if (catorze > 0.8 && (proporcao(cnpjValido) > 0.5 || sugereCnpj)) return "cnpj";
+  if (sugereCpf && onze > 0.5) return "cpf";
+  if (proporcao(emailValido) > 0.8) return "email";
+  if (proporcao(pareceData) > 0.8) return "data";
+  if (proporcao(v => paraNumero(v) !== null) > 0.85) {
+    for (const tipo of ["cep", "telefone"]) {
+      const padrao = PADROES_TIPO.find(p => p[0] === tipo)[1];
+      if (padrao.test(nome) && conteudoCompativel(tipo, proporcao)) return tipo;
+    }
+    return "numero";
+  }
+  const distintos = new Set(amostra.map(normalizar)).size;
+  if (distintos <= Math.max(2, Math.min(25, Math.floor(amostra.length / 8))) && amostra.length >= 8) {
+    return "categoria";
+  }
+  for (const [tipo, padrao] of PADROES_TIPO) {
+    if (padrao.test(nome) && conteudoCompativel(tipo, proporcao)) return tipo;
+  }
+  return "texto";
+}
+
+function conteudoCompativel(tipo, proporcao) {
+  if (["cpf", "cnpj", "cpf_cnpj"].includes(tipo)) return proporcao(v => soDigitos(v).length >= 11) >= 0.5;
+  if (tipo === "telefone") return proporcao(v => soDigitos(v).length >= 8) >= 0.5;
+  if (tipo === "cep") return proporcao(v => soDigitos(v).length === 8) >= 0.5;
+  if (tipo === "email") return proporcao(v => v.includes("@")) >= 0.5;
+  if (tipo === "data") return proporcao(pareceData) >= 0.3;
+  if (tipo === "numero") return proporcao(v => paraNumero(v) !== null) >= 0.5;
+  return true;
+}
+
+function deduzirCampos(linhas, colunas, perfil) {
+  const campos = colunas.map(coluna => {
+    const valores = linhas.map(l => limpar(l[coluna]));
+    const preenchidos = valores.filter(Boolean);
+    const configurado = perfil.campoPor(coluna);
+    if (configurado) {
+      const campo = { ...configurado };
+      if (!campo.tipo || campo.tipo === "texto") campo.tipo = inferirTipo(coluna, preenchidos);
+      return campo;
+    }
+    const tipo = inferirTipo(coluna, preenchidos);
+    const unicidade = preenchidos.length ? new Set(preenchidos.map(normalizar)).size / preenchidos.length : 0;
+    const completude = valores.length ? preenchidos.length / valores.length : 0;
+    const chave = unicidade >= 0.98 && completude >= 0.95 &&
+                  (PADRAO_CHAVE.test(normalizar(coluna)) || unicidade === 1);
+    return { nome: coluna, tipo, chave, unico: chave };
+  });
+  return campos;
+}
+
+/* =========================================================================
+   Qualidade
+   ========================================================================= */
+
+const DIMENSOES = ["Completude", "Unicidade", "Validade", "Consistencia", "Padronizacao",
+                   "Acuracia", "Atualidade"];
+const PESOS = { Completude: .25, Unicidade: .2, Validade: .25, Consistencia: .1,
+                Padronizacao: .1, Acuracia: .05, Atualidade: .05 };
+
+function classificar(nota) {
+  if (nota >= 95) return "Excelente";
+  if (nota >= 85) return "Bom";
+  if (nota >= 70) return "Regular";
+  if (nota >= 50) return "Ruim";
+  return "Crítico";
+}
+
+function analisarQualidade(consolidado, perfil) {
+  const ocorrencias = [], metricas = [];
+  const total = consolidado.linhas.length;
+  const hoje = new Date();
+  const limiteInferior = new Date(Date.UTC(1900, 0, 1));
+  const registrar = (linha, campo, dimensao, gravidade, descricao, valor) => ocorrencias.push({
+    id: linha ? linha[COL_ID] : "", arquivo: linha ? linha[COL_ARQUIVO] : "(todos)",
+    linha: linha ? linha[COL_LINHA] : "", campo, dimensao, gravidade, descricao,
+    valor: String(valor ?? "").slice(0, 200),
+  });
+
+  for (const campo of consolidado.campos) {
+    const metrica = { campo: campo.nome, tipo: campo.tipo, total, preenchidos: 0, distintos: 0,
+                      invalidos: 0, grafias: 0, implausiveis: 0, exemplos: [],
+                      chave: !!campo.chave, unico: !!campo.unico };
+    const vistos = new Map(), repetidos = new Map(), numeros = [];
+    const dominio = campo.dominio ? new Set(campo.dominio.map(normalizar)) : null;
+
+    for (const linha of consolidado.linhas) {
+      const bruto = limpar(linha[campo.nome]);
+      if (!bruto) {
+        if (campo.obrigatorio) {
+          registrar(linha, campo.nome, "Completude", "Alta", "Campo obrigatório não preenchido", "");
+        }
+        continue;
+      }
+      metrica.preenchidos++;
+      const chave = normalizar(bruto);
+      if (vistos.has(chave)) {
+        if (vistos.get(chave) !== bruto) {
+          metrica.grafias++;
+          registrar(linha, campo.nome, "Padronizacao", "Baixa",
+                    `Grafia divergente de '${vistos.get(chave)}' para o mesmo conteúdo`, bruto);
+        }
+      } else vistos.set(chave, bruto);
+      const original = String(linha[campo.nome] ?? "");
+      if (original !== original.trim() || original.includes("  ")) {
+        metrica.grafias++;
+        registrar(linha, campo.nome, "Padronizacao", "Baixa",
+                  "Espaços extras no início, no fim ou entre palavras", bruto);
+      }
+      const problema = validarValor(bruto, campo);
+      if (problema) {
+        metrica.invalidos++;
+        if (metrica.exemplos.length < 5) metrica.exemplos.push(bruto.slice(0, 40));
+        const grave = ["cpf", "cnpj", "cpf_cnpj"].includes(campo.tipo) || campo.chave;
+        registrar(linha, campo.nome, "Validade", grave ? "Alta" : "Media", problema, bruto);
+      }
+      if (dominio && !dominio.has(chave)) {
+        metrica.invalidos++;
+        registrar(linha, campo.nome, "Validade", "Media", "Valor fora da lista de valores aceitos", bruto);
+      }
+      if (campo.tipo === "data") {
+        const data = paraData(bruto);
+        if (data && (data < limiteInferior || data > hoje)) {
+          metrica.implausiveis++;
+          registrar(linha, campo.nome, "Acuracia", "Media", "Data fora da faixa plausível", bruto);
+        }
+      } else if (campo.tipo === "numero") {
+        const numero = paraNumero(bruto);
+        if (numero === null && paraNumero(bruto.replace(/[A-Za-zÀ-ÿ%º°.\s]+$/, "")) !== null) {
+          metrica.grafias++;
+          registrar(linha, campo.nome, "Padronizacao", "Baixa",
+                    "Número com a unidade escrita junto, enquanto a mesma coluna traz só números", bruto);
+        }
+        if (numero !== null) {
+          numeros.push([numero, linha]);
+          if (campo.minimo !== undefined && numero < campo.minimo) {
+            metrica.implausiveis++;
+            registrar(linha, campo.nome, "Acuracia", "Media", `Valor abaixo do mínimo (${campo.minimo})`, bruto);
+          }
+          if (campo.maximo !== undefined && numero > campo.maximo) {
+            metrica.implausiveis++;
+            registrar(linha, campo.nome, "Acuracia", "Media", `Valor acima do máximo (${campo.maximo})`, bruto);
+          }
+        }
+      }
+      if (campo.tamanho_minimo && bruto.length < campo.tamanho_minimo) {
+        metrica.invalidos++;
+        registrar(linha, campo.nome, "Validade", "Media",
+                  `Texto menor que o tamanho mínimo (${campo.tamanho_minimo})`, bruto);
+      }
+      if (campo.chave || campo.unico) {
+        if (!repetidos.has(chave)) repetidos.set(chave, []);
+        repetidos.get(chave).push(linha);
+      }
+    }
+    metrica.distintos = vistos.size;
+    if (total && !metrica.preenchidos) {
+      registrar(null, campo.nome, "Completude", "Media",
+                `Campo existe na base mas nunca foi preenchido (${total} registros em branco)`, "");
+    }
+    for (const [, grupo] of repetidos) {
+      if (grupo.length > 1) {
+        const ids = grupo.slice(0, 6).map(l => l[COL_ID]).join(", ");
+        for (const linha of grupo) {
+          registrar(linha, campo.nome, "Unicidade", "Alta",
+                    `Valor repetido em ${grupo.length} registros (${ids})`, limpar(linha[campo.nome]));
+        }
+      }
+    }
+    if (numeros.length >= 12) {
+      const ordenados = numeros.map(n => n[0]).sort((a, b) => a - b);
+      const q1 = ordenados[Math.floor(ordenados.length / 4)];
+      const q3 = ordenados[Math.floor(3 * ordenados.length / 4)];
+      const intervalo = q3 - q1;
+      if (intervalo > 0) {
+        let marcados = 0;
+        for (const [numero, linha] of numeros) {
+          if (marcados >= 50) break;
+          if (numero < q1 - 3 * intervalo || numero > q3 + 3 * intervalo) {
+            marcados++; metrica.implausiveis++;
+            registrar(linha, campo.nome, "Acuracia", "Baixa",
+                      "Valor muito distante da faixa usual da coluna (possível outlier)", numero);
+          }
+        }
+      }
+    }
+    metricas.push(metrica);
+  }
+
+  // registros idênticos
+  const assinaturas = new Map();
+  let duplicados = 0;
+  for (const linha of consolidado.linhas) {
+    const assinatura = consolidado.colunas.map(c => normalizar(linha[c])).join("\u00a7");
+    if (!assinaturas.has(assinatura)) assinaturas.set(assinatura, []);
+    assinaturas.get(assinatura).push(linha);
+  }
+  for (const [, grupo] of assinaturas) {
+    if (grupo.length > 1) {
+      duplicados += grupo.length - 1;
+      const ids = grupo.slice(0, 6).map(l => l[COL_ID]).join(", ");
+      grupo.slice(1).forEach(linha => registrar(linha, "(registro inteiro)", "Unicidade", "Alta",
+        `Registro idêntico a outro(s) do mesmo sistema (${ids})`, ""));
+    }
+  }
+
+  for (const regra of perfil.qualidade.regras_consistencia) {
+    if (!consolidado.colunas.includes(regra.campo_a)) continue;
+    for (const linha of consolidado.linhas) {
+      const valorA = limpar(linha[regra.campo_a]);
+      const valorB = regra.campo_b ? limpar(linha[regra.campo_b]) : regra.valor;
+      if (!valorA || !valorB) continue;
+      if (!comparar(valorA, valorB, regra.operador)) {
+        registrar(linha, regra.campo_a, "Consistencia", "Media",
+                  regra.descricao || `${regra.campo_a} deveria ser ${regra.operador} ${regra.campo_b}`, valorA);
+      }
+    }
+  }
+
+  const notas = calcularNotas(metricas, ocorrencias, consolidado, total, duplicados);
+  const registrosComProblema = new Set(ocorrencias.filter(o => o.id).map(o => o.id)).size;
+  return { nome: consolidado.nome, metricas, ocorrencias, notas: notas.dimensoes,
+           notaGeral: notas.geral, total, registrosComProblema, duplicados };
+}
+
+function validarValor(valor, campo) {
+  switch (campo.tipo) {
+    case "cpf":
+      if (!cpfValido(valor)) {
+        const n = soDigitos(valor).length;
+        return n !== 11 ? `CPF com ${n} dígitos (esperado 11)` : "CPF com dígito verificador inválido";
+      }
+      break;
+    case "cnpj":
+      if (!cnpjValido(valor)) {
+        const n = soDigitos(valor).length;
+        return n !== 14 ? `CNPJ com ${n} dígitos (esperado 14)` : "CNPJ com dígito verificador inválido";
+      }
+      break;
+    case "email": if (!emailValido(valor)) return "E-mail em formato inválido"; break;
+    case "cep": if (!cepValido(valor)) return `CEP com ${soDigitos(valor).length} dígitos (esperado 8)`; break;
+    case "telefone": if (!telefoneValido(valor)) return "Telefone com quantidade de dígitos improvável"; break;
+    case "data": if (!paraData(valor)) return "Data em formato não reconhecido"; break;
+    case "numero": if (paraNumero(valor) === null &&
+                       paraNumero(valor.replace(/[A-Za-zÀ-ÿ%º°.\s]+$/, "")) === null) {
+                     return "Valor numérico em formato não reconhecido";
+                   } break;
+  }
+  return "";
+}
+
+function comparar(valorA, valorB, operador) {
+  let a = paraData(valorA), b = paraData(valorB);
+  if (a && b) { a = a.getTime(); b = b.getTime(); }
+  else {
+    a = paraNumero(valorA); b = paraNumero(valorB);
+    if (a === null || b === null) { a = normalizar(valorA); b = normalizar(valorB); }
+  }
+  switch (operador) {
+    case ">=": return a >= b; case "<=": return a <= b;
+    case ">": return a > b; case "<": return a < b;
+    case "==": return a === b; case "!=": return a !== b;
+    default: return true;
+  }
+}
+
+function calcularNotas(metricas, ocorrencias, consolidado, total, duplicados) {
+  const seguro = Math.max(total, 1);
+  const campos = Math.max(metricas.length, 1);
+  const celulas = seguro * campos;
+  const completude = metricas.reduce((s, m) => s + (m.total ? 100 * m.preenchidos / m.total : 0), 0) / campos;
+  const validade = metricas.reduce((s, m) =>
+    s + (m.preenchidos ? 100 * (m.preenchidos - m.invalidos) / m.preenchidos : 100), 0) / campos;
+  // Unicidade mede duplicidade indevida: campos categóricos repetem valores
+  // por natureza e não podem puxar a nota para baixo.
+  const chaves = metricas.filter(m => m.chave || m.unico);
+  const semDuplicados = 100 * (seguro - duplicados) / seguro;
+  const unicidade = chaves.length
+    ? Math.min(chaves.reduce((s, m) => s + (m.preenchidos ? 100 * m.distintos / m.preenchidos : 100), 0) / chaves.length, semDuplicados)
+    : semDuplicados;
+  const porDimensao = d => ocorrencias.filter(o => o.dimensao === d).length;
+  const dimensoes = {
+    Completude: arredondar(completude),
+    Unicidade: arredondar(unicidade),
+    Validade: arredondar(validade),
+    Consistencia: arredondar(100 * (1 - Math.min(1, porDimensao("Consistencia") / seguro))),
+    Padronizacao: arredondar(100 * (1 - Math.min(1, porDimensao("Padronizacao") / celulas))),
+    Acuracia: arredondar(100 * (1 - Math.min(1, porDimensao("Acuracia") / celulas))),
+    Atualidade: arredondar(notaAtualidade(consolidado)),
+  };
+  const geral = arredondar(DIMENSOES.reduce((s, d) => s + dimensoes[d] * PESOS[d], 0));
+  return { dimensoes, geral };
+}
+
+const arredondar = n => Math.round(n * 10) / 10;
+
+function notaAtualidade(consolidado) {
+  let maisRecente = null;
+  for (const campo of consolidado.campos) {
+    if (campo.tipo !== "data") continue;
+    for (const linha of consolidado.linhas) {
+      const data = paraData(linha[campo.nome]);
+      if (data && (!maisRecente || data > maisRecente)) maisRecente = data;
+    }
+  }
+  if (!maisRecente) return 100;
+  const dias = (Date.now() - maisRecente.getTime()) / 86400000;
+  if (dias <= 45) return 100;
+  if (dias <= 180) return 90;
+  if (dias <= 365) return 75;
+  if (dias <= 730) return 60;
+  return 40;
+}
+
+/* =========================================================================
+   Pareamento
+   ========================================================================= */
+
+const TIPO_CHAVE = "Exato por chave", TIPO_ALTERNATIVA = "Exato por chave alternativa";
+const TIPO_PROVAVEL = "Provável por similaridade", TIPO_DUVIDOSO = "Duvidoso - revisar";
+
+function parear(consolidadoA, consolidadoB, perfil) {
+  const mapa = mapearCampos(consolidadoA, consolidadoB, perfil);
+  const resultado = { pares: [], somenteA: [], somenteB: [], mapa, chaves: [], camposSimilaridade: [],
+                      avisos: [] };
+  if (!consolidadoA.linhas.length || !consolidadoB.linhas.length) {
+    resultado.avisos.push("Um dos sistemas ficou sem registros: o pareamento não foi possível.");
+    resultado.somenteA = consolidadoA.linhas.map(l => ({ linha: l, motivo: "Sistema oposto sem registros", candidato: {}, escore: 0 }));
+    resultado.somenteB = consolidadoB.linhas.map(l => ({ linha: l, motivo: "Sistema oposto sem registros", candidato: {}, escore: 0 }));
+    return resultado;
+  }
+  const escolhidos = new Set(perfil.pareamento.campos_comparacao);
+  const comparaveis = escolhidos.size ? mapa.filter(p => escolhidos.has(p.campoA)) : mapa;
+  const chaves = definirChaves(consolidadoA, consolidadoB, perfil, mapa);
+  resultado.chaves = chaves.map(c => [c.campoA, c.campoB]);
+  if (!chaves.length) resultado.avisos.push("Nenhuma chave comum foi identificada; o pareamento usou apenas similaridade.");
+
+  const pareadosA = new Map(), pareadosB = new Map();
+  chaves.forEach((chave, ordem) => {
+    const indice = new Map();
+    for (const linha of consolidadoB.linhas) {
+      const valor = valorChave(linha, chave.campoB);
+      if (!valor) continue;
+      if (!indice.has(valor)) indice.set(valor, []);
+      indice.get(valor).push(linha);
+    }
+    for (const linhaA of consolidadoA.linhas) {
+      if (pareadosA.has(linhaA[COL_ID])) continue;
+      const valor = valorChave(linhaA, chave.campoA);
+      if (!valor) continue;
+      for (const linhaB of indice.get(valor) || []) {
+        const par = {
+          idA: linhaA[COL_ID], idB: linhaB[COL_ID],
+          tipo: ordem === 0 ? TIPO_CHAVE : TIPO_ALTERNATIVA,
+          chave: chave.rotulo,
+          valorChave: chave.campoA.split("+").map(c => limpar(linhaA[c])).join(" + "),
+          escore: 1, linhaA, linhaB, multiplicidade: "1:1",
+          divergencias: compararCampos(linhaA, linhaB, comparaveis, chave.campoA),
+        };
+        resultado.pares.push(par);
+        if (!pareadosA.has(par.idA)) pareadosA.set(par.idA, []);
+        if (!pareadosB.has(par.idB)) pareadosB.set(par.idB, []);
+        pareadosA.get(par.idA).push(par);
+        pareadosB.get(par.idB).push(par);
+      }
+    }
+  });
+
+  const restantesA = consolidadoA.linhas.filter(l => !pareadosA.has(l[COL_ID]));
+  const restantesB = consolidadoB.linhas.filter(l => !pareadosB.has(l[COL_ID]));
+  const camposSim = definirCamposSimilaridade(consolidadoA, perfil, mapa, new Set(chaves.map(c => c.campoA)));
+  resultado.camposSimilaridade = camposSim;
+
+  for (const par of parearPorSimilaridade(restantesA, restantesB, camposSim, perfil, comparaveis, consolidadoA)) {
+    resultado.pares.push(par);
+    if (!pareadosA.has(par.idA)) pareadosA.set(par.idA, []);
+    if (!pareadosB.has(par.idB)) pareadosB.set(par.idB, []);
+    pareadosA.get(par.idA).push(par);
+    pareadosB.get(par.idB).push(par);
+  }
+  for (const par of resultado.pares) {
+    const qa = (pareadosA.get(par.idA) || []).length, qb = (pareadosB.get(par.idB) || []).length;
+    if (qa > 1 || qb > 1) par.multiplicidade = `${qa}:${qb} (revisar duplicidade)`;
+  }
+
+  const sobramA = consolidadoA.linhas.filter(l => !pareadosA.has(l[COL_ID]));
+  const sobramB = consolidadoB.linhas.filter(l => !pareadosB.has(l[COL_ID]));
+  const indiceB = indicePorToken(sobramB, camposSim, "b");
+  const indiceA = indicePorToken(sobramA, camposSim, "a");
+  const chaveA = chaves.length ? chaves[0].campoA : "", chaveB = chaves.length ? chaves[0].campoB : "";
+  for (const linha of sobramA) {
+    const { escore, candidato } = maisParecido(linha, sobramB, camposSim, "a", indiceB);
+    resultado.somenteA.push({ linha, escore, candidato,
+      motivo: motivoAusencia(linha, chaveA, consolidadoB.nome, escore) });
+  }
+  for (const linha of sobramB) {
+    const { escore, candidato } = maisParecido(linha, sobramA, camposSim, "b", indiceA);
+    resultado.somenteB.push({ linha, escore, candidato,
+      motivo: motivoAusencia(linha, chaveB, consolidadoA.nome, escore) });
+  }
+  resultado.pares.sort((a, b) => (a.tipo === TIPO_CHAVE ? 0 : 1) - (b.tipo === TIPO_CHAVE ? 0 : 1)
+                                 || b.escore - a.escore);
+  return resultado;
+}
+
+function mapearCampos(consolidadoA, consolidadoB, perfil) {
+  const canonicos = new Set(perfil.campos.map(c => c.nome));
+  const amostra = (consolidado, coluna) => {
+    const valores = new Set();
+    for (const linha of consolidado.linhas.slice(0, 800)) {
+      const valor = chaveValor(linha[coluna]);
+      if (valor) valores.add(valor);
+    }
+    return valores;
+  };
+  const valoresA = new Map(consolidadoA.colunas.map(c => [c, amostra(consolidadoA, c)]));
+  const valoresB = new Map(consolidadoB.colunas.map(c => [c, amostra(consolidadoB, c)]));
+  const candidatos = [];
+  for (const colunaA of consolidadoA.colunas) {
+    for (const colunaB of consolidadoB.colunas) {
+      if (colunaA !== colunaB && canonicos.has(colunaA) && canonicos.has(colunaB)) continue;
+      const tipoA = (consolidadoA.campoPor(colunaA) || {}).tipo || "texto";
+      const tipoB = (consolidadoB.campoPor(colunaB) || {}).tipo || "texto";
+      let nota;
+      if (chaveCabecalho(colunaA) === chaveCabecalho(colunaB)) nota = 1;
+      else {
+        const notaNome = similaridadeNomes(colunaA, colunaB);
+        const sobreposicao = jaccard(valoresA.get(colunaA), valoresB.get(colunaB));
+        nota = 0.55 * notaNome + 0.45 * sobreposicao;
+        if (tipoA === tipoB && tipoA !== "texto") nota += 0.1;
+        else if (tipoA !== tipoB && tipoA !== "texto" && tipoB !== "texto") nota -= 0.2;
+      }
+      if (nota >= 0.55) candidatos.push({ nota, campoA: colunaA, campoB: colunaB, tipo: tipoA });
+    }
+  }
+  candidatos.sort((a, b) => b.nota - a.nota);
+  const usadosA = new Set(), usadosB = new Set(), mapa = [];
+  for (const candidato of candidatos) {
+    if (usadosA.has(candidato.campoA) || usadosB.has(candidato.campoB)) continue;
+    usadosA.add(candidato.campoA); usadosB.add(candidato.campoB);
+    mapa.push(candidato);
+  }
+  return mapa;
+}
+
+function perfilColuna(consolidado, coluna) {
+  const valores = consolidado.linhas.map(l => normalizar(l[coluna]));
+  const preenchidos = valores.filter(Boolean);
+  if (!preenchidos.length) return [0, 0];
+  return [preenchidos.length / valores.length, new Set(preenchidos).size / preenchidos.length];
+}
+
+function definirChaves(consolidadoA, consolidadoB, perfil, mapa) {
+  const direto = new Map(mapa.map(p => [p.campoA, p.campoB]));
+  const grupos = [
+    ...perfil.pareamento.chaves_primarias.map(c => Array.isArray(c) ? c : String(c).split("+")),
+    ...perfil.pareamento.chaves_alternativas.map(g => [...g]),
+  ];
+  const chaves = [];
+  for (const grupo of grupos) {
+    const campos = grupo.map(c => c.trim()).filter(Boolean);
+    if (!campos.length) continue;
+    const camposB = campos.map(c => direto.get(c) || c);
+    if (campos.every(c => consolidadoA.colunas.includes(c)) &&
+        camposB.every(c => consolidadoB.colunas.includes(c))) {
+      chaves.push({ campoA: campos.join("+"), campoB: camposB.join("+"), rotulo: campos.join(" + ") });
+    }
+  }
+  if (chaves.length) return chaves;
+
+  const candidatos = [];
+  for (const par of mapa) {
+    const campoA = consolidadoA.campoPor(par.campoA), campoB = consolidadoB.campoPor(par.campoB);
+    if (!campoA || !campoB) continue;
+    const [completudeA, unicidadeA] = perfilColuna(consolidadoA, par.campoA);
+    const [completudeB, unicidadeB] = perfilColuna(consolidadoB, par.campoB);
+    if (completudeA < 0.7 || completudeB < 0.7) continue;
+    const documento = ["cpf", "cnpj", "cpf_cnpj", "codigo"].includes(campoA.tipo);
+    if (Math.max(unicidadeA, unicidadeB) < 0.9 && !documento) continue;
+    const conjuntoA = new Set(consolidadoA.linhas.map(l => chaveValor(l[par.campoA])).filter(Boolean));
+    const conjuntoB = new Set(consolidadoB.linhas.map(l => chaveValor(l[par.campoB])).filter(Boolean));
+    let intersecao = 0;
+    conjuntoA.forEach(v => { if (conjuntoB.has(v)) intersecao++; });
+    const sobreposicao = intersecao / Math.max(1, Math.min(conjuntoA.size, conjuntoB.size));
+    if (sobreposicao < 0.05) continue;
+    let nota = 0.45 * sobreposicao + 0.25 * Math.max(unicidadeA, unicidadeB) +
+               0.15 * Math.min(unicidadeA, unicidadeB) + 0.15 * Math.min(completudeA, completudeB);
+    if (["cpf", "cnpj", "cpf_cnpj"].includes(campoA.tipo)) nota += 0.35;
+    if (campoA.chave || campoB.chave) nota += 0.15;
+    candidatos.push({ nota, campoA: par.campoA, campoB: par.campoB, rotulo: par.campoA });
+  }
+  candidatos.sort((a, b) => b.nota - a.nota);
+  return candidatos.slice(0, 3);
+}
+
+function definirCamposSimilaridade(consolidadoA, perfil, mapa, usados) {
+  const direto = new Map(mapa.map(p => [p.campoA, p.campoB]));
+  const escolhidos = perfil.pareamento.campos_similaridade
+    .filter(nome => direto.has(nome))
+    .map(nome => [nome, direto.get(nome)]);
+  if (escolhidos.length) return escolhidos;
+  for (const excluir of [true, false]) {
+    const candidatos = [];
+    for (const par of mapa) {
+      const campo = consolidadoA.campoPor(par.campoA);
+      if (!campo || !["texto", "codigo", "cpf", "cnpj", "cpf_cnpj"].includes(campo.tipo)) continue;
+      if (excluir && usados.has(par.campoA)) continue;
+      const [completude, unicidade] = perfilColuna(consolidadoA, par.campoA);
+      const poder = 0.7 * unicidade + 0.3 * completude;
+      if (poder < 0.55) continue;
+      candidatos.push({ nota: poder * par.nota, campos: [par.campoA, par.campoB] });
+    }
+    if (candidatos.length) {
+      candidatos.sort((a, b) => b.nota - a.nota);
+      return candidatos.slice(0, 2).map(c => c.campos);
+    }
+  }
+  return [];
+}
+
+const valorChave = (linha, especificacao) => {
+  const partes = especificacao.split("+").map(c => chaveValor(linha[c]));
+  return partes.every(Boolean) ? partes.join("|") : "";
+};
+
+function tokensBloqueio(linha, camposSim, lado) {
+  const tokens = [];
+  for (const par of camposSim) {
+    const valor = normalizar(linha[lado === "a" ? par[0] : par[1]]);
+    for (const palavra of valor.split(" ")) if (palavra.length >= 3) tokens.push(palavra);
+    if (valor) tokens.push(valor.slice(0, 4));
+  }
+  return tokens.slice(0, 20);
+}
+
+function indicePorToken(linhas, camposSim, lado) {
+  const indice = new Map();
+  if (!camposSim.length) return indice;
+  linhas.forEach((linha, posicao) => {
+    for (const token of tokensBloqueio(linha, camposSim, lado)) {
+      if (!indice.has(token)) indice.set(token, []);
+      indice.get(token).push(posicao);
+    }
+  });
+  return indice;
+}
+
+function candidatosDoBloco(linha, camposSim, lado, indice, limite = 200) {
+  const tokens = [...new Set(tokensBloqueio(linha, camposSim, lado))].filter(t => indice.has(t));
+  tokens.sort((a, b) => indice.get(a).length - indice.get(b).length);
+  const escolhidos = [], vistos = new Set();
+  for (const token of tokens) {
+    for (const posicao of indice.get(token)) {
+      if (vistos.has(posicao)) continue;
+      vistos.add(posicao); escolhidos.push(posicao);
+      if (escolhidos.length >= limite) return escolhidos;
+    }
+  }
+  return escolhidos;
+}
+
+function escoreSimilaridade(linhaA, linhaB, camposSim) {
+  const notas = [];
+  for (const [campoA, campoB] of camposSim) {
+    const valorA = limpar(linhaA[campoA]), valorB = limpar(linhaB[campoB]);
+    if (!valorA || !valorB) continue;
+    notas.push(similaridade(valorA, valorB));
+  }
+  return notas.length ? notas.reduce((s, n) => s + n, 0) / notas.length : 0;
+}
+
+function parearPorSimilaridade(restantesA, restantesB, camposSim, perfil, comparaveis, consolidadoA) {
+  if (!camposSim.length || !restantesA.length || !restantesB.length) return [];
+  const limiar = perfil.pareamento.limiar_duvidoso;
+  const indice = indicePorToken(restantesB, camposSim, "b");
+  const forca = new Map();
+  for (const par of comparaveis) {
+    const valores = new Set(consolidadoA.linhas.map(l => normalizar(l[par.campoA])).filter(Boolean));
+    forca.set(par.campoA, valores.size >= 20 || valores.size / Math.max(consolidadoA.linhas.length, 1) >= 0.5);
+  }
+  const usados = new Set(camposSim.map(c => c[0]));
+  const candidatos = [];
+  restantesA.forEach((linhaA, indiceA) => {
+    for (const indiceB of candidatosDoBloco(linhaA, camposSim, "a", indice)) {
+      const escore = escoreSimilaridade(linhaA, restantesB[indiceB], camposSim);
+      if (escore < limiar) continue;
+      let fortes = 0, concordantes = 0, comparados = 0;
+      for (const par of comparaveis) {
+        if (usados.has(par.campoA)) continue;
+        const valorA = limpar(linhaA[par.campoA]), valorB = limpar(restantesB[indiceB][par.campoB]);
+        if (!valorA || !valorB) continue;
+        comparados++;
+        if (equivalentes(valorA, valorB, par.tipo)) {
+          concordantes++;
+          if (forca.get(par.campoA)) fortes++;
+        }
+      }
+      const aceito = comparados === 0 ? escore >= 0.97 : (fortes >= 1 || concordantes >= 2);
+      if (aceito) candidatos.push({ escore, indiceA, indiceB, concordantes, comparados });
+    }
+  });
+  candidatos.sort((a, b) => b.concordantes - a.concordantes || b.escore - a.escore);
+  const ocupadosA = new Set(), ocupadosB = new Set(), pares = [];
+  for (const candidato of candidatos) {
+    if (ocupadosA.has(candidato.indiceA) || ocupadosB.has(candidato.indiceB)) continue;
+    ocupadosA.add(candidato.indiceA); ocupadosB.add(candidato.indiceB);
+    const linhaA = restantesA[candidato.indiceA], linhaB = restantesB[candidato.indiceB];
+    const confirmado = candidato.concordantes >= 1 || candidato.comparados === 0;
+    pares.push({
+      idA: linhaA[COL_ID], idB: linhaB[COL_ID],
+      tipo: (candidato.escore >= perfil.pareamento.limiar_provavel && confirmado) ? TIPO_PROVAVEL : TIPO_DUVIDOSO,
+      chave: `similaridade (${camposSim.map(c => c[0]).join(" / ")}), ` +
+             (candidato.comparados ? `confirmado por ${candidato.concordantes} de ${candidato.comparados} campo(s)`
+                                   : "sem outro campo para confirmar"),
+      valorChave: limpar(linhaA[camposSim[0][0]]),
+      escore: Math.round(candidato.escore * 1000) / 1000,
+      linhaA, linhaB, multiplicidade: "1:1",
+      divergencias: compararCampos(linhaA, linhaB, comparaveis, ""),
+    });
+  }
+  return pares;
+}
+
+function compararCampos(linhaA, linhaB, comparaveis, chaveA) {
+  const camposChave = new Set(chaveA ? chaveA.split("+") : []);
+  const divergencias = [];
+  for (const par of comparaveis) {
+    if (camposChave.has(par.campoA)) continue;
+    const valorA = limpar(linhaA[par.campoA]), valorB = limpar(linhaB[par.campoB]);
+    if (!valorA && !valorB) continue;
+    if (equivalentes(valorA, valorB, par.tipo)) continue;
+    divergencias.push({ campo: par.campoA, valorA, valorB });
+  }
+  return divergencias;
+}
+
+function equivalentes(valorA, valorB, tipo) {
+  if (normalizar(valorA) === normalizar(valorB)) return true;
+  if (["cpf", "cnpj", "cpf_cnpj", "codigo", "cep", "telefone"].includes(tipo)) {
+    const a = soDigitos(valorA).replace(/^0+/, ""), b = soDigitos(valorB).replace(/^0+/, "");
+    return !!a && a === b;
+  }
+  if (tipo === "data") {
+    const a = paraData(valorA), b = paraData(valorB);
+    return !!a && !!b && a.getTime() === b.getTime();
+  }
+  if (tipo === "numero") {
+    const a = paraNumero(valorA), b = paraNumero(valorB);
+    return a !== null && b !== null && Math.abs(a - b) <= Math.max(0.005, Math.abs(a) * 0.0001);
+  }
+  return false;
+}
+
+function maisParecido(linha, candidatos, camposSim, lado, indice) {
+  if (!camposSim.length || !candidatos.length) return { escore: 0, candidato: {} };
+  const invertidos = lado === "b" ? camposSim.map(([a, b]) => [b, a]) : camposSim;
+  let melhorEscore = 0, melhorLinha = {};
+  for (const posicao of candidatosDoBloco(linha, camposSim, lado, indice)) {
+    const escore = escoreSimilaridade(linha, candidatos[posicao], invertidos);
+    if (escore > melhorEscore) { melhorEscore = escore; melhorLinha = candidatos[posicao]; }
+  }
+  return { escore: Math.round(melhorEscore * 1000) / 1000, candidato: melhorLinha };
+}
+
+function motivoAusencia(linha, chave, nomeOposto, escore) {
+  const partes = chave ? chave.split("+").filter(Boolean) : [];
+  const vazios = partes.filter(c => !limpar(linha[c]));
+  if (vazios.length) {
+    return `Registro sem valor em ${vazios.map(c => `'${c}'`).join(", ")}, que compõe a chave de ` +
+           `busca, o que impede localizá-lo em ${nomeOposto}.`;
+  }
+  const valor = partes.map(c => limpar(linha[c])).join(" + ");
+  const inicio = partes.length
+    ? `Chave '${partes.join(" + ")}' = ${valor} não encontrada em ${nomeOposto}`
+    : `Nenhuma correspondência encontrada em ${nomeOposto}`;
+  if (escore >= 0.85) return `${inicio}; há um registro muito parecido (${Math.round(escore * 100)}%), provável erro de digitação.`;
+  if (escore >= 0.6) return `${inicio}; há um registro parecido (${Math.round(escore * 100)}%), abaixo do limite de aceite.`;
+  return `${inicio}; nenhum registro semelhante foi localizado.`;
+}
+
+/* =========================================================================
+   Planilha de saída
+   ========================================================================= */
+
+const CORES = { azul: "FF1F4E79", azulMedio: "FF2E75B6", verde: "FF548235", cinza: "FFF2F2F2",
+                ambar: "FFFFF2CC", verdeClaro: "FFE2EFDA", laranja: "FFFCE4D6",
+                azulClaro: "FFDDEBF7", vermelho: "FFFADBD8" };
+
+function novaPlanilha() {
+  return { abas: [], textos: new Map(), estilos: new Map(), listaEstilos: [] };
+}
+
+function novaAba(planilha, nome) {
+  const limpo = (nome || "Planilha").replace(/[\\/*?:\[\]]/g, "-").slice(0, 31);
+  const aba = { nome: limpo, celulas: new Map(), larguras: new Map(), congelar: null,
+                autofiltro: null, mescladas: [], maxLinha: -1, maxColuna: -1 };
+  planilha.abas.push(aba);
+  return aba;
+}
+
+function indiceEstilo(planilha, estilo) {
+  if (!estilo) return 0;
+  const chave = JSON.stringify(estilo);
+  if (!planilha.estilos.has(chave)) {
+    planilha.listaEstilos.push(estilo);
+    planilha.estilos.set(chave, planilha.listaEstilos.length);
+  }
+  return planilha.estilos.get(chave);
+}
+
+function escrever(planilha, aba, linha, coluna, valor, estilo) {
+  aba.celulas.set(`${linha},${coluna}`, { valor, estilo: indiceEstilo(planilha, estilo) });
+  aba.maxLinha = Math.max(aba.maxLinha, linha);
+  aba.maxColuna = Math.max(aba.maxColuna, coluna);
+}
+
+function colunaLetra(indice) {
+  let letras = "", n = indice + 1;
+  while (n > 0) { const resto = (n - 1) % 26; letras = String.fromCharCode(65 + resto) + letras; n = Math.floor((n - 1) / 26); }
+  return letras;
+}
+const referencia = (linha, coluna) => `${colunaLetra(coluna)}${linha + 1}`;
+
+async function gerarXLSX(planilha) {
+  const entradas = [];
+  const textos = [];
+  const indiceTexto = new Map();
+  for (const aba of planilha.abas) {
+    for (const { valor } of aba.celulas.values()) {
+      if (typeof valor === "string" && valor && !indiceTexto.has(valor)) {
+        indiceTexto.set(valor, textos.length); textos.push(valor);
+      }
+    }
+  }
+  entradas.push({ nome: "[Content_Types].xml", dados:
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+    `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+    `<Default Extension="xml" ContentType="application/xml"/>` +
+    `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
+    planilha.abas.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("") +
+    `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>` +
+    `<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/></Types>` });
+  entradas.push({ nome: "_rels/.rels", dados:
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>` });
+  entradas.push({ nome: "xl/workbook.xml", dados:
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>` +
+    planilha.abas.map((aba, i) => `<sheet name="${escapar(aba.nome)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("") +
+    `</sheets></workbook>` });
+  entradas.push({ nome: "xl/_rels/workbook.xml.rels", dados:
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+    planilha.abas.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("") +
+    `<Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+    `<Relationship Id="rIdT" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/></Relationships>` });
+  entradas.push({ nome: "xl/sharedStrings.xml", dados:
+    `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="${textos.length}" uniqueCount="${textos.length}">` +
+    textos.map(t => `<si><t xml:space="preserve">${escapar(t)}</t></si>`).join("") + `</sst>` });
+  entradas.push({ nome: "xl/styles.xml", dados: montarEstilos(planilha) });
+
+  planilha.abas.forEach((aba, indice) => {
+    const porLinha = new Map();
+    for (const [posicao, celula] of aba.celulas) {
+      const [linha, coluna] = posicao.split(",").map(Number);
+      if (!porLinha.has(linha)) porLinha.set(linha, []);
+      porLinha.get(linha).push([coluna, celula]);
+    }
+    const partes = [`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`];
+    if (aba.congelar) {
+      const celula = referencia(aba.congelar[0], aba.congelar[1]);
+      const painel = aba.congelar[1] ? "bottomRight" : "bottomLeft";
+      partes.push(`<sheetViews><sheetView workbookViewId="0"><pane xSplit="${aba.congelar[1]}" ySplit="${aba.congelar[0]}" topLeftCell="${celula}" activePane="${painel}" state="frozen"/></sheetView></sheetViews>`);
+    }
+    partes.push(`<sheetFormatPr defaultRowHeight="15"/>`);
+    if (aba.larguras.size) {
+      partes.push("<cols>" + [...aba.larguras.entries()].sort((a, b) => a[0] - b[0])
+        .map(([c, largura]) => `<col min="${c + 1}" max="${c + 1}" width="${largura.toFixed(1)}" customWidth="1"/>`).join("") + "</cols>");
+    }
+    partes.push("<sheetData>");
+    for (const linha of [...porLinha.keys()].sort((a, b) => a - b)) {
+      partes.push(`<row r="${linha + 1}">`);
+      for (const [coluna, celula] of porLinha.get(linha).sort((a, b) => a[0] - b[0])) {
+        partes.push(celulaXML(linha, coluna, celula, indiceTexto));
+      }
+      partes.push("</row>");
+    }
+    partes.push("</sheetData>");
+    if (aba.autofiltro) partes.push(`<autoFilter ref="${aba.autofiltro}"/>`);
+    if (aba.mescladas.length) {
+      partes.push(`<mergeCells count="${aba.mescladas.length}">` +
+        aba.mescladas.map(r => `<mergeCell ref="${r}"/>`).join("") + "</mergeCells>");
+    }
+    partes.push(`<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>`);
+    entradas.push({ nome: `xl/worksheets/sheet${indice + 1}.xml`, dados: partes.join("") });
+  });
+  return await compactar(entradas);
+}
+
+function celulaXML(linha, coluna, celula, indiceTexto) {
+  const ref = referencia(linha, coluna);
+  const estilo = celula.estilo ? ` s="${celula.estilo}"` : "";
+  const valor = celula.valor;
+  if (valor === "" || valor === null || valor === undefined) return `<c r="${ref}"${estilo}/>`;
+  if (typeof valor === "number") return `<c r="${ref}"${estilo}><v>${valor}</v></c>`;
+  return `<c r="${ref}"${estilo} t="s"><v>${indiceTexto.get(valor)}</v></c>`;
+}
+
+function montarEstilos(planilha) {
+  const fontes = [`<font><sz val="10"/><color rgb="FF1F2937"/><name val="Calibri"/></font>`];
+  const preenchimentos = [`<fill><patternFill patternType="none"/></fill>`,
+                          `<fill><patternFill patternType="gray125"/></fill>`];
+  const bordas = [`<border><left/><right/><top/><bottom/><diagonal/></border>`,
+    `<border><left style="thin"><color rgb="FFD1D5DB"/></left><right style="thin"><color rgb="FFD1D5DB"/></right>` +
+    `<top style="thin"><color rgb="FFD1D5DB"/></top><bottom style="thin"><color rgb="FFD1D5DB"/></bottom><diagonal/></border>`];
+  const indicesFonte = new Map(), indicesFill = new Map();
+  const xfs = [`<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>`];
+  for (const estilo of planilha.listaEstilos) {
+    const chaveFonte = `${!!estilo.negrito}|${estilo.tamanho || 10}|${estilo.cor || "FF1F2937"}`;
+    if (!indicesFonte.has(chaveFonte)) {
+      indicesFonte.set(chaveFonte, fontes.length);
+      fontes.push(`<font>${estilo.negrito ? "<b/>" : ""}<sz val="${estilo.tamanho || 10}"/>` +
+                  `<color rgb="${estilo.cor || "FF1F2937"}"/><name val="Calibri"/></font>`);
+    }
+    let fillId = 0;
+    if (estilo.fundo) {
+      if (!indicesFill.has(estilo.fundo)) {
+        indicesFill.set(estilo.fundo, preenchimentos.length);
+        preenchimentos.push(`<fill><patternFill patternType="solid"><fgColor rgb="${estilo.fundo}"/><bgColor indexed="64"/></patternFill></fill>`);
+      }
+      fillId = indicesFill.get(estilo.fundo);
+    }
+    const alinhamento = (estilo.alinhamento || estilo.quebra)
+      ? `<alignment${estilo.alinhamento ? ` horizontal="${estilo.alinhamento}"` : ""} vertical="top"${estilo.quebra ? ' wrapText="1"' : ""}/>`
+      : `<alignment vertical="top"/>`;
+    xfs.push(`<xf numFmtId="0" fontId="${indicesFonte.get(chaveFonte)}" fillId="${fillId}" ` +
+             `borderId="${estilo.borda ? 1 : 0}" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">${alinhamento}</xf>`);
+  }
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
+    `<fonts count="${fontes.length}">${fontes.join("")}</fonts>` +
+    `<fills count="${preenchimentos.length}">${preenchimentos.join("")}</fills>` +
+    `<borders count="${bordas.length}">${bordas.join("")}</borders>` +
+    `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
+    `<cellXfs count="${xfs.length}">${xfs.join("")}</cellXfs>` +
+    `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
+}
+
+/* ---- montagem das abas --------------------------------------------------- */
+
+const E_TITULO = { negrito: true, tamanho: 14, cor: CORES.azul };
+const E_SUB = { tamanho: 9, cor: "FF595959" };
+const E_CAB = { negrito: true, cor: "FFFFFFFF", fundo: CORES.azul, borda: true, quebra: true, alinhamento: "center" };
+const E_CAB_A = { ...E_CAB, fundo: CORES.azulMedio };
+const E_CAB_B = { ...E_CAB, fundo: CORES.verde };
+const E_DADO = { borda: true };
+const E_OK = { borda: true, fundo: CORES.verdeClaro, cor: "FF375623" };
+const E_DIV = { borda: true, fundo: CORES.ambar, cor: "FF7F6000", negrito: true };
+const E_SO_A = { borda: true, fundo: CORES.laranja, cor: "FF922B21" };
+const E_SO_B = { borda: true, fundo: CORES.azulClaro, cor: "FF1F4E79" };
+const E_ALTA = { borda: true, fundo: CORES.vermelho, cor: "FF922B21" };
+const E_MEDIA = { borda: true, fundo: CORES.ambar, cor: "FF7F6000" };
+const E_BAIXA = { borda: true, fundo: CORES.cinza };
+const E_SECAO = { negrito: true, tamanho: 11, cor: "FFFFFFFF", fundo: CORES.azulMedio, borda: true };
+
+function estiloNota(nota) {
+  if (nota >= 95) return E_OK;
+  if (nota >= 85) return { borda: true, fundo: "FFEBF7E4" };
+  if (nota >= 70) return E_MEDIA;
+  return E_ALTA;
+}
+
+async function montarPlanilha(resultado) {
+  const planilha = novaPlanilha();
+  const { consolidadoA, consolidadoB, qualidadeA, qualidadeB, pareamento, estatisticas } = resultado;
+
+  // 1. Resumo
+  const resumo = novaAba(planilha, "Resumo");
+  escrever(planilha, resumo, 0, 0, `Consolidação e análise: ${consolidadoA.nome} x ${consolidadoB.nome}`, E_TITULO);
+  escrever(planilha, resumo, 1, 0, `Gerado em ${new Date().toLocaleString("pt-BR")} — ${resultado.arquivos.length} arquivo(s)`, E_SUB);
+  let linha = 3;
+  escrever(planilha, resumo, linha, 0, "1. Volumes", E_SECAO); linha++;
+  [["Indicador", consolidadoA.nome, consolidadoB.nome]].forEach(cab =>
+    cab.forEach((v, i) => escrever(planilha, resumo, linha, i, v, E_CAB)));
+  linha++;
+  const volumes = [
+    ["Registros consolidados", estatisticas.registrosA, estatisticas.registrosB],
+    ["Colunas identificadas", consolidadoA.colunas.length, consolidadoB.colunas.length],
+    ["Registros pareados", estatisticas.registrosA - estatisticas.somenteA, estatisticas.registrosB - estatisticas.somenteB],
+    ["Registros exclusivos", estatisticas.somenteA, estatisticas.somenteB],
+    ["Cobertura do pareamento", `${estatisticas.coberturaA.toFixed(1)}%`, `${estatisticas.coberturaB.toFixed(1)}%`],
+  ];
+  for (const [rotulo, a, b] of volumes) {
+    escrever(planilha, resumo, linha, 0, rotulo, { ...E_DADO, negrito: true });
+    escrever(planilha, resumo, linha, 1, a, { ...E_DADO, alinhamento: "center" });
+    escrever(planilha, resumo, linha, 2, b, { ...E_DADO, alinhamento: "center" });
+    linha++;
+  }
+  linha++;
+  escrever(planilha, resumo, linha, 0, "2. Qualidade por dimensão (0 a 100)", E_SECAO); linha++;
+  ["Dimensão", consolidadoA.nome, consolidadoB.nome, "Leitura"].forEach((v, i) =>
+    escrever(planilha, resumo, linha, i, v, E_CAB));
+  linha++;
+  for (const dimensao of DIMENSOES) {
+    const notaA = qualidadeA.notas[dimensao], notaB = qualidadeB.notas[dimensao];
+    escrever(planilha, resumo, linha, 0, dimensao, { ...E_DADO, negrito: true });
+    escrever(planilha, resumo, linha, 1, notaA, { ...estiloNota(notaA), alinhamento: "center" });
+    escrever(planilha, resumo, linha, 2, notaB, { ...estiloNota(notaB), alinhamento: "center" });
+    escrever(planilha, resumo, linha, 3, `${classificar(notaA)} x ${classificar(notaB)}`, E_DADO);
+    linha++;
+  }
+  escrever(planilha, resumo, linha, 0, "NOTA GERAL", { ...E_DADO, negrito: true, fundo: CORES.cinza });
+  escrever(planilha, resumo, linha, 1, qualidadeA.notaGeral, { ...estiloNota(qualidadeA.notaGeral), negrito: true, alinhamento: "center" });
+  escrever(planilha, resumo, linha, 2, qualidadeB.notaGeral, { ...estiloNota(qualidadeB.notaGeral), negrito: true, alinhamento: "center" });
+  linha += 2;
+  escrever(planilha, resumo, linha, 0, "3. Pareamento", E_SECAO); linha++;
+  ["Situação", "Registros", "Observação"].forEach((v, i) => escrever(planilha, resumo, linha, i, v, E_CAB));
+  linha++;
+  const contagem = {};
+  for (const par of pareamento.pares) contagem[par.tipo] = (contagem[par.tipo] || 0) + 1;
+  const itens = [
+    ["Pares encontrados", pareamento.pares.length, Object.entries(contagem).map(([t, n]) => `${t}: ${n}`).join("; ") || "-"],
+    ["Pares com divergência de conteúdo", estatisticas.divergentes, "Mesmo registro, informação diferente"],
+    [`Somente em ${consolidadoA.nome}`, estatisticas.somenteA, `Não localizados em ${consolidadoB.nome}`],
+    [`Somente em ${consolidadoB.nome}`, estatisticas.somenteB, `Não localizados em ${consolidadoA.nome}`],
+  ];
+  for (const [rotulo, valor, observacao] of itens) {
+    escrever(planilha, resumo, linha, 0, rotulo, { ...E_DADO, negrito: true });
+    escrever(planilha, resumo, linha, 1, valor, { ...E_DADO, alinhamento: "center" });
+    escrever(planilha, resumo, linha, 2, observacao, E_DADO);
+    linha++;
+  }
+  if (pareamento.chaves.length) {
+    linha++;
+    escrever(planilha, resumo, linha, 0, "Chave(s) utilizada(s):", { negrito: true });
+    escrever(planilha, resumo, linha, 1, pareamento.chaves.map(c => `${c[0]} = ${c[1]}`).join("; "), {});
+  }
+  resumo.larguras.set(0, 44); resumo.larguras.set(1, 18); resumo.larguras.set(2, 18); resumo.larguras.set(3, 40);
+
+  // 2 e 3. Consolidados
+  for (const [consolidado, lado] of [[consolidadoA, "A"], [consolidadoB, "B"]]) {
+    const oposto = lado === "A" ? consolidadoB.nome : consolidadoA.nome;
+    const pareados = new Set(pareamento.pares.map(p => lado === "A" ? p.idA : p.idB));
+    const divergentes = new Set(pareamento.pares.filter(p => p.divergencias.length).map(p => lado === "A" ? p.idA : p.idB));
+    const aba = novaAba(planilha, `Consolidado ${consolidado.nome}`);
+    escrever(planilha, aba, 0, 0, `Consolidado - ${consolidado.nome}`, E_TITULO);
+    escrever(planilha, aba, 1, 0, `${consolidado.linhas.length} registros de ${consolidado.arquivos.length} arquivo(s)`, E_SUB);
+    const colunas = [COL_ID, ...consolidado.colunas, COL_ARQUIVO, COL_LINHA];
+    const cabecalho = [...colunas, "Situação no pareamento"];
+    cabecalho.forEach((nome, i) => escrever(planilha, aba, 3, i, nome, lado === "A" ? E_CAB_A : E_CAB_B));
+    consolidado.linhas.forEach((registro, numero) => {
+      const alvo = 4 + numero;
+      colunas.forEach((coluna, i) => escrever(planilha, aba, alvo, i, limpar(registro[coluna]), E_DADO));
+      const id = registro[COL_ID];
+      const [texto, estilo] = divergentes.has(id) ? ["Pareado com divergência", E_DIV]
+        : pareados.has(id) ? [`Pareado com ${oposto}`, E_OK]
+        : [`SOMENTE neste sistema (ausente em ${oposto})`, lado === "A" ? E_SO_A : E_SO_B];
+      escrever(planilha, aba, alvo, colunas.length, texto, estilo);
+    });
+    ajustarLarguras(aba, cabecalho.length);
+    aba.congelar = [4, 1];
+    aba.autofiltro = `A4:${referencia(Math.max(aba.maxLinha, 4), cabecalho.length - 1)}`;
+  }
+
+  // 4 e 5. Qualidade
+  for (const qualidade of [qualidadeA, qualidadeB]) {
+    const aba = novaAba(planilha, `Qualidade ${qualidade.nome}`);
+    escrever(planilha, aba, 0, 0, `Análise de qualidade - ${qualidade.nome}`, E_TITULO);
+    escrever(planilha, aba, 1, 0, `Nota geral ${qualidade.notaGeral} (${classificar(qualidade.notaGeral)}) — ` +
+      `${qualidade.ocorrencias.length} ocorrências em ${qualidade.registrosComProblema} de ${qualidade.total} registros`, E_SUB);
+    let alvo = 3;
+    escrever(planilha, aba, alvo, 0, "A. Notas por dimensão", E_SECAO); alvo++;
+    ["Dimensão", "Nota", "Classificação", "Ocorrências"].forEach((v, i) => escrever(planilha, aba, alvo, i, v, E_CAB));
+    alvo++;
+    for (const dimensao of DIMENSOES) {
+      const nota = qualidade.notas[dimensao];
+      escrever(planilha, aba, alvo, 0, dimensao, { ...E_DADO, negrito: true });
+      escrever(planilha, aba, alvo, 1, nota, { ...estiloNota(nota), alinhamento: "center" });
+      escrever(planilha, aba, alvo, 2, classificar(nota), estiloNota(nota));
+      escrever(planilha, aba, alvo, 3, qualidade.ocorrencias.filter(o => o.dimensao === dimensao).length,
+               { ...E_DADO, alinhamento: "center" });
+      alvo++;
+    }
+    alvo++;
+    escrever(planilha, aba, alvo, 0, "B. Indicadores por campo", E_SECAO); alvo++;
+    const cabecalhoCampos = ["Campo", "Tipo", "Chave", "Preenchidos", "Completude %", "Distintos",
+                             "Inválidos", "Grafias divergentes", "Implausíveis", "Exemplos"];
+    cabecalhoCampos.forEach((v, i) => escrever(planilha, aba, alvo, i, v, E_CAB));
+    alvo++;
+    for (const metrica of [...qualidade.metricas].sort((a, b) => completude(a) - completude(b))) {
+      const valores = [metrica.campo, metrica.tipo, metrica.chave ? "SIM" : "", metrica.preenchidos,
+                       arredondar(completude(metrica)), metrica.distintos, metrica.invalidos,
+                       metrica.grafias, metrica.implausiveis, metrica.exemplos.join("; ")];
+      valores.forEach((v, i) => escrever(planilha, aba, alvo, i, v,
+        i === 4 ? { ...estiloNota(completude(metrica)), alinhamento: "center" } : E_DADO));
+      alvo++;
+    }
+    alvo += 2;
+    escrever(planilha, aba, alvo, 0, "C. Ocorrências detalhadas", E_SECAO); alvo++;
+    const cabecalhoOcorrencias = ["Gravidade", "Dimensão", "Campo", "Descrição da inconsistência",
+                                  "Valor encontrado", "ID do registro", "Arquivo", "Linha"];
+    cabecalhoOcorrencias.forEach((v, i) => escrever(planilha, aba, alvo, i, v, E_CAB));
+    const linhaFiltro = alvo;
+    alvo++;
+    const ordem = { Alta: 0, Media: 1, Baixa: 2 };
+    const ordenadas = [...qualidade.ocorrencias].sort((a, b) =>
+      (ordem[a.gravidade] ?? 3) - (ordem[b.gravidade] ?? 3) || a.campo.localeCompare(b.campo));
+    for (const ocorrencia of ordenadas.slice(0, 60000)) {
+      const estilo = ocorrencia.gravidade === "Alta" ? E_ALTA : ocorrencia.gravidade === "Media" ? E_MEDIA : E_BAIXA;
+      [ocorrencia.gravidade, ocorrencia.dimensao, ocorrencia.campo, ocorrencia.descricao,
+       ocorrencia.valor, ocorrencia.id, ocorrencia.arquivo, ocorrencia.linha]
+        .forEach((v, i) => escrever(planilha, aba, alvo, i, v, i === 0 ? estilo : E_DADO));
+      alvo++;
+    }
+    [26, 14, 22, 54, 26, 14, 26, 10].forEach((largura, i) => aba.larguras.set(i, largura));
+    aba.autofiltro = `A${linhaFiltro + 1}:${referencia(Math.max(aba.maxLinha, linhaFiltro), 7)}`;
+  }
+
+  // 6. Pareamento
+  const abaPar = novaAba(planilha, "Pareamento");
+  escrever(planilha, abaPar, 0, 0, `Pareamento entre ${consolidadoA.nome} e ${consolidadoB.nome}`, E_TITULO);
+  escrever(planilha, abaPar, 1, 0, `${pareamento.pares.length} pares; ${estatisticas.divergentes} com ` +
+    "divergência de conteúdo. Amarelo = valores diferentes entre os sistemas.", E_SUB);
+  const mapaVisivel = pareamento.mapa.slice(0, 25);
+  const fixos = [`ID ${consolidadoA.nome.slice(0, 12)}`, `ID ${consolidadoB.nome.slice(0, 12)}`,
+                 "Tipo de pareamento", "Escore", "Critério", "Valor da chave", "Situação",
+                 "Qtd. divergências", "Campos divergentes", "Multiplicidade"];
+  const cabecalhoPar = [...fixos];
+  for (const par of mapaVisivel) {
+    cabecalhoPar.push(`${par.campoA} (${consolidadoA.nome.slice(0, 10)})`);
+    cabecalhoPar.push(`${par.campoB} (${consolidadoB.nome.slice(0, 10)})`);
+  }
+  cabecalhoPar.forEach((v, i) => escrever(planilha, abaPar, 3, i, v, E_CAB));
+  pareamento.pares.forEach((par, numero) => {
+    const alvo = 4 + numero;
+    const divergentes = new Set(par.divergencias.map(d => d.campo));
+    const valores = [par.idA, par.idB, par.tipo, par.escore, par.chave, par.valorChave,
+      par.divergencias.length ? `Divergente em ${par.divergencias.length} campo(s)` : "Idêntico nos campos comparados",
+      par.divergencias.length,
+      par.divergencias.slice(0, 6).map(d => `${d.campo}: '${d.valorA || "(vazio)"}' x '${d.valorB || "(vazio)"}'`).join("; "),
+      par.multiplicidade];
+    valores.forEach((v, i) => escrever(planilha, abaPar, alvo, i, v,
+      i === 6 ? (par.divergencias.length ? E_DIV : E_OK) : E_DADO));
+    let coluna = fixos.length;
+    for (const campo of mapaVisivel) {
+      const estilo = divergentes.has(campo.campoA) ? E_DIV : E_DADO;
+      escrever(planilha, abaPar, alvo, coluna, limpar(par.linhaA[campo.campoA]), estilo);
+      escrever(planilha, abaPar, alvo, coluna + 1, limpar(par.linhaB[campo.campoB]), estilo);
+      coluna += 2;
+    }
+  });
+  ajustarLarguras(abaPar, cabecalhoPar.length);
+  abaPar.larguras.set(8, 50);
+  abaPar.congelar = [4, 2];
+  abaPar.autofiltro = `A4:${referencia(Math.max(abaPar.maxLinha, 4), cabecalhoPar.length - 1)}`;
+
+  // 7 e 8. Somente em
+  for (const lado of ["A", "B"]) {
+    const consolidado = lado === "A" ? consolidadoA : consolidadoB;
+    const oposto = lado === "A" ? consolidadoB : consolidadoA;
+    const itens = lado === "A" ? pareamento.somenteA : pareamento.somenteB;
+    const estilo = lado === "A" ? E_SO_A : E_SO_B;
+    const aba = novaAba(planilha, `Somente em ${consolidado.nome}`);
+    escrever(planilha, aba, 0, 0, `Existe em ${consolidado.nome} e não foi localizado em ${oposto.nome}`, E_TITULO);
+    escrever(planilha, aba, 1, 0, `${itens.length} de ${consolidado.linhas.length} registros ` +
+      `(${(100 * itens.length / Math.max(consolidado.linhas.length, 1)).toFixed(1)}%). Todas as linhas realçadas.`, E_SUB);
+    const camposCandidato = camposDoCandidato(pareamento, lado);
+    const colunas = [COL_ID, ...consolidado.colunas, COL_ARQUIVO, COL_LINHA];
+    const cabecalho = [...colunas, "Por que consta como ausente", "Semelhança com o mais parecido",
+      "ID do mais parecido", ...camposCandidato.map(c => `${c} em ${oposto.nome.slice(0, 14)} (mais parecido)`)];
+    cabecalho.forEach((v, i) => escrever(planilha, aba, 3, i, v, lado === "A" ? E_CAB_A : E_CAB_B));
+    itens.forEach((item, numero) => {
+      const alvo = 4 + numero;
+      colunas.forEach((coluna, i) => escrever(planilha, aba, alvo, i, limpar(item.linha[coluna]), estilo));
+      escrever(planilha, aba, alvo, colunas.length, item.motivo, { ...estilo, quebra: true });
+      escrever(planilha, aba, alvo, colunas.length + 1,
+        item.escore ? `${Math.round(item.escore * 100)}%` : "",
+        { ...(item.escore >= 0.85 ? E_MEDIA : E_DADO), alinhamento: "center" });
+      escrever(planilha, aba, alvo, colunas.length + 2, limpar(item.candidato[COL_ID] || ""), E_DADO);
+      camposCandidato.forEach((campo, i) =>
+        escrever(planilha, aba, alvo, colunas.length + 3 + i, limpar(item.candidato[campo] || ""), E_DADO));
+    });
+    if (!itens.length) {
+      escrever(planilha, aba, 4, 0, `Todos os registros de ${consolidado.nome} foram localizados em ${oposto.nome}.`, E_OK);
+    }
+    ajustarLarguras(aba, cabecalho.length);
+    aba.larguras.set(colunas.length, 56);
+    aba.congelar = [4, 1];
+    aba.autofiltro = `A4:${referencia(Math.max(aba.maxLinha, 4), cabecalho.length - 1)}`;
+  }
+
+  // 9. Arquivos lidos
+  const abaArquivos = novaAba(planilha, "Arquivos lidos");
+  escrever(planilha, abaArquivos, 0, 0, "Auditoria da leitura dos arquivos", E_TITULO);
+  ["Arquivo", "Sistema atribuído", "Confiança", "Registros", "Como foi identificado", "Erro"]
+    .forEach((v, i) => escrever(planilha, abaArquivos, 3, i, v, E_CAB));
+  resultado.arquivos.forEach((arquivo, numero) => {
+    const alvo = 4 + numero;
+    const estilo = arquivo.erro ? E_ALTA : E_DADO;
+    [arquivo.nome, arquivo.sistema, arquivo.confianca ? `${Math.round(arquivo.confianca * 100)}%` : "",
+     arquivo.registros, arquivo.motivo, arquivo.erro || ""]
+      .forEach((v, i) => escrever(planilha, abaArquivos, alvo, i, v, estilo));
+  });
+  [40, 22, 12, 12, 60, 40].forEach((largura, i) => abaArquivos.larguras.set(i, largura));
+  return await gerarXLSX(planilha);
+}
+
+const completude = metrica => metrica.total ? 100 * metrica.preenchidos / metrica.total : 0;
+
+function camposDoCandidato(pareamento, lado) {
+  const campos = [];
+  for (const [campoA, campoB] of pareamento.camposSimilaridade) campos.push(lado === "A" ? campoB : campoA);
+  for (const par of pareamento.mapa) {
+    if (campos.length >= 5) break;
+    const nome = lado === "A" ? par.campoB : par.campoA;
+    if (!campos.includes(nome)) campos.push(nome);
+  }
+  return campos.slice(0, 5);
+}
+
+function ajustarLarguras(aba, colunas) {
+  const medidas = new Map();
+  for (const [posicao, celula] of aba.celulas) {
+    const coluna = +posicao.split(",")[1];
+    const tamanho = Math.min(String(celula.valor ?? "").length + 2.5, 40);
+    medidas.set(coluna, Math.max(medidas.get(coluna) || 10, tamanho));
+  }
+  for (let i = 0; i < colunas; i++) aba.larguras.set(i, medidas.get(i) || 12);
+}
+
+/* =========================================================================
+   Relatório em Word
+   ========================================================================= */
+
+async function montarRelatorio(resultado) {
+  const { consolidadoA, consolidadoB, qualidadeA, qualidadeB, pareamento, estatisticas } = resultado;
+  const corpo = [];
+  const paragrafo = (texto, estilo = "Corpo", negrito = false, cor = "") => corpo.push(
+    `<w:p><w:pPr><w:pStyle w:val="${estilo}"/><w:jc w:val="both"/></w:pPr><w:r><w:rPr>` +
+    `${negrito ? "<w:b/>" : ""}${cor ? `<w:color w:val="${cor}"/>` : ""}</w:rPr>` +
+    `<w:t xml:space="preserve">${escapar(texto)}</w:t></w:r></w:p>`);
+  const secao = (texto, nivel = 1) => corpo.push(
+    `<w:p><w:pPr><w:pStyle w:val="Heading${nivel}"/></w:pPr><w:r><w:t xml:space="preserve">${escapar(texto)}</w:t></w:r></w:p>`);
+  const lista = itens => itens.forEach(item => corpo.push(
+    `<w:p><w:pPr><w:pStyle w:val="Corpo"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr>` +
+    `<w:r><w:t xml:space="preserve">${escapar(item)}</w:t></w:r></w:p>`));
+  const tabela = (cabecalho, linhas, larguras) => {
+    const celula = (texto, opcoes = {}) =>
+      `<w:tc><w:tcPr><w:tcW w:w="${opcoes.largura || 2000}" w:type="dxa"/>` +
+      `${opcoes.fundo ? `<w:shd w:val="clear" w:color="auto" w:fill="${opcoes.fundo}"/>` : ""}</w:tcPr>` +
+      `<w:p><w:pPr><w:pStyle w:val="TextoTabela"/></w:pPr><w:r><w:rPr>${opcoes.negrito ? "<w:b/>" : ""}` +
+      `${opcoes.cor ? `<w:color w:val="${opcoes.cor}"/>` : ""}</w:rPr>` +
+      `<w:t xml:space="preserve">${escapar(texto ?? "")}</w:t></w:r></w:p></w:tc>`;
+    const partes = [`<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>` +
+      `<w:top w:val="single" w:sz="4" w:color="BFBFBF"/><w:left w:val="single" w:sz="4" w:color="BFBFBF"/>` +
+      `<w:bottom w:val="single" w:sz="4" w:color="BFBFBF"/><w:right w:val="single" w:sz="4" w:color="BFBFBF"/>` +
+      `<w:insideH w:val="single" w:sz="4" w:color="D9D9D9"/><w:insideV w:val="single" w:sz="4" w:color="D9D9D9"/>` +
+      `</w:tblBorders></w:tblPr><w:tblGrid>` +
+      (larguras || cabecalho.map(() => 2000)).map(l => `<w:gridCol w:w="${l}"/>`).join("") + `</w:tblGrid>`];
+    partes.push("<w:tr><w:trPr><w:tblHeader/></w:trPr>" +
+      cabecalho.map((t, i) => celula(t, { negrito: true, fundo: "1F4E79", cor: "FFFFFF", largura: (larguras || [])[i] })).join("") + "</w:tr>");
+    linhas.forEach((linha, numero) => {
+      partes.push("<w:tr>" + linha.map((t, i) =>
+        celula(t, { fundo: numero % 2 ? "F4F6F8" : "", largura: (larguras || [])[i] })).join("") + "</w:tr>");
+    });
+    partes.push("</w:tbl><w:p><w:pPr><w:spacing w:after=\"0\"/></w:pPr></w:p>");
+    corpo.push(partes.join(""));
+  };
+
+  corpo.push(`<w:p><w:pPr><w:pStyle w:val="TituloPrincipal"/></w:pPr><w:r>` +
+    `<w:t xml:space="preserve">Relatório analítico, descritivo e comparativo</w:t></w:r></w:p>`);
+  paragrafo(`Consolidação, análise de qualidade e pareamento entre ${consolidadoA.nome} e ` +
+            `${consolidadoB.nome} — emitido em ${new Date().toLocaleString("pt-BR")}.`, "Corpo");
+
+  secao("Sumário executivo");
+  paragrafo(`Foram processados ${resultado.arquivos.length} arquivo(s): ${estatisticas.registrosA} ` +
+    `registros consolidados em ${consolidadoA.nome} e ${estatisticas.registrosB} em ${consolidadoB.nome}. ` +
+    `O pareamento localizou ${pareamento.pares.length} correspondência(s), cobrindo ` +
+    `${estatisticas.coberturaA.toFixed(1)}% da base de ${consolidadoA.nome} e ` +
+    `${estatisticas.coberturaB.toFixed(1)}% da de ${consolidadoB.nome}.`);
+  paragrafo(`A qualidade foi avaliada em sete dimensões: ${consolidadoA.nome} obteve nota ` +
+    `${qualidadeA.notaGeral} (${classificar(qualidadeA.notaGeral)}) e ${consolidadoB.nome}, ` +
+    `${qualidadeB.notaGeral} (${classificar(qualidadeB.notaGeral)}).`);
+  paragrafo(`${estatisticas.somenteA} registro(s) existem apenas em ${consolidadoA.nome}, ` +
+    `${estatisticas.somenteB} apenas em ${consolidadoB.nome} e ${estatisticas.divergentes} par(es) ` +
+    `apresentam divergência de conteúdo entre os dois sistemas.`);
+  tabela(["Indicador", consolidadoA.nome, consolidadoB.nome], [
+    ["Registros consolidados", estatisticas.registrosA, estatisticas.registrosB],
+    ["Registros pareados", estatisticas.registrosA - estatisticas.somenteA, estatisticas.registrosB - estatisticas.somenteB],
+    ["Registros exclusivos", estatisticas.somenteA, estatisticas.somenteB],
+    ["Cobertura do pareamento", `${estatisticas.coberturaA.toFixed(1)}%`, `${estatisticas.coberturaB.toFixed(1)}%`],
+    ["Nota de qualidade", qualidadeA.notaGeral, qualidadeB.notaGeral],
+    ["Ocorrências de qualidade", qualidadeA.ocorrencias.length, qualidadeB.ocorrencias.length],
+  ].map(l => l.map(String)), [4200, 2400, 2400]);
+
+  secao("1. Metodologia");
+  paragrafo("A rotina executa seis etapas encadeadas: leitura dos arquivos conforme o formato real " +
+    "(o conteúdo, e não a extensão), identificação de qual sistema cada arquivo representa, " +
+    "consolidação de uma tabela única por sistema, análise dos atributos de qualidade, pareamento " +
+    "dos registros e comparação do que existe em um sistema e não no outro.");
+  if (pareamento.chaves.length) {
+    paragrafo(`Chaves utilizadas no pareamento: ${pareamento.chaves.map(c => `${c[0]} = ${c[1]}`).join("; ")}. ` +
+      "A comparação desconsidera diferença de acentuação, caixa, pontuação e formatação de datas e números.");
+  }
+  if (pareamento.camposSimilaridade.length) {
+    paragrafo(`Campos usados na comparação aproximada: ${pareamento.camposSimilaridade.map(c => c.join(" ~ ")).join("; ")}. ` +
+      "Semelhança de nome, sozinha, não fecha um par: havendo outro campo comparável, ao menos um " +
+      "precisa coincidir.");
+  }
+
+  secao("2. Arquivos processados");
+  tabela(["Arquivo", "Sistema", "Confiança", "Registros", "Critério"],
+    resultado.arquivos.map(a => [a.nome, a.sistema, a.confianca ? `${Math.round(a.confianca * 100)}%` : "-",
+      String(a.registros), a.erro || a.motivo]), [2600, 1500, 900, 900, 3100]);
+
+  secao("3. Análise dos atributos de qualidade");
+  for (const qualidade of [qualidadeA, qualidadeB]) {
+    secao(qualidade.nome, 2);
+    paragrafo(`${qualidade.total} registros analisados; nota geral ${qualidade.notaGeral} ` +
+      `(${classificar(qualidade.notaGeral)}), com ${qualidade.ocorrencias.length} ocorrências em ` +
+      `${qualidade.registrosComProblema} registros distintos.`);
+    tabela(["Dimensão", "Nota", "Classificação", "Ocorrências"],
+      DIMENSOES.map(d => [d, String(qualidade.notas[d]), classificar(qualidade.notas[d]),
+        String(qualidade.ocorrencias.filter(o => o.dimensao === d).length)]), [2400, 1200, 2000, 1600]);
+    const agrupadas = new Map();
+    for (const ocorrencia of qualidade.ocorrencias) {
+      const chave = `${ocorrencia.gravidade}\u00a7${ocorrencia.dimensao}\u00a7${ocorrencia.campo}\u00a7${ocorrencia.descricao.split("(")[0].trim()}`;
+      agrupadas.set(chave, (agrupadas.get(chave) || 0) + 1);
+    }
+    const principais = [...agrupadas.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+    if (principais.length) {
+      tabela(["Gravidade", "Dimensão", "Campo", "Inconsistência", "Qtd."],
+        principais.map(([chave, n]) => [...chave.split("\u00a7"), String(n)]), [1100, 1400, 1800, 3500, 800]);
+    } else {
+      paragrafo("Nenhuma inconsistência foi identificada nesta base.", "Corpo", false, "2E7D32");
+    }
+  }
+
+  secao("4. Pareamento entre os sistemas");
+  const contagemTipos = new Map();
+  for (const par of pareamento.pares) contagemTipos.set(par.tipo, (contagemTipos.get(par.tipo) || 0) + 1);
+  paragrafo(`Foram identificados ${pareamento.pares.length} pares entre as duas bases.`);
+  tabela(["Tipo de pareamento", "Pares", "Participação", "Confiabilidade"],
+    [...contagemTipos.entries()].map(([tipo, n]) => [tipo, String(n),
+      `${(100 * n / Math.max(pareamento.pares.length, 1)).toFixed(1)}%`,
+      tipo.startsWith("Exato") ? "Alta - identidade confirmada pela chave"
+        : tipo.startsWith("Provável") ? "Média - semelhança confirmada por outro campo"
+        : "Baixa - exige conferência manual"]), [2800, 1000, 1400, 3800]);
+  const divergentes = pareamento.pares.filter(p => p.divergencias.length);
+  if (divergentes.length) {
+    const porCampo = new Map();
+    for (const par of divergentes) for (const d of par.divergencias) porCampo.set(d.campo, (porCampo.get(d.campo) || 0) + 1);
+    paragrafo(`${divergentes.length} par(es) apresentam ao menos um campo com valor diferente entre os ` +
+      "sistemas: o registro existe nos dois lugares, mas a informação não está igual.");
+    tabela(["Campo", "Pares divergentes", "% dos pares", "Exemplo"],
+      [...porCampo.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10).map(([campo, n]) => {
+        const exemplo = divergentes.find(p => p.divergencias.some(d => d.campo === campo))
+          .divergencias.find(d => d.campo === campo);
+        return [campo, String(n), `${(100 * n / pareamento.pares.length).toFixed(1)}%`,
+                `'${exemplo.valorA || "(vazio)"}' x '${exemplo.valorB || "(vazio)"}'`];
+      }), [2200, 1400, 1100, 4300]);
+  }
+
+  secao("5. Comparação: o que existe em um sistema e não no outro");
+  for (const [lado, consolidado, oposto, itens] of [
+    ["A", consolidadoA, consolidadoB, pareamento.somenteA],
+    ["B", consolidadoB, consolidadoA, pareamento.somenteB],
+  ]) {
+    secao(`Registros exclusivos de ${consolidado.nome}`, 2);
+    if (!itens.length) {
+      paragrafo(`Todos os registros de ${consolidado.nome} foram localizados em ${oposto.nome}.`,
+                "Corpo", false, "2E7D32");
+      continue;
+    }
+    paragrafo(`${itens.length} registro(s) de ${consolidado.nome} ` +
+      `(${(100 * itens.length / consolidado.linhas.length).toFixed(1)}% da base) não foram localizados ` +
+      `em ${oposto.nome}. A lista completa, com realce em cor, está na aba "Somente em ${consolidado.nome}".`);
+    const motivos = new Map();
+    for (const item of itens) {
+      const chave = item.escore >= 0.85 ? "Há registro muito parecido no outro sistema (provável erro de digitação)"
+        : item.escore >= 0.6 ? "Há registro parecido, abaixo do limite de aceite (exige conferência)"
+        : "Ausência efetiva: nenhum registro semelhante no outro sistema";
+      motivos.set(chave, (motivos.get(chave) || 0) + 1);
+    }
+    tabela(["Motivo da ausência", "Registros", "Participação"],
+      [...motivos.entries()].sort((a, b) => b[1] - a[1]).map(([motivo, n]) =>
+        [motivo, String(n), `${(100 * n / itens.length).toFixed(1)}%`]), [5200, 1600, 1600]);
+  }
+
+  secao("6. Conclusões e recomendações");
+  const conclusoes = [];
+  const alinhamento = Math.min(estatisticas.coberturaA, estatisticas.coberturaB);
+  conclusoes.push(alinhamento >= 95
+    ? `As bases estão bem alinhadas: ao menos ${alinhamento.toFixed(1)}% dos registros de cada sistema tem correspondência no outro.`
+    : alinhamento >= 80
+    ? `O alinhamento é razoável (${alinhamento.toFixed(1)}% de cobertura mínima), mas o volume de registros exclusivos já gera divergência em relatórios gerenciais.`
+    : `As bases estão materialmente desalinhadas: a cobertura mínima é de ${alinhamento.toFixed(1)}%.`);
+  if (estatisticas.divergentes) {
+    conclusoes.push(`${estatisticas.divergentes} registro(s) existem nos dois sistemas com conteúdo diferente; ` +
+      "é a situação mais crítica, porque não aparece em conferência por contagem.");
+  }
+  for (const qualidade of [qualidadeA, qualidadeB]) {
+    const graves = qualidade.ocorrencias.filter(o => o.gravidade === "Alta").length;
+    if (graves) conclusoes.push(`${qualidade.nome} apresenta ${graves} ocorrência(s) de gravidade alta.`);
+  }
+  paragrafo("Principais constatações:");
+  lista(conclusoes);
+  paragrafo("Encaminhamentos sugeridos, em ordem de prioridade:");
+  lista([
+    "Corrigir na origem as ocorrências de gravidade alta (chave duplicada, chave ausente e documento inválido).",
+    "Tratar os registros exclusivos de cada sistema, começando pelos que têm registro muito parecido no outro.",
+    "Conferir manualmente os pares classificados como duvidosos antes de considerá-los equivalentes.",
+    "Padronizar o preenchimento dos campos com mais divergências de grafia.",
+    "Repetir a rotina no mesmo intervalo e acompanhar a evolução das notas e da cobertura.",
+  ]);
+
+  const documento = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+    `<w:body>${corpo.join("")}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/>` +
+    `<w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1418"/></w:sectPr></w:body></w:document>`;
+  return await compactar([
+    { nome: "[Content_Types].xml", dados: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">` +
+      `<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>` +
+      `<Default Extension="xml" ContentType="application/xml"/>` +
+      `<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>` +
+      `<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>` +
+      `<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>` },
+    { nome: "_rels/.rels", dados: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>` },
+    { nome: "word/_rels/document.xml.rels", dados: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
+      `<Relationship Id="rIdS" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+      `<Relationship Id="rIdN" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>` },
+    { nome: "word/document.xml", dados: documento },
+    { nome: "word/styles.xml", dados: ESTILOS_DOCX },
+    { nome: "word/numbering.xml", dados: NUMERACAO_DOCX },
+  ]);
+}
+
+const estiloDocx = (id, nome, tamanho, opcoes = {}) =>
+  `<w:style w:type="paragraph" w:styleId="${id}"><w:name w:val="${nome}"/><w:basedOn w:val="Normal"/><w:qFormat/>` +
+  `<w:pPr><w:spacing w:before="${opcoes.antes || 0}" w:after="${opcoes.depois ?? 120}" w:line="264" w:lineRule="auto"/>` +
+  `${opcoes.nivel !== undefined ? `<w:outlineLvl w:val="${opcoes.nivel}"/>` : ""}</w:pPr>` +
+  `<w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/>${opcoes.negrito ? "<w:b/>" : ""}` +
+  `<w:color w:val="${opcoes.cor || "1F2937"}"/><w:sz w:val="${tamanho * 2}"/></w:rPr></w:style>`;
+
+const ESTILOS_DOCX = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+  `<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+  `<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault></w:docDefaults>` +
+  `<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>` +
+  estiloDocx("TituloPrincipal", "Title", 20, { negrito: true, cor: "1F4E79", depois: 60 }) +
+  estiloDocx("Heading1", "heading 1", 15, { negrito: true, cor: "1F4E79", antes: 280, nivel: 0 }) +
+  estiloDocx("Heading2", "heading 2", 12, { negrito: true, cor: "2E75B6", antes: 220, nivel: 1 }) +
+  estiloDocx("Corpo", "Corpo", 11) +
+  estiloDocx("TextoTabela", "Texto de tabela", 9, { depois: 0 }) +
+  `</w:styles>`;
+
+const NUMERACAO_DOCX = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
+  `<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">` +
+  `<w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0">` +
+  `<w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="&#8226;"/><w:lvlJc w:val="left"/>` +
+  `<w:pPr><w:ind w:left="454" w:hanging="284"/></w:pPr><w:rPr><w:rFonts w:ascii="Symbol" w:hAnsi="Symbol"/></w:rPr>` +
+  `</w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="1"/></w:num></w:numbering>`;
+
+/* =========================================================================
+   Interface
+   ========================================================================= */
+
+const estado = { arquivos: [], manuais: {}, resultado: null };
+const elemento = id => document.getElementById(id);
+
+function iniciar() {
+  const seletor = elemento("perfil");
+  for (const [chave, perfil] of Object.entries(PERFIS)) {
+    const opcao = document.createElement("option");
+    opcao.value = chave; opcao.textContent = perfil.nome;
+    seletor.appendChild(opcao);
+  }
+  seletor.value = "automatico";
+  seletor.addEventListener("change", () => {
+    elemento("descricaoPerfil").textContent = PERFIS[seletor.value].descricao;
+  });
+  elemento("descricaoPerfil").textContent = PERFIS.automatico.descricao;
+
+  const zona = elemento("zona"), entrada = elemento("entrada");
+  zona.addEventListener("click", () => entrada.click());
+  entrada.addEventListener("change", () => { acrescentar([...entrada.files]); entrada.value = ""; });
+  ["dragenter", "dragover"].forEach(evento => zona.addEventListener(evento, e => {
+    e.preventDefault(); zona.classList.add("sobre");
+  }));
+  ["dragleave", "drop"].forEach(evento => zona.addEventListener(evento, e => {
+    e.preventDefault(); zona.classList.remove("sobre");
+  }));
+  zona.addEventListener("drop", e => acrescentar([...e.dataTransfer.files]));
+  elemento("executar").addEventListener("click", executar);
+}
+
+function acrescentar(arquivos) {
+  for (const arquivo of arquivos) {
+    if (!estado.arquivos.some(a => a.name === arquivo.name && a.size === arquivo.size)) {
+      estado.arquivos.push(arquivo);
+    }
+  }
+  desenharLista();
+}
+
+function desenharLista() {
+  const alvo = elemento("listaArquivos");
+  if (!estado.arquivos.length) { alvo.innerHTML = ""; atualizarBotao(); return; }
+  const linhas = estado.arquivos.map((arquivo, indice) => `
+    <tr>
+      <td>${escaparHTML(arquivo.name)}</td>
+      <td class="numero">${(arquivo.size / 1024).toFixed(0)} KB</td>
+      <td>
+        <select data-indice="${indice}">
+          <option value="">(automático)</option>
+          <option value="A"${estado.manuais[arquivo.name] === "A" ? " selected" : ""}>Sistema 1</option>
+          <option value="B"${estado.manuais[arquivo.name] === "B" ? " selected" : ""}>Sistema 2</option>
+        </select>
+      </td>
+      <td><button data-remover="${indice}">remover</button></td>
+    </tr>`).join("");
+  alvo.innerHTML = `<table><thead><tr><th>Arquivo</th><th class="numero">Tamanho</th>
+    <th>Sistema</th><th></th></tr></thead><tbody>${linhas}</tbody></table>`;
+  alvo.querySelectorAll("select").forEach(seletor => seletor.addEventListener("change", () => {
+    const arquivo = estado.arquivos[+seletor.dataset.indice];
+    if (seletor.value) estado.manuais[arquivo.name] = seletor.value;
+    else delete estado.manuais[arquivo.name];
+  }));
+  alvo.querySelectorAll("button[data-remover]").forEach(botao => botao.addEventListener("click", () => {
+    const arquivo = estado.arquivos[+botao.dataset.remover];
+    delete estado.manuais[arquivo.name];
+    estado.arquivos.splice(+botao.dataset.remover, 1);
+    desenharLista();
+  }));
+  atualizarBotao();
+}
+
+const escaparHTML = texto => String(texto).replace(/[&<>"]/g, c =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function atualizarBotao() {
+  elemento("executar").disabled = estado.arquivos.length < 1;
+  elemento("situacao").textContent = estado.arquivos.length
+    ? `${estado.arquivos.length} arquivo(s) na lista.`
+    : "Adicione os arquivos dos dois sistemas.";
+}
+
+function anotar(mensagem) {
+  const registro = elemento("registro");
+  registro.classList.remove("oculto");
+  registro.textContent += mensagem + "\n";
+  registro.scrollTop = registro.scrollHeight;
+  elemento("situacao").textContent = mensagem;
+}
+
+const respirar = () => new Promise(resolve => setTimeout(resolve, 15));
+
+async function executar() {
+  const botao = elemento("executar");
+  botao.disabled = true;
+  botao.textContent = "Processando...";
+  elemento("registro").textContent = "";
+  elemento("resultado").innerHTML = "";
+  try {
+    await rodar();
+  } catch (erro) {
+    elemento("resultado").innerHTML = `<div class="erro"><b>Falhou:</b> ${escaparHTML(erro.message)}</div>`;
+    anotar("ERRO: " + erro.message);
+  }
+  botao.disabled = false;
+  botao.textContent = "Executar rotina";
+}
+
+async function rodar() {
+  const perfil = normalizarPerfil(PERFIS[elemento("perfil").value]);
+  const nomeA = elemento("nomeA").value.trim(), nomeB = elemento("nomeB").value.trim();
+  if (nomeA) perfil.sistemas[0].nome = nomeA;
+  if (nomeB) perfil.sistemas[1].nome = nomeB;
+
+  anotar(`Lendo ${estado.arquivos.length} arquivo(s)...`);
+  await respirar();
+  const tabelas = [], relatorioArquivos = [];
+  for (const arquivo of estado.arquivos) {
+    try {
+      const lidas = await lerArquivo(arquivo);
+      lidas.forEach(t => { t.origem = arquivo.name; tabelas.push(t); });
+      const registros = lidas.reduce((soma, t) => soma + t.linhas.length, 0);
+      relatorioArquivos.push({ nome: arquivo.name, registros, sistema: "", confianca: 0, motivo: "", erro: "" });
+      anotar(`  ${arquivo.name}: ${registros} registro(s)`);
+    } catch (erro) {
+      relatorioArquivos.push({ nome: arquivo.name, registros: 0, sistema: "", confianca: 0, motivo: "", erro: erro.message });
+      anotar(`  ${arquivo.name}: ERRO — ${erro.message}`);
+    }
+    await respirar();
+  }
+  if (!tabelas.length) throw new Error("Nenhum arquivo pôde ser lido.");
+
+  anotar("Identificando a qual sistema pertence cada arquivo...");
+  await respirar();
+  const deteccao = detectar(tabelas, perfil, estado.manuais);
+  for (const arquivo of relatorioArquivos) {
+    const item = deteccao.detectadas.find(d => d.tabela.origem === arquivo.nome);
+    if (item) {
+      arquivo.sistema = deteccao.nomes[item.sistema] || item.sistema;
+      arquivo.confianca = item.confianca;
+      arquivo.motivo = item.motivo;
+    }
+  }
+
+  anotar("Consolidando cada sistema...");
+  await respirar();
+  const consolidadoA = consolidar(deteccao.detectadas.filter(d => d.sistema === "A"), perfil, "A", deteccao.nomes.A);
+  const consolidadoB = consolidar(deteccao.detectadas.filter(d => d.sistema === "B"), perfil, "B", deteccao.nomes.B);
+  anotar(`  ${consolidadoA.nome}: ${consolidadoA.linhas.length} registros | ${consolidadoB.nome}: ${consolidadoB.linhas.length} registros`);
+  await respirar();
+
+  anotar("Analisando os atributos de qualidade...");
+  await respirar();
+  const qualidadeA = analisarQualidade(consolidadoA, perfil);
+  const qualidadeB = analisarQualidade(consolidadoB, perfil);
+
+  anotar("Pareando os registros...");
+  await respirar();
+  const pareamento = parear(consolidadoA, consolidadoB, perfil);
+  const estatisticas = {
+    registrosA: consolidadoA.linhas.length, registrosB: consolidadoB.linhas.length,
+    somenteA: pareamento.somenteA.length, somenteB: pareamento.somenteB.length,
+    divergentes: pareamento.pares.filter(p => p.divergencias.length).length,
+    coberturaA: consolidadoA.linhas.length ? 100 * (consolidadoA.linhas.length - pareamento.somenteA.length) / consolidadoA.linhas.length : 0,
+    coberturaB: consolidadoB.linhas.length ? 100 * (consolidadoB.linhas.length - pareamento.somenteB.length) / consolidadoB.linhas.length : 0,
+  };
+  anotar(`  ${pareamento.pares.length} par(es); ${estatisticas.somenteA} só em ${consolidadoA.nome}; ${estatisticas.somenteB} só em ${consolidadoB.nome}.`);
+  await respirar();
+
+  anotar("Gerando a planilha e o relatório...");
+  await respirar();
+  const resultado = { consolidadoA, consolidadoB, qualidadeA, qualidadeB, pareamento, estatisticas,
+                      arquivos: relatorioArquivos, avisos: [...deteccao.avisos, ...pareamento.avisos,
+                      ...consolidadoA.avisos, ...consolidadoB.avisos] };
+  estado.resultado = resultado;
+  const planilha = await montarPlanilha(resultado);
+  const documento = await montarRelatorio(resultado);
+  anotar("Concluído.");
+  mostrarResultado(resultado, planilha, documento);
+}
+
+function mostrarResultado(resultado, planilha, documento) {
+  const { consolidadoA, consolidadoB, qualidadeA, qualidadeB, estatisticas, pareamento } = resultado;
+  const prefixo = `Consolidacao_${limparNome(consolidadoA.nome)}_x_${limparNome(consolidadoB.nome)}`;
+  const alvo = elemento("resultado");
+  alvo.innerHTML = `
+    <div class="cartoes" style="margin-top:14px">
+      <div class="cartao"><b>${estatisticas.registrosA}</b><span>registros em ${escaparHTML(consolidadoA.nome)}</span></div>
+      <div class="cartao"><b>${estatisticas.registrosB}</b><span>registros em ${escaparHTML(consolidadoB.nome)}</span></div>
+      <div class="cartao ok"><b>${pareamento.pares.length}</b><span>pares encontrados</span></div>
+      <div class="cartao alerta"><b>${estatisticas.somenteA}</b><span>só em ${escaparHTML(consolidadoA.nome)}</span></div>
+      <div class="cartao alerta"><b>${estatisticas.somenteB}</b><span>só em ${escaparHTML(consolidadoB.nome)}</span></div>
+      <div class="cartao atencao"><b>${estatisticas.divergentes}</b><span>pares com divergência</span></div>
+      <div class="cartao"><b>${qualidadeA.notaGeral}</b><span>qualidade ${escaparHTML(consolidadoA.nome)}</span></div>
+      <div class="cartao"><b>${qualidadeB.notaGeral}</b><span>qualidade ${escaparHTML(consolidadoB.nome)}</span></div>
+    </div>
+    ${resultado.avisos.map(a => `<div class="aviso">${escaparHTML(a)}</div>`).join("")}
+    ${resultado.arquivos.filter(a => a.erro).map(a =>
+      `<div class="erro"><b>${escaparHTML(a.nome)}:</b> ${escaparHTML(a.erro)}</div>`).join("")}
+    <div class="linha" style="margin-top:14px">
+      <button class="principal" id="baixarPlanilha">Baixar a planilha (.xlsx)</button>
+      <button id="baixarRelatorio">Baixar o relatório (.docx)</button>
+    </div>`;
+  elemento("baixarPlanilha").addEventListener("click", () => baixar(planilha, `${prefixo}.xlsx`));
+  elemento("baixarRelatorio").addEventListener("click", () => baixar(documento, `${prefixo}.docx`));
+}
+
+const limparNome = nome => nome.replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 20) || "Sistema";
+
+function baixar(blob, nome) {
+  const url = URL.createObjectURL(blob);
+  const ligacao = document.createElement("a");
+  ligacao.href = url;
+  ligacao.download = nome;
+  document.body.appendChild(ligacao);
+  ligacao.click();
+  ligacao.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+iniciar();
+</script>
+</body>
+</html>

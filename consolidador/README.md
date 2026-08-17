@@ -27,14 +27,33 @@ Cada execução gera **dois arquivos**:
 8. **Somente em \<Sistema 2\>** — o inverso, **realçado em azul**.
 9. **Arquivos lidos** — qual arquivo virou qual sistema, por qual critério e com qual confiança.
 
-## Instalação
+## Duas formas de usar
 
-Nenhuma. Basta ter **Python 3.8 ou superior** instalado
+| Versão | Como abrir | Quando usar |
+| --- | --- | --- |
+| **`Consolidador.html`** | Duplo clique — abre no navegador (Chrome, Edge ou Firefox atualizados) | **Não exige instalar nada.** É a forma mais simples, e faz a rotina inteira: lê, consolida, analisa, pareia e baixa a planilha e o relatório |
+| **Aplicativo em Python** | `Consolidador.bat` (janela) ou `consolidar.py` (linha de comando) | Quando precisar de `.dbf`, `.ods`, `.zip`, perfis em arquivo `.json` ou execução automatizada |
+
+As duas versões seguem exatamente as mesmas regras e produzem os mesmos números; foram conferidas
+lado a lado com os mesmos arquivos. A versão web roda inteiramente no seu computador — nenhum
+arquivo é enviado para a internet — e lê `.xls` de relatório, `.xlsx`, `.htm`, `.csv`, `.txt` e
+`.json`; para `.dbf`, `.ods` e `.zip`, use a versão em Python.
+
+### Versão web, passo a passo
+
+1. Salve o `Consolidador.html` numa pasta e dê **duplo clique** (ele abre no navegador).
+2. Arraste os arquivos dos dois sistemas para a área indicada.
+3. Se quiser, corrija a coluna **Sistema** de cada arquivo e escolha o **perfil**
+   (Automático, SICLOM × SINAN ou Dispensações × Ativos).
+4. Clique em **Executar rotina** e, ao final, em **Baixar a planilha** e **Baixar o relatório**.
+
+## Instalação (só para a versão em Python)
+
+Nenhuma biblioteca externa. Basta ter **Python 3.8 ou superior** instalado
 ([python.org/downloads](https://www.python.org/downloads/) — na instalação, marque
-"Add Python to PATH"). O aplicativo não usa nenhuma biblioteca externa: lê e grava
-`.xlsx` e `.docx` diretamente.
+"Add Python to PATH").
 
-## Como usar (janela)
+## Como usar (janela do Python)
 
 - **Windows:** duplo clique em `Consolidador.bat` (ou em `executar.py`).
 - **Linux/macOS:** `python3 executar.py`
@@ -203,7 +222,8 @@ Arquivos do dia a dia (centenas ou poucos milhares de linhas) rodam em segundos.
 
 ```
 consolidador/
-├── executar.py                  # abre a janela
+├── Consolidador.html            # versão web: duplo clique, sem instalar nada
+├── executar.py                  # abre a janela (versão Python)
 ├── consolidar.py                # linha de comando
 ├── Consolidador.bat             # atalho para Windows
 ├── perfis/                      # perfis de configuração
