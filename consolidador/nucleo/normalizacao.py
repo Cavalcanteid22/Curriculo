@@ -29,7 +29,7 @@ _PADROES_TIPO = (
     ("cnpj", r"\bcnpj\b|cnpj"),
     ("email", r"e.?mail"),
     ("cep", r"\bcep\b"),
-    ("telefone", r"telefone|celular|fone|contato"),
+    ("telefone", r"telefone|telefon|celular|\bfone\b|\bcontato\b"),
     ("data", r"\bdata\b|\bdt\b|nascimento|emissao|vencimento|admissao|cadastro|competencia|periodo"),
     ("numero", r"valor|preco|salario|quantidade|qtd|total|saldo|montante|percentual|aliquota"),
     ("codigo", r"codigo|matricula|protocolo|processo|identificador|\bid\b|registro|inscricao|contrato|empenho"),
@@ -278,23 +278,54 @@ def inferir_tipo(nome_coluna: str, valores: List[str]) -> str:
         return "cnpj"
     if proporcao(tx.email_valido) > 0.80:
         return "email"
-    if proporcao(lambda v: tx.para_data(v) is not None) > 0.80:
+    if proporcao(_parece_data) > 0.80:
         return "data"
     if proporcao(lambda v: tx.para_numero(v) is not None) > 0.85:
-        nome = tx.normalizar(nome_coluna)
-        if re.search(r"cep", nome) and proporcao(lambda v: len(tx.so_digitos(v)) == 8) > 0.7:
-            return "cep"
+        # Telefone e CEP tambem sao formados so por digitos: quando o nome da
+        # coluna diz o que o campo e, ele vale mais do que 'numero'.
+        for tipo in ("cep", "telefone"):
+            padrao = dict(_PADROES_TIPO)[tipo]
+            if re.search(padrao, nome_normalizado) and _conteudo_compativel(tipo, proporcao):
+                return tipo
         return "numero"
     distintos = len({tx.normalizar(v) for v in amostra})
     if distintos <= max(2, min(25, total // 8)) and total >= 8:
         return "categoria"
     nome = tx.normalizar(nome_coluna)
     for tipo, padrao in _PADROES_TIPO:
-        if re.search(padrao, nome):
-            if tipo in ("cpf", "cnpj", "cpf_cnpj") and proporcao(lambda v: tx.so_digitos(v)) < 0.5:
-                continue
+        if re.search(padrao, nome) and _conteudo_compativel(tipo, proporcao):
             return tipo
     return "texto"
+
+
+def _parece_data(valor: str) -> bool:
+    """Data precisa parecer data: '30/10/2009' ou '20091030', nunca '3859'.
+
+    Sem isso, codigos numericos curtos (CNES da unidade, numero de lote) seriam
+    lidos como numero de serie de data do Excel e a base inteira apareceria
+    como 'data invalida'.
+    """
+    texto = tx.limpar(valor)
+    if not (re.search(r"\d[/.\-]\d", texto) or re.fullmatch(r"\d{8}", texto)):
+        return False
+    return tx.para_data(texto) is not None
+
+
+def _conteudo_compativel(tipo: str, proporcao) -> bool:
+    """O nome da coluna sugere o tipo; o conteudo precisa aceitar a sugestao."""
+    if tipo in ("cpf", "cnpj", "cpf_cnpj"):
+        return proporcao(lambda v: len(tx.so_digitos(v)) >= 11) >= 0.5
+    if tipo == "telefone":
+        return proporcao(lambda v: len(tx.so_digitos(v)) >= 8) >= 0.5
+    if tipo == "cep":
+        return proporcao(lambda v: len(tx.so_digitos(v)) == 8) >= 0.5
+    if tipo == "email":
+        return proporcao(lambda v: "@" in v) >= 0.5
+    if tipo == "data":
+        return proporcao(_parece_data) >= 0.3
+    if tipo == "numero":
+        return proporcao(lambda v: tx.para_numero(v) is not None) >= 0.5
+    return True
 
 
 def _parece_chave(coluna: str, valores: List[str], preenchidos: List[str]) -> bool:

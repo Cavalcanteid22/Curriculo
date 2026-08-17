@@ -164,7 +164,7 @@ Perfis prontos incluídos:
 | --- | --- |
 | `perfis/exemplo_dois_sistemas.json` | Modelo comentado, com todas as opções |
 | `perfis/siclom_cadastrados_x_ativos.json` | Cruzamento entre o relatório de usuários cadastrados (`.xls` que é HTML) e a planilha de usuários ativos, pareando por nome + data de nascimento + nome da mãe, já que não há CPF nos dois lados |
-| `perfis/siclom_hepatites_x_sinan.json` | Conferência "todo paciente ativo no SICLOM Hepatites deveria estar notificado no SINAN": pareia por CPF e, na falta dele, por nome + data de nascimento ou nome + nome da mãe |
+| `perfis/siclom_hepatites_x_sinan.json` | Conferência "todo paciente ativo no SICLOM Hepatites deveria estar notificado no SINAN": lê a exportação HEPANET do SINAN (`NM_PACIENT`, `DT_NASC`, `NU_NOTIFIC`…) e pareia por nome + data de nascimento e por nome + nome da mãe, já que o SINAN não traz CPF |
 | `perfis/siclom_dispensacoes_x_ativos.json` | Confere a lista de usuários ativos contra o que foi efetivamente dispensado (uma linha por dispensação × uma linha por pessoa: pareamento 1:N) |
 
 ### A conferência SICLOM × SINAN, passo a passo

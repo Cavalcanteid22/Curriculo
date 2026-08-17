@@ -81,13 +81,22 @@ def detectar(
         for tabela in tabelas:
             identificador, confianca, motivo = _classificar_por_perfil(tabela, perfil)
             resultado.detectadas.append(TabelaDetectada(tabela, identificador, confianca, motivo))
-        indefinidas = [d for d in resultado.detectadas if not d.sistema_id or d.confianca < 0.30]
+        # Só recorre a semelhanca quando o perfil nao reconheceu nada: uma
+        # correspondencia fraca com o sistema certo vale mais do que uma
+        # semelhanca forte com o arquivo errado.
+        indefinidas = [d for d in resultado.detectadas if not d.sistema_id]
         if indefinidas:
             resultado.avisos.append(
-                f"{len(indefinidas)} tabela(s) nao casaram com o perfil; "
+                f"{len(indefinidas)} tabela(s) nao casaram com nenhuma regra do perfil; "
                 "foram classificadas por semelhanca de cabecalho."
             )
             _classificar_por_agrupamento(indefinidas, resultado.detectadas, perfil)
+        fracas = [d for d in resultado.detectadas if d.sistema_id and d.confianca < 0.30]
+        for detectada in fracas:
+            resultado.avisos.append(
+                f"'{detectada.arquivo}' casou fracamente com o perfil "
+                f"({detectada.confianca:.0%}): confira a coluna Sistema."
+            )
         resultado.nomes_sistemas = {s.id: s.nome for s in perfil.sistemas}
     else:
         resultado.modo = "automatico"
@@ -143,16 +152,19 @@ def _pontuar_sistema(tabela: Tabela, sistema: SistemaConfig) -> Tuple[float, Lis
             motivos.append(f"aba casa com '{padrao}'")
             break
     cabecalhos = {tx.chave_cabecalho(c) for c in tabela.colunas}
-    esperadas = {tx.chave_cabecalho(c) for c in sistema.colunas_esperadas}
-    for aliases in sistema.mapeamento.values():
-        esperadas.update(tx.chave_cabecalho(a) for a in aliases)
-    if esperadas:
-        cobertura = len(cabecalhos & esperadas) / len(esperadas)
+    # Conta campos reconhecidos, e nao apelidos: um campo com dez apelidos nao
+    # pode valer menos do que um campo com um so.
+    campos = [
+        {tx.chave_cabecalho(a) for a in aliases} | {tx.chave_cabecalho(canonico)}
+        for canonico, aliases in sistema.mapeamento.items()
+    ]
+    campos += [{tx.chave_cabecalho(c)} for c in sistema.colunas_esperadas]
+    if campos:
+        encontrados = sum(1 for apelidos in campos if apelidos & cabecalhos)
+        cobertura = encontrados / len(campos)
         nota += 0.60 * cobertura
         if cobertura:
-            motivos.append(
-                f"{len(cabecalhos & esperadas)} de {len(esperadas)} colunas esperadas presentes"
-            )
+            motivos.append(f"{encontrados} de {len(campos)} campos esperados presentes")
     return nota, motivos
 
 

@@ -105,14 +105,20 @@
       "nome": "SINAN",
       "padroes_arquivo": [
         "sinan",
+        "hepanet",
         "hepatonet",
         "notifica"
       ],
       "padroes_aba": [],
       "colunas_esperadas": [
+        "NU_NOTIFIC",
         "NM_PACIENT",
         "DT_NASC",
-        "NU_NOTIFIC"
+        "NM_MAE_PAC",
+        "DT_NOTIFIC",
+        "ID_AGRAVO",
+        "CS_SEXO",
+        "ID_MN_RESI"
       ],
       "mapeamento": {
         "Nome": [
@@ -174,6 +180,22 @@
           "CS_SEXO",
           "SEXO",
           "Sexo"
+        ],
+        "Cartao SUS": [
+          "ID_CNS_SUS",
+          "CNS",
+          "CARTAO SUS"
+        ],
+        "Bairro": [
+          "NM_BAIRRO",
+          "BAIRRO"
+        ],
+        "Telefones": [
+          "NU_TELEFON",
+          "TELEFONE"
+        ],
+        "Data de encerramento": [
+          "DT_ENCERRA"
         ]
       },
       "ignorar_colunas": []
@@ -245,6 +267,18 @@
     {
       "nome": "Email",
       "tipo": "email"
+    },
+    {
+      "nome": "Cartao SUS",
+      "tipo": "codigo"
+    },
+    {
+      "nome": "Data de encerramento",
+      "tipo": "data"
+    },
+    {
+      "nome": "Bairro",
+      "tipo": "texto"
     }
   ],
   "pareamento": {
