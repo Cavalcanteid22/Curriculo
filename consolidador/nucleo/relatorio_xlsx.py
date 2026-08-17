@@ -533,6 +533,20 @@ def _aba_pareamento(planilha: Planilha, resultado: ResultadoGeral) -> None:
 # --------------------------------------------------------------------------
 
 
+def _campos_do_candidato(pareamento: ResultadoPareamento, lado: str) -> List[str]:
+    """Campos do outro sistema que ajudam a decidir se e a mesma pessoa."""
+    campos: List[str] = []
+    for par_a, par_b in pareamento.campos_similaridade:
+        campos.append(par_b if lado == "A" else par_a)
+    for par in pareamento.mapa_campos:
+        if len(campos) >= 5:
+            break
+        nome = par.campo_b if lado == "A" else par.campo_a
+        if nome not in campos:
+            campos.append(nome)
+    return campos[:5]
+
+
 def _aba_somente(planilha: Planilha, resultado: ResultadoGeral, lado: str) -> None:
     pareamento: ResultadoPareamento = resultado.pareamento
     if lado == "A":
@@ -546,10 +560,13 @@ def _aba_somente(planilha: Planilha, resultado: ResultadoGeral, lado: str) -> No
 
     aba = planilha.aba(_nome_aba("Somente em", nome))
     colunas = [COL_ID] + consolidado.colunas_dados + [COL_ARQUIVO, COL_LINHA]
+    # Colunas do candidato: sem elas, a conferencia obriga a abrir o outro
+    # sistema para descobrir o que estava diferente.
+    campos_candidato = _campos_do_candidato(pareamento, lado)
     cabecalho = colunas + [
-        "Por que consta como ausente", "Registro mais parecido no outro sistema",
-        "Semelhanca com o mais parecido",
-    ]
+        "Por que consta como ausente", "Semelhanca com o mais parecido",
+        "ID do mais parecido",
+    ] + [f"{campo} em {nome_oposto[:14]} (mais parecido)" for campo in campos_candidato]
     total = len(consolidado.tabela.linhas)
     percentual = (100.0 * len(nao_pareados) / total) if total else 0.0
     linha = _titulo_aba(
@@ -573,12 +590,16 @@ def _aba_somente(planilha: Planilha, resultado: ResultadoGeral, lado: str) -> No
             )
             aba.escrever(linha, indice, valor, estilo)
         aba.escrever(linha, len(colunas), item.motivo, estilo_destaque.com(quebra=True))
-        aba.escrever(linha, len(colunas) + 1, item.melhor_candidato, E_DADO)
         aba.escrever(
-            linha, len(colunas) + 2,
+            linha, len(colunas) + 1,
             f"{item.escore_candidato:.0%}" if item.escore_candidato else "",
-            (E_ALERTA_MEDIO if item.escore_candidato >= 0.60 else E_DADO).com(alinhamento="center"),
+            (E_ALERTA_MEDIO if item.escore_candidato >= 0.85 else E_DADO).com(alinhamento="center"),
         )
+        aba.escrever(linha, len(colunas) + 2,
+                     tx.limpar(item.linha_candidata.get(COL_ID)), E_DADO)
+        for deslocamento, campo in enumerate(campos_candidato):
+            aba.escrever(linha, len(colunas) + 3 + deslocamento,
+                         tx.limpar(item.linha_candidata.get(campo)), E_DADO)
         linha += 1
 
     if not nao_pareados:
@@ -588,7 +609,7 @@ def _aba_somente(planilha: Planilha, resultado: ResultadoGeral, lado: str) -> No
 
     aba.larguras_automaticas(minima=10, maxima=40)
     aba.largura(len(colunas), 56)
-    aba.largura(len(colunas) + 1, 34)
+    aba.largura(len(colunas) + 1, 14)
     aba.congelar(linha_cabecalho + 1, 1)
     aba.aplicar_autofiltro(linha_cabecalho, 0, len(cabecalho) - 1)
 

@@ -60,6 +60,7 @@ class NaoPareado:
     motivo: str
     melhor_candidato: str = ""
     escore_candidato: float = 0.0
+    linha_candidata: Dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -612,20 +613,22 @@ def _listar_nao_pareados(
     indice_a = _indice_por_token(restantes_a, campos_sim, "a")
 
     for linha in restantes_a:
-        melhor, escore = _mais_parecido(linha, restantes_b, campos_sim, "a", indice_b)
+        melhor, escore, candidata = _mais_parecido(linha, restantes_b, campos_sim, "a", indice_b)
         resultado.somente_a.append(NaoPareado(
             linha=linha,
             motivo=_motivo_ausencia(linha, chave_a, consolidado_b.nome, escore),
             melhor_candidato=melhor,
             escore_candidato=escore,
+            linha_candidata=candidata,
         ))
     for linha in restantes_b:
-        melhor, escore = _mais_parecido(linha, restantes_a, campos_sim, "b", indice_a)
+        melhor, escore, candidata = _mais_parecido(linha, restantes_a, campos_sim, "b", indice_a)
         resultado.somente_b.append(NaoPareado(
             linha=linha,
             motivo=_motivo_ausencia(linha, chave_b, consolidado_a.nome, escore),
             melhor_candidato=melhor,
             escore_candidato=escore,
+            linha_candidata=candidata,
         ))
 
 
@@ -650,17 +653,18 @@ def _motivo_ausencia(linha, campo_chave: str, nome_oposto: str, escore: float) -
 
 def _mais_parecido(
     linha, candidatos, campos_sim, lado: str, indice: Dict[str, List[int]]
-) -> Tuple[str, float]:
+) -> Tuple[str, float, Dict[str, Any]]:
     """Registro mais parecido do outro sistema, para explicar a ausencia."""
     if not campos_sim or not candidatos:
-        return "", 0.0
+        return "", 0.0, {}
     invertidos = [(b, a) for a, b in campos_sim] if lado == "b" else campos_sim
-    melhor_texto, melhor_escore = "", 0.0
+    melhor_texto, melhor_escore, melhor_linha = "", 0.0, {}
     campo_mostrar = campos_sim[0][1] if lado == "a" else campos_sim[0][0]
     for posicao in _candidatos_do_bloco(linha, campos_sim, lado, indice):
         candidato = candidatos[posicao]
         escore = _escore_similaridade(linha, candidato, invertidos)
         if escore > melhor_escore:
             melhor_escore = escore
+            melhor_linha = candidato
             melhor_texto = f"{candidato[COL_ID]}: {tx.limpar(candidato.get(campo_mostrar))}"
-    return melhor_texto, round(melhor_escore, 3)
+    return melhor_texto, round(melhor_escore, 3), melhor_linha
