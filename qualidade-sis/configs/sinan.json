@@ -1,0 +1,660 @@
+{
+  "_leia_me": "Dicionário de crítica do SINAN NET (ficha de notificação individual — campos gerais, comuns a todos os agravos). Os campos específicos de cada agravo (ficha de investigação) devem ser acrescentados aqui conforme a necessidade do setor. Rode 'python executar.py validar -s sinan -b sua_base.csv' antes do primeiro uso.",
+  "sistema": "SINAN",
+  "nome_completo": "Sistema de Informação de Agravos de Notificação (SINAN NET)",
+  "descricao": "Base de notificações compulsórias do município de Salvador.",
+  "orgao": "Subcoordenadoria de Informação em Saúde — SMS Salvador",
+  "csv": {
+    "separador": null,
+    "encoding": null
+  },
+  "chave_registro": [
+    "NU_NOTIFIC",
+    "ID_AGRAVO",
+    "DT_NOTIFIC"
+  ],
+  "data_referencia": "DT_NOTIFIC",
+  "campos_estratificacao": [
+    "ID_UNIDADE",
+    "ID_AGRAVO",
+    "ID_BAIRRO",
+    "CLASSI_FIN"
+  ],
+  "apelidos_colunas": {
+    "NU_NOTIF": "NU_NOTIFIC",
+    "DT_NOTIF": "DT_NOTIFIC",
+    "ID_MUNICIPIO": "ID_MUNICIP",
+    "DT_SINTOMA": "DT_SIN_PRI"
+  },
+  "parametros": {
+    "data_minima_plausivel": "1900-01-01",
+    "defasagem_aceitavel_dias": 15,
+    "campo_abrangencia": "ID_MN_RESI"
+  },
+  "chaves_duplicidade": [
+    {
+      "id": "DUP_NOTIFIC",
+      "nome": "Número de notificação repetido no mesmo agravo",
+      "campos": [
+        "NU_NOTIFIC",
+        "ID_AGRAVO"
+      ]
+    },
+    {
+      "id": "DUP_PROVAVEL",
+      "nome": "Provável duplicidade (nome + data de nascimento + agravo)",
+      "campos": [
+        "NM_PACIENT",
+        "DT_NASC",
+        "ID_AGRAVO"
+      ]
+    },
+    {
+      "id": "DUP_MAE_AGRAVO",
+      "nome": "Provável duplicidade (nome + nome da mãe + agravo + data dos primeiros sintomas)",
+      "campos": [
+        "NM_PACIENT",
+        "NM_MAE_PAC",
+        "ID_AGRAVO",
+        "DT_SIN_PRI"
+      ]
+    }
+  ],
+  "tempestividade": [
+    {
+      "id": "NOTIFICACAO",
+      "rotulo": "Oportunidade da notificação (1º sintoma → notificação)",
+      "data_inicial": "DT_SIN_PRI",
+      "data_final": "DT_NOTIFIC",
+      "prazo_dias": 7
+    },
+    {
+      "id": "DIGITACAO",
+      "rotulo": "Oportunidade da digitação (notificação → digitação)",
+      "data_inicial": "DT_NOTIFIC",
+      "data_final": "DT_DIGITA",
+      "prazo_dias": 7
+    },
+    {
+      "id": "INVESTIGACAO",
+      "rotulo": "Oportunidade da investigação (notificação → investigação)",
+      "data_inicial": "DT_NOTIFIC",
+      "data_final": "DT_INVEST",
+      "prazo_dias": 2
+    },
+    {
+      "id": "ENCERRAMENTO",
+      "rotulo": "Oportunidade do encerramento (notificação → encerramento)",
+      "data_inicial": "DT_NOTIFIC",
+      "data_final": "DT_ENCERRA",
+      "prazo_dias": 60
+    }
+  ],
+  "campos": {
+    "TP_NOT": {
+      "rotulo": "Tipo de notificação",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "dominio": {
+        "1": "Negativa",
+        "2": "Individual",
+        "3": "Surto",
+        "4": "Agregado"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "ID_AGRAVO": {
+      "rotulo": "Agravo/doença (CID-10)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cid10"
+    },
+    "NU_NOTIFIC": {
+      "rotulo": "Número da notificação",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação"
+    },
+    "DT_NOTIFIC": {
+      "rotulo": "Data da notificação",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "data_minima": "2000-01-01"
+    },
+    "SEM_NOT": {
+      "rotulo": "Semana epidemiológica da notificação",
+      "tipo": "texto",
+      "bloco": "Notificação",
+      "regex": "^[0-9]{4}(0[1-9]|[1-4][0-9]|5[0-3])$",
+      "formato_descricao": "AAAASS"
+    },
+    "NU_ANO": {
+      "rotulo": "Ano da notificação",
+      "tipo": "inteiro",
+      "bloco": "Notificação",
+      "min": 2000,
+      "max": 2100
+    },
+    "SG_UF_NOT": {
+      "rotulo": "UF da notificação",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Notificação",
+      "regex": "^[0-9]{2}$",
+      "formato_descricao": "código IBGE da UF"
+    },
+    "ID_MUNICIP": {
+      "rotulo": "Município notificante (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "ibge"
+    },
+    "ID_REGIONA": {
+      "rotulo": "Regional de saúde",
+      "tipo": "texto",
+      "bloco": "Notificação"
+    },
+    "ID_UNIDADE": {
+      "rotulo": "Unidade notificadora (CNES)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Notificação",
+      "validador": "cnes",
+      "ignorado": [
+        "9999999"
+      ]
+    },
+    "DT_SIN_PRI": {
+      "rotulo": "Data dos primeiros sintomas",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Caso",
+      "data_minima": "2000-01-01"
+    },
+    "SEM_PRI": {
+      "rotulo": "Semana epidemiológica do 1º sintoma",
+      "tipo": "texto",
+      "bloco": "Caso",
+      "regex": "^[0-9]{4}(0[1-9]|[1-4][0-9]|5[0-3])$",
+      "formato_descricao": "AAAASS"
+    },
+    "NM_PACIENT": {
+      "rotulo": "Nome do paciente",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "DT_NASC": {
+      "rotulo": "Data de nascimento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "NU_IDADE_N": {
+      "rotulo": "Idade (código SINAN)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente",
+      "regex": "^[1-4][0-9]{3}$",
+      "formato_descricao": "4 dígitos: unidade (1=hora,2=dia,3=mês,4=ano) + quantidade"
+    },
+    "CS_SEXO": {
+      "rotulo": "Sexo",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "M": "Masculino",
+        "F": "Feminino",
+        "1": "Masculino",
+        "2": "Feminino"
+      },
+      "ignorado": [
+        "I",
+        "9",
+        "0"
+      ]
+    },
+    "CS_GESTANT": {
+      "rotulo": "Gestante",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "1": "1º trimestre",
+        "2": "2º trimestre",
+        "3": "3º trimestre",
+        "4": "Idade gestacional ignorada",
+        "5": "Não",
+        "6": "Não se aplica"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "CS_RACA": {
+      "rotulo": "Raça/cor",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Paciente",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "CS_ESCOL_N": {
+      "rotulo": "Escolaridade",
+      "tipo": "categorico",
+      "bloco": "Paciente",
+      "dominio": {
+        "0": "Analfabeto",
+        "1": "1ª a 4ª série incompleta",
+        "2": "4ª série completa",
+        "3": "5ª a 8ª série incompleta",
+        "4": "Fundamental completo",
+        "5": "Médio incompleto",
+        "6": "Médio completo",
+        "7": "Superior incompleto",
+        "8": "Superior completo",
+        "10": "Não se aplica"
+      },
+      "ignorado": [
+        "9",
+        "99"
+      ]
+    },
+    "NU_CNS": {
+      "rotulo": "Cartão Nacional de Saúde",
+      "tipo": "texto",
+      "bloco": "Paciente",
+      "validador": "cns"
+    },
+    "NM_MAE_PAC": {
+      "rotulo": "Nome da mãe",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Paciente"
+    },
+    "SG_UF": {
+      "rotulo": "UF de residência",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Residência",
+      "regex": "^[0-9]{2}$"
+    },
+    "ID_MN_RESI": {
+      "rotulo": "Município de residência (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Residência",
+      "validador": "ibge",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "ID_BAIRRO": {
+      "rotulo": "Bairro de residência",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Residência"
+    },
+    "NM_BAIRRO": {
+      "rotulo": "Nome do bairro",
+      "tipo": "texto",
+      "bloco": "Residência"
+    },
+    "NU_CEP": {
+      "rotulo": "CEP",
+      "tipo": "texto",
+      "bloco": "Residência",
+      "validador": "cep",
+      "ignorado": [
+        "00000000"
+      ]
+    },
+    "CS_ZONA": {
+      "rotulo": "Zona de residência",
+      "tipo": "categorico",
+      "bloco": "Residência",
+      "dominio": {
+        "1": "Urbana",
+        "2": "Rural",
+        "3": "Periurbana"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "ID_PAIS": {
+      "rotulo": "País de residência",
+      "tipo": "texto",
+      "bloco": "Residência"
+    },
+    "DT_INVEST": {
+      "rotulo": "Data da investigação",
+      "tipo": "data",
+      "bloco": "Investigação",
+      "data_minima": "2000-01-01"
+    },
+    "ID_OCUPA_N": {
+      "rotulo": "Ocupação (CBO)",
+      "tipo": "texto",
+      "bloco": "Paciente",
+      "regex": "^[0-9]{4,6}$",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "CLASSI_FIN": {
+      "rotulo": "Classificação final",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "dominio": {
+        "1": "Confirmado",
+        "2": "Descartado",
+        "3": "Provável",
+        "4": "Confirmado laboratorial",
+        "5": "Confirmado clínico-epidemiológico",
+        "8": "Inconclusivo"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "CRITERIO": {
+      "rotulo": "Critério de confirmação",
+      "tipo": "categorico",
+      "bloco": "Encerramento",
+      "dominio": {
+        "1": "Laboratorial",
+        "2": "Clínico-epidemiológico",
+        "3": "Clínico"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "EVOLUCAO": {
+      "rotulo": "Evolução do caso",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "dominio": {
+        "1": "Cura",
+        "2": "Óbito pelo agravo notificado",
+        "3": "Óbito por outra causa",
+        "4": "Óbito em investigação"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "DT_OBITO": {
+      "rotulo": "Data do óbito",
+      "tipo": "data",
+      "bloco": "Encerramento",
+      "data_minima": "2000-01-01"
+    },
+    "DT_ENCERRA": {
+      "rotulo": "Data do encerramento",
+      "tipo": "data",
+      "essencial": true,
+      "bloco": "Encerramento",
+      "data_minima": "2000-01-01"
+    },
+    "DT_DIGITA": {
+      "rotulo": "Data da digitação",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Processamento",
+      "data_minima": "2000-01-01"
+    },
+    "DT_TRANSUS": {
+      "rotulo": "Data da transferência para o nível superior",
+      "tipo": "data",
+      "bloco": "Processamento",
+      "data_minima": "2000-01-01"
+    },
+    "CS_FLXRET": {
+      "rotulo": "Fluxo de retorno",
+      "tipo": "categorico",
+      "bloco": "Processamento",
+      "dominio": {
+        "0": "Não",
+        "1": "Sim, aguardando",
+        "2": "Sim, retornado"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "NDUPLIC_N": {
+      "rotulo": "Marcador de duplicidade do SINAN",
+      "tipo": "categorico",
+      "bloco": "Processamento",
+      "dominio": {
+        "0": "Não duplicado",
+        "1": "Duplicidade identificada",
+        "2": "Não é duplicidade"
+      },
+      "ignorado": [
+        "9"
+      ]
+    }
+  },
+  "regras_cruzadas": [
+    {
+      "id": "SNN001",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_SIN_PRI",
+        "DT_NOTIFIC"
+      ],
+      "descricao": "A notificação não pode ser anterior aos primeiros sintomas.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN002",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NOTIFIC",
+        "DT_DIGITA"
+      ],
+      "descricao": "A digitação não pode ser anterior à notificação.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN003",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NOTIFIC",
+        "DT_ENCERRA"
+      ],
+      "descricao": "O encerramento não pode ser anterior à notificação.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN004",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NASC",
+        "DT_NOTIFIC"
+      ],
+      "descricao": "A notificação não pode ser anterior ao nascimento do paciente.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN005",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_NOTIFIC",
+        "DT_INVEST"
+      ],
+      "descricao": "A investigação não pode ser anterior à notificação.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN006",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DT_SIN_PRI",
+        "DT_OBITO"
+      ],
+      "descricao": "O óbito não pode ser anterior aos primeiros sintomas.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNN010",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "CS_SEXO",
+        "valores": [
+          "M",
+          "1"
+        ]
+      },
+      "entao_campo": "CS_GESTANT",
+      "valores_proibidos": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "descricao": "Paciente do sexo masculino marcado como gestante.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNN011",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "EVOLUCAO",
+        "valores": [
+          "2",
+          "3"
+        ]
+      },
+      "entao_preenchido": [
+        "DT_OBITO"
+      ],
+      "descricao": "Evolução para óbito exige a data do óbito.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SNN012",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "CLASSI_FIN",
+        "valores": [
+          "1",
+          "2",
+          "4",
+          "5",
+          "8"
+        ]
+      },
+      "entao_preenchido": [
+        "DT_ENCERRA",
+        "EVOLUCAO"
+      ],
+      "descricao": "Caso com classificação final exige data de encerramento e evolução.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SNN013",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "CLASSI_FIN",
+        "valores": [
+          "1",
+          "4",
+          "5"
+        ]
+      },
+      "entao_preenchido": [
+        "CRITERIO"
+      ],
+      "descricao": "Caso confirmado exige o critério de confirmação.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SNN014",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "CLASSI_FIN",
+        "valores": [
+          "2"
+        ]
+      },
+      "entao_campo": "CRITERIO",
+      "valores_proibidos": [
+        "1",
+        "2",
+        "3"
+      ],
+      "descricao": "Caso descartado com critério de confirmação preenchido — conferir.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNN020",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "TP_NOT",
+        "valores": [
+          "2"
+        ]
+      },
+      "entao_preenchido": [
+        "NM_PACIENT",
+        "DT_NASC",
+        "CS_SEXO",
+        "ID_MN_RESI"
+      ],
+      "descricao": "Notificação individual exige identificação mínima do paciente.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SNN030",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "NDUPLIC_N",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_campo": "NDUPLIC_N",
+      "valores_proibidos": [
+        "1"
+      ],
+      "descricao": "Registro marcado como duplicidade pelo próprio SINAN e ainda presente na base.",
+      "tipo_inconsistencia": "duplicidade"
+    }
+  ]
+}

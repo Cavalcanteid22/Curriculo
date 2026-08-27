@@ -1,0 +1,2314 @@
+<title>QualiSIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>/* QualiSIS no navegador — folha de estilo
+   Direção: ficha de laboratório / laudo institucional.
+   Tinta verde-petróleo, papel com viés frio-esverdeado, tipos Bitter (títulos)
+   + IBM Plex Sans (interface) + IBM Plex Mono (códigos e números).           */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  color-scheme: light;
+
+  --papel:        #f4f6f4;
+  --superficie:   #ffffff;
+  --superficie-2: #eaefec;
+  --tinta:        #14201d;
+  --tinta-2:      #4a5a55;
+  --tinta-3:      #7d8c87;
+  --fio:          #d8e0dc;
+  --fio-forte:    #b9c6c1;
+  --acento:       #0f6d5f;
+  --acento-suave: #e2f0ec;
+  --acento-tinta: #0b5348;
+
+  --bom:      #0f7a3d;
+  --atencao:  #b57900;
+  --serio:    #c25a24;
+  --critico:  #b3261e;
+
+  --c-duplicidade:      #d13c3b;
+  --c-em_branco:        #b8820a;
+  --c-ignorado:         #d05a26;
+  --c-codigo_invalido:  #5b4bc4;
+  --c-data_invalida:    #1f6fc4;
+  --c-incoerencia:      #10876a;
+  --c-formato_invalido: #c2568a;
+  --c-fora_de_faixa:    #2f7a12;
+  --c-fora_do_prazo:    #6f7d78;
+
+  --f-duplicidade:      #fae0df;
+  --f-em_branco:        #fbeecb;
+  --f-ignorado:         #fbe1d3;
+  --f-codigo_invalido:  #e6e2fa;
+  --f-data_invalida:    #d9e8f8;
+  --f-incoerencia:      #d6efe7;
+  --f-formato_invalido: #fadfeb;
+  --f-fora_de_faixa:    #dff0d4;
+  --f-fora_do_prazo:    #e6e9e8;
+
+  --raio: 10px;
+  --sombra: 0 1px 2px rgba(20, 32, 29, .06), 0 8px 24px -16px rgba(20, 32, 29, .28);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --papel:        #0e1412;
+    --superficie:   #161e1b;
+    --superficie-2: #1e2825;
+    --tinta:        #edf2f0;
+    --tinta-2:      #b3c1bc;
+    --tinta-3:      #83948e;
+    --fio:          #26332f;
+    --fio-forte:    #33443f;
+    --acento:       #35c1a5;
+    --acento-suave: #16302b;
+    --acento-tinta: #7fdcc7;
+
+    --bom:      #34b364;
+    --atencao:  #e0a52a;
+    --serio:    #e07a45;
+    --critico:  #e2564d;
+
+    --c-duplicidade:      #e8706e;
+    --c-em_branco:        #d9a52b;
+    --c-ignorado:         #e07f52;
+    --c-codigo_invalido:  #9b8ff0;
+    --c-data_invalida:    #5ba0e6;
+    --c-incoerencia:      #3cb894;
+    --c-formato_invalido: #e089b1;
+    --c-fora_de_faixa:    #63b23f;
+    --c-fora_do_prazo:    #96a5a0;
+
+    --f-duplicidade:      #3a1f1f;
+    --f-em_branco:        #372b12;
+    --f-ignorado:         #3a2418;
+    --f-codigo_invalido:  #262151;
+    --f-data_invalida:    #14283f;
+    --f-incoerencia:      #10332a;
+    --f-formato_invalido: #3a2030;
+    --f-fora_de_faixa:    #1c3312;
+    --f-fora_do_prazo:    #262e2c;
+
+    --sombra: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --papel:        #0e1412;
+  --superficie:   #161e1b;
+  --superficie-2: #1e2825;
+  --tinta:        #edf2f0;
+  --tinta-2:      #b3c1bc;
+  --tinta-3:      #83948e;
+  --fio:          #26332f;
+  --fio-forte:    #33443f;
+  --acento:       #35c1a5;
+  --acento-suave: #16302b;
+  --acento-tinta: #7fdcc7;
+
+  --bom:      #34b364;
+  --atencao:  #e0a52a;
+  --serio:    #e07a45;
+  --critico:  #e2564d;
+
+  --c-duplicidade:      #e8706e;
+  --c-em_branco:        #d9a52b;
+  --c-ignorado:         #e07f52;
+  --c-codigo_invalido:  #9b8ff0;
+  --c-data_invalida:    #5ba0e6;
+  --c-incoerencia:      #3cb894;
+  --c-formato_invalido: #e089b1;
+  --c-fora_de_faixa:    #63b23f;
+  --c-fora_do_prazo:    #96a5a0;
+
+  --f-duplicidade:      #3a1f1f;
+  --f-em_branco:        #372b12;
+  --f-ignorado:         #3a2418;
+  --f-codigo_invalido:  #262151;
+  --f-data_invalida:    #14283f;
+  --f-incoerencia:      #10332a;
+  --f-formato_invalido: #3a2030;
+  --f-fora_de_faixa:    #1c3312;
+  --f-fora_do_prazo:    #262e2c;
+
+  --sombra: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -16px rgba(0, 0, 0, .8);
+}
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--tinta);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15.5px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 { font-family: Bitter, Georgia, "Times New Roman", serif; text-wrap: balance; }
+h1 { font-size: clamp(26px, 3.4vw, 36px); margin: 0; line-height: 1.14; letter-spacing: -.015em; }
+h2 { font-size: 21px; margin: 0 0 4px; letter-spacing: -.01em; }
+h3 { font-size: 15.5px; margin: 22px 0 6px; color: var(--tinta-2); font-weight: 600; }
+p  { margin: 0 0 10px; }
+a  { color: var(--acento-tinta); }
+
+.envelope { max-width: 1240px; margin: 0 auto; padding: 26px 20px 90px; }
+
+/* ------------------------------------------------------------------ topo */
+.cabecalho { display: flex; flex-wrap: wrap; gap: 18px 26px; align-items: flex-end;
+             justify-content: space-between; padding-bottom: 18px;
+             border-bottom: 2px solid var(--fio-forte); }
+.marca { display: flex; align-items: center; gap: 13px; }
+.selo { width: 46px; height: 46px; flex: none; border-radius: 11px; background: var(--acento);
+        display: grid; place-items: center; color: #fff; font-family: Bitter, serif;
+        font-size: 20px; font-weight: 700; box-shadow: var(--sombra); }
+.sobrenome { color: var(--tinta-3); font-size: 11.5px; letter-spacing: .13em;
+             text-transform: uppercase; font-weight: 600; }
+.subtitulo { color: var(--tinta-2); font-size: 14px; max-width: 62ch; }
+
+/* --------------------------------------------------------------- etapas */
+.etapas { display: grid; gap: 16px; margin-top: 24px; }
+.cartao { background: var(--superficie); border: 1px solid var(--fio); border-radius: var(--raio);
+          padding: 18px 20px; box-shadow: var(--sombra); }
+.cartao > .rotulo-etapa { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.numero-etapa { width: 25px; height: 25px; flex: none; border-radius: 50%;
+                background: var(--acento-suave); color: var(--acento-tinta);
+                display: grid; place-items: center; font-size: 13px; font-weight: 700;
+                font-family: "IBM Plex Mono", monospace; }
+.rotulo-etapa strong { font-size: 15.5px; }
+.rotulo-etapa span.dica { color: var(--tinta-3); font-size: 13px; }
+
+.sistemas { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px; }
+.sistema { text-align: left; cursor: pointer; background: var(--superficie);
+           border: 1.5px solid var(--fio); border-radius: 9px; padding: 12px 14px;
+           font: inherit; color: inherit; transition: border-color .12s, background .12s; }
+.sistema:hover { border-color: var(--fio-forte); background: var(--superficie-2); }
+.sistema[aria-pressed="true"] { border-color: var(--acento); background: var(--acento-suave); }
+.sistema b { display: block; font-family: "IBM Plex Mono", monospace; font-size: 14px;
+             letter-spacing: .02em; }
+.sistema small { color: var(--tinta-2); font-size: 12.5px; line-height: 1.35; display: block;
+                 margin-top: 3px; }
+
+.solta { border: 2px dashed var(--fio-forte); border-radius: 9px; padding: 26px 20px;
+         text-align: center; background: var(--superficie-2); transition: border-color .12s; }
+.solta.sobre { border-color: var(--acento); background: var(--acento-suave); }
+.solta p { margin: 6px 0 0; color: var(--tinta-2); font-size: 13.5px; }
+.arquivo-escolhido { display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+                     margin-top: 12px; font-size: 13.5px; color: var(--tinta-2); }
+.arquivo-escolhido code { font-size: 13px; }
+
+.botao { font: inherit; font-weight: 600; cursor: pointer; border-radius: 8px; padding: 10px 18px;
+         border: 1.5px solid var(--acento); background: var(--acento); color: #fff;
+         transition: filter .12s; }
+.botao:hover { filter: brightness(1.08); }
+.botao[disabled] { opacity: .45; cursor: not-allowed; filter: none; }
+.botao.secundario { background: transparent; color: var(--acento-tinta); }
+.botao.discreto { background: transparent; color: var(--tinta-2); border-color: var(--fio-forte);
+                  padding: 7px 13px; font-weight: 500; font-size: 13.5px; }
+:focus-visible { outline: 2.5px solid var(--acento); outline-offset: 2px; }
+
+.opcional { margin-top: 12px; font-size: 13.5px; color: var(--tinta-2); }
+.opcional summary { cursor: pointer; color: var(--acento-tinta); font-weight: 600; }
+.linha-controles { display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+                   margin-top: 14px; }
+label.campo { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px;
+              color: var(--tinta-2); }
+input[type="date"], input[type="search"], select {
+  font: inherit; font-size: 13.5px; padding: 6px 9px; border-radius: 7px;
+  border: 1px solid var(--fio-forte); background: var(--superficie); color: var(--tinta); }
+
+/* ------------------------------------------------------------- progresso */
+.progresso { margin-top: 18px; }
+.barra-fora { height: 8px; border-radius: 99px; background: var(--superficie-2); overflow: hidden; }
+.barra-dentro { height: 100%; width: 0; background: var(--acento); border-radius: 99px;
+                transition: width .18s ease-out; }
+.progresso p { margin: 8px 0 0; font-size: 13.5px; color: var(--tinta-2);
+               font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------ resultados */
+.navegacao { position: sticky; top: 0; z-index: 20; display: flex; gap: 4px; overflow-x: auto;
+             background: var(--papel); padding: 10px 0; margin: 26px 0 0;
+             border-bottom: 1px solid var(--fio); }
+.navegacao a { flex: none; color: var(--tinta-2); text-decoration: none; font-size: 13.5px;
+               padding: 6px 11px; border-radius: 7px; white-space: nowrap; }
+.navegacao a:hover { background: var(--superficie-2); color: var(--tinta); }
+
+section.painel { background: var(--superficie); border: 1px solid var(--fio);
+                 border-radius: var(--raio); padding: 20px 22px; margin-top: 16px;
+                 box-shadow: var(--sombra); scroll-margin-top: 60px; }
+.cabeca-painel { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline;
+                 justify-content: space-between; margin-bottom: 6px; }
+.nota { color: var(--tinta-2); font-size: 13.5px; max-width: 78ch; }
+
+.heroi { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.heroi .escore { font-family: Bitter, serif; font-size: 64px; font-weight: 700; line-height: 1;
+                 letter-spacing: -.03em; }
+.pastilha { display: inline-block; padding: 3px 11px; border-radius: 99px; font-size: 12.5px;
+            font-weight: 600; border: 1.5px solid currentColor; }
+.mosaico { display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr)); gap: 12px;
+           margin-top: 18px; }
+.ladrilho { background: var(--superficie-2); border: 1px solid var(--fio); border-radius: 9px;
+            padding: 13px 15px; }
+.ladrilho .rot { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em;
+                 color: var(--tinta-2); font-weight: 600; }
+.ladrilho .val { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 600;
+                 margin-top: 3px; letter-spacing: -.02em; }
+.ladrilho .obs { font-size: 12.5px; color: var(--tinta-3); }
+
+/* --------------------------------------------------------------- tabelas */
+.rolagem { overflow-x: auto; border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--fio);
+         vertical-align: top; }
+th { position: sticky; top: 0; background: var(--superficie); color: var(--tinta-2);
+     font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600;
+     white-space: nowrap; z-index: 2; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap;
+                 font-family: "IBM Plex Mono", monospace; }
+tbody tr:hover td { background: var(--superficie-2); }
+.medidor { display: flex; align-items: center; gap: 9px; }
+.medidor .trilho { display: block; flex: 1 1 78px; min-width: 78px; height: 8px;
+                   border-radius: 99px; background: var(--superficie-2); overflow: hidden; }
+.medidor .preenchido { display: block; height: 100%; border-radius: 99px; }
+.medidor .valor { font-family: "IBM Plex Mono", monospace; min-width: 56px; text-align: right; }
+
+.amostra { width: 11px; height: 11px; border-radius: 3px; display: inline-block;
+           vertical-align: -1px; margin-right: 6px; }
+.legenda { display: flex; flex-wrap: wrap; gap: 7px 18px; font-size: 13px; color: var(--tinta-2);
+           margin: 4px 0 12px; }
+
+/* ------------------------------------------------- tabela de ocorrências */
+.filtros { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin: 4px 0 12px; }
+.tabelao { max-height: 66vh; overflow: auto; border: 1px solid var(--fio); border-radius: 8px; }
+.tabelao table { font-size: 12.5px; }
+.tabelao td, .tabelao th { white-space: nowrap; padding: 5px 8px; }
+.tabelao table { width: max-content; min-width: 100%; }
+.tabelao td.detalhe { max-width: 560px; overflow: hidden; text-overflow: ellipsis;
+                      font-size: 12px; color: var(--tinta-2); }
+.tabelao tr td:first-child { position: sticky; left: 0; background: var(--superficie);
+                             border-right: 1px solid var(--fio); font-family: "IBM Plex Mono", monospace; }
+.tabelao tr:hover td:first-child { background: var(--superficie-2); }
+
+td.duplicidade      { background: var(--f-duplicidade); }
+td.em_branco        { background: var(--f-em_branco); }
+td.ignorado         { background: var(--f-ignorado); }
+td.codigo_invalido  { background: var(--f-codigo_invalido); }
+td.data_invalida    { background: var(--f-data_invalida); }
+td.incoerencia      { background: var(--f-incoerencia); }
+td.formato_invalido { background: var(--f-formato_invalido); }
+td.fora_de_faixa    { background: var(--f-fora_de_faixa); }
+td.fora_do_prazo    { background: var(--f-fora_do_prazo); }
+tr.marcada td:first-child { box-shadow: inset 4px 0 0 var(--cor-linha, var(--fio-forte)); }
+
+.paginacao { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px;
+             font-size: 13.5px; color: var(--tinta-2); }
+
+/* --------------------------------------------------------------- rodapé */
+.acoes-download { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+ul.providencias { margin: 6px 0 0; padding-left: 20px; }
+ul.providencias li { margin-bottom: 7px; }
+.rodape { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--fio);
+          color: var(--tinta-3); font-size: 12.5px; }
+code, .mono { font-family: "IBM Plex Mono", monospace; font-size: .92em; }
+.oculto { display: none !important; }
+.aviso { border-left: 3px solid var(--atencao); background: var(--superficie-2);
+         padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 13.5px; color: var(--tinta-2);
+         margin: 12px 0; }
+.erro { border-left-color: var(--critico); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+@media print {
+  body { background: #fff; }
+  .navegacao, .etapas, .acoes-download, .filtros { display: none !important; }
+  section.painel { break-inside: avoid; box-shadow: none; }
+}
+</style>
+
+<div class="envelope">
+
+  <header class="cabecalho">
+    <div class="marca">
+      <div class="selo" aria-hidden="true">Q</div>
+      <div>
+        <div class="sobrenome">Subcoordenadoria de Informação em Saúde — SMS Salvador</div>
+        <h1>Qualidade dos sistemas de informação</h1>
+      </div>
+    </div>
+    <p class="subtitulo">Arraste o CSV do SIM, SINAN, SINASC, e-SUS SINAN ou SINAN Online e veja,
+    linha a linha e em cores, o que está inconsistente — e quanto já foi corrigido desde o último
+    envio. <strong>O arquivo não sai do seu computador</strong>: tudo é processado aqui, dentro do
+    navegador.</p>
+  </header>
+
+  <div class="etapas">
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">1</span>
+        <strong>Escolha o sistema</strong>
+        <span class="dica">o dicionário de crítica muda conforme o sistema</span></div>
+      <div class="sistemas" id="sistemas"></div>
+    </div>
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">2</span>
+        <strong>Escolha o arquivo CSV ou DBF</strong>
+        <span class="dica">exportado do sistema, sem ter sido aberto no Excel antes</span></div>
+      <div class="solta" id="zona-arquivo">
+        <strong>Arraste o arquivo para cá</strong>
+        <p>ou <button type="button" class="botao secundario">procurar no computador</button></p>
+        <input type="file" id="arquivo" accept=".csv,.txt,.dbf,text/csv" class="oculto">
+      </div>
+      <div class="arquivo-escolhido" id="rotulo-arquivo"></div>
+
+      <details class="opcional">
+        <summary>Comparar com o envio anterior (opcional, mas é o que mede a resolutividade)</summary>
+        <p style="margin-top:8px">Informe o CSV ou DBF do envio passado. A ferramenta acompanha cada
+        registro pela chave e mostra o que foi <strong>corrigido</strong>, o que
+        <strong>persiste</strong> e o que é <strong>novo</strong>.</p>
+        <div class="solta" id="zona-anterior" style="padding:16px">
+          <button type="button" class="botao discreto">escolher o arquivo do envio anterior</button>
+          <input type="file" id="arquivo-anterior" accept=".csv,.txt,.dbf,text/csv" class="oculto">
+        </div>
+        <div class="arquivo-escolhido" id="rotulo-anterior"></div>
+      </details>
+
+      <div class="linha-controles">
+        <label class="campo">Data da extração
+          <input type="date" id="data-extracao">
+        </label>
+        <span class="nota">em branco = usa a data do arquivo</span>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">3</span>
+        <strong>Analisar</strong></div>
+      <div class="linha-controles">
+        <button class="botao" id="analisar" disabled>Analisar a base</button>
+        <button class="botao discreto" id="exemplo">Ver um exemplo com dados inventados</button>
+      </div>
+      <p class="nota" id="resumo-escolha" style="margin-top:10px"></p>
+      <div class="progresso oculto" id="progresso">
+        <div class="barra-fora"><div class="barra-dentro" id="barra"></div></div>
+        <p id="texto-progresso"></p>
+      </div>
+      <div class="aviso erro oculto" id="erro"></div>
+    </div>
+
+  </div>
+
+  <nav class="navegacao oculto" id="navegacao" aria-label="Seções do resultado">
+    <a href="#p-resumo">Resumo</a>
+    <a href="#p-indicadores">Indicadores</a>
+    <a href="#p-tipos">Tipos</a>
+    <a href="#p-campos">Campos</a>
+    <a href="#p-prazos">Prazos</a>
+    <a href="#p-estratos">Onde estão</a>
+    <a href="#p-comparativo">Comparação</a>
+    <a href="#p-providencias">Providências</a>
+    <a href="#p-linhas">Linhas</a>
+    <a href="#p-exportar">Exportar</a>
+  </nav>
+
+  <main id="resultados"></main>
+
+  <footer class="rodape">
+    <p><strong>Como ler as cores.</strong> Vermelho: duplicidade. Amarelo: campo essencial em
+    branco. Laranja: preenchido como ignorado. Roxo: código fora do dicionário. Azul: data
+    inválida ou fora de ordem. Verde-água: incoerência entre campos. Rosa: formato inválido
+    (CNS, CPF, CEP). Verde: valor fora da faixa plausível. Cinza: fora do prazo pactuado.</p>
+    <p><strong>Proteção de dados.</strong> A base contém dado pessoal sensível. Nada é enviado
+    pela internet — a análise roda inteiramente neste navegador. Ao devolver a lista para uma
+    unidade, filtre e envie apenas as linhas daquela unidade.</p>
+    <p>Os dicionários de crítica (campos, domínios, prazos e regras) acompanham a versão para
+    computador, no repositório do setor, e podem ser ajustados sem programação.</p>
+  </footer>
+</div>
+
+<script>const CONFIGS = {"esus_sinan":{"sistema":"ESUS_SINAN","nome_completo":"e-SUS SINAN — notificação de agravos em plataforma web","descricao":"Base de notificações registradas no e-SUS SINAN no município de Salvador.","orgao":"Subcoordenadoria de Informação em Saúde — SMS Salvador","csv":{"separador":null,"encoding":null},"chave_registro":["NU_NOTIFIC"],"data_referencia":"DT_NOTIFIC","campos_estratificacao":["ID_UNIDADE","ID_AGRAVO","CLASSI_FIN","ID_BAIRRO"],"apelidos_colunas":{"NUMERO_NOTIFICACAO":"NU_NOTIFIC","NUMERO_DA_NOTIFICACAO":"NU_NOTIFIC","DATA_NOTIFICACAO":"DT_NOTIFIC","DATA_DA_NOTIFICACAO":"DT_NOTIFIC","DATA_PRIMEIROS_SINTOMAS":"DT_SIN_PRI","DATA_DOS_PRIMEIROS_SINTOMAS":"DT_SIN_PRI","DATA_DIGITACAO":"DT_DIGITA","DATA_DA_DIGITACAO":"DT_DIGITA","DATA_ENCERRAMENTO":"DT_ENCERRA","DATA_DO_ENCERRAMENTO":"DT_ENCERRA","DATA_NASCIMENTO":"DT_NASC","DATA_DE_NASCIMENTO":"DT_NASC","AGRAVO":"ID_AGRAVO","CID10":"ID_AGRAVO","CID_10":"ID_AGRAVO","UNIDADE_NOTIFICADORA":"ID_UNIDADE","CNES_UNIDADE_NOTIFICADORA":"ID_UNIDADE","MUNICIPIO_NOTIFICACAO":"ID_MUNICIP","MUNICIPIO_RESIDENCIA":"ID_MN_RESI","MUNICIPIO_DE_RESIDENCIA":"ID_MN_RESI","BAIRRO_RESIDENCIA":"ID_BAIRRO","BAIRRO":"ID_BAIRRO","NOME_PACIENTE":"NM_PACIENT","NOME_DO_PACIENTE":"NM_PACIENT","NOME_DA_MAE":"NM_MAE_PAC","NOME_MAE":"NM_MAE_PAC","SEXO":"CS_SEXO","RACA_COR":"CS_RACA","RACA":"CS_RACA","ESCOLARIDADE":"CS_ESCOL_N","GESTANTE":"CS_GESTANT","CNS":"NU_CNS","CARTAO_SUS":"NU_CNS","CPF":"NU_CPF","CEP":"NU_CEP","CLASSIFICACAO_FINAL":"CLASSI_FIN","CRITERIO_CONFIRMACAO":"CRITERIO","EVOLUCAO_CASO":"EVOLUCAO","TELEFONE":"NU_TELEFON","ZONA":"CS_ZONA"},"parametros":{"data_minima_plausivel":"1900-01-01","defasagem_aceitavel_dias":10,"campo_abrangencia":"ID_MN_RESI"},"chaves_duplicidade":[{"id":"DUP_NOTIFIC","nome":"Número de notificação repetido","campos":["NU_NOTIFIC"]},{"id":"DUP_CPF","nome":"Provável duplicidade (CPF + agravo + data dos primeiros sintomas)","campos":["NU_CPF","ID_AGRAVO","DT_SIN_PRI"]},{"id":"DUP_PROVAVEL","nome":"Provável duplicidade (nome + data de nascimento + agravo)","campos":["NM_PACIENT","DT_NASC","ID_AGRAVO"]}],"tempestividade":[{"id":"NOTIFICACAO","rotulo":"Oportunidade da notificação (1º sintoma → notificação)","data_inicial":"DT_SIN_PRI","data_final":"DT_NOTIFIC","prazo_dias":7},{"id":"DIGITACAO","rotulo":"Oportunidade do registro no sistema (notificação → digitação)","data_inicial":"DT_NOTIFIC","data_final":"DT_DIGITA","prazo_dias":2},{"id":"ENCERRAMENTO","rotulo":"Oportunidade do encerramento (notificação → encerramento)","data_inicial":"DT_NOTIFIC","data_final":"DT_ENCERRA","prazo_dias":60}],"campos":{"NU_NOTIFIC":{"rotulo":"Número da notificação","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação"},"ID_AGRAVO":{"rotulo":"Agravo (CID-10)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cid10"},"DT_NOTIFIC":{"rotulo":"Data da notificação","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Notificação","data_minima":"2015-01-01"},"DT_SIN_PRI":{"rotulo":"Data dos primeiros sintomas","tipo":"data","essencial":true,"bloco":"Caso","data_minima":"2015-01-01"},"ID_MUNICIP":{"rotulo":"Município notificante (IBGE)","tipo":"texto","essencial":true,"bloco":"Notificação","validador":"ibge"},"ID_UNIDADE":{"rotulo":"Unidade notificadora (CNES)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cnes","ignorado":["9999999"]},"NM_PACIENT":{"rotulo":"Nome do paciente","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Paciente"},"DT_NASC":{"rotulo":"Data de nascimento","tipo":"data","essencial":true,"bloco":"Paciente"},"CS_SEXO":{"rotulo":"Sexo","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Paciente","dominio":{"M":"Masculino","F":"Feminino","1":"Masculino","2":"Feminino","MASCULINO":"Masculino","FEMININO":"Feminino"},"ignorado":["I","9","INDEFINIDO"]},"CS_GESTANT":{"rotulo":"Gestante","tipo":"categorico","bloco":"Paciente","dominio":{"1":"1º trimestre","2":"2º trimestre","3":"3º trimestre","4":"Idade gestacional ignorada","5":"Não","6":"Não se aplica"},"ignorado":["9"]},"CS_RACA":{"rotulo":"Raça/cor","tipo":"categorico","essencial":true,"bloco":"Paciente","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena","BRANCA":"Branca","PRETA":"Preta","AMARELA":"Amarela","PARDA":"Parda","INDIGENA":"Indígena"},"ignorado":["9"]},"CS_ESCOL_N":{"rotulo":"Escolaridade","tipo":"texto","bloco":"Paciente","ignorado":["9","99"]},"NU_CNS":{"rotulo":"Cartão Nacional de Saúde","tipo":"texto","essencial":true,"bloco":"Paciente","validador":"cns"},"NU_CPF":{"rotulo":"CPF","tipo":"texto","bloco":"Paciente","validador":"cpf"},"NM_MAE_PAC":{"rotulo":"Nome da mãe","tipo":"texto","essencial":true,"bloco":"Paciente"},"NU_TELEFON":{"rotulo":"Telefone de contato","tipo":"texto","bloco":"Paciente","regex":"^[0-9]{10,11}$","so_digitos":true,"formato_descricao":"DDD + número (10 ou 11 dígitos)"},"ID_MN_RESI":{"rotulo":"Município de residência (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Residência","validador":"ibge"},"ID_BAIRRO":{"rotulo":"Bairro de residência","tipo":"texto","essencial":true,"bloco":"Residência"},"NU_CEP":{"rotulo":"CEP","tipo":"texto","bloco":"Residência","validador":"cep"},"CS_ZONA":{"rotulo":"Zona de residência","tipo":"categorico","bloco":"Residência","dominio":{"1":"Urbana","2":"Rural","3":"Periurbana","URBANA":"Urbana","RURAL":"Rural"},"ignorado":["9"]},"CLASSI_FIN":{"rotulo":"Classificação final","tipo":"texto","essencial":true,"bloco":"Encerramento","ignorado":["9"]},"CRITERIO":{"rotulo":"Critério de confirmação","tipo":"texto","bloco":"Encerramento","ignorado":["9"]},"EVOLUCAO":{"rotulo":"Evolução do caso","tipo":"texto","essencial":true,"bloco":"Encerramento","ignorado":["9"]},"DT_ENCERRA":{"rotulo":"Data do encerramento","tipo":"data","essencial":true,"bloco":"Encerramento","data_minima":"2015-01-01"},"DT_DIGITA":{"rotulo":"Data da digitação/registro","tipo":"data","essencial":true,"bloco":"Processamento","data_minima":"2015-01-01"}},"regras_cruzadas":[{"id":"ESN001","tipo":"ordem_datas","campos":["DT_SIN_PRI","DT_NOTIFIC"],"descricao":"A notificação não pode ser anterior aos primeiros sintomas.","tipo_inconsistencia":"data_invalida"},{"id":"ESN002","tipo":"ordem_datas","campos":["DT_NOTIFIC","DT_DIGITA"],"descricao":"O registro no sistema não pode ser anterior à notificação.","tipo_inconsistencia":"data_invalida"},{"id":"ESN003","tipo":"ordem_datas","campos":["DT_NOTIFIC","DT_ENCERRA"],"descricao":"O encerramento não pode ser anterior à notificação.","tipo_inconsistencia":"data_invalida"},{"id":"ESN004","tipo":"ordem_datas","campos":["DT_NASC","DT_NOTIFIC"],"descricao":"A notificação não pode ser anterior ao nascimento do paciente.","tipo_inconsistencia":"data_invalida"},{"id":"ESN010","tipo":"condicional_proibido","se":{"campo":"CS_SEXO","valores":["M","1","MASCULINO"]},"entao_campo":"CS_GESTANT","valores_proibidos":["1","2","3","4"],"descricao":"Paciente do sexo masculino marcado como gestante.","tipo_inconsistencia":"incoerencia"},{"id":"ESN011","tipo":"condicional_obrigatorio","se":{"campo":"CLASSI_FIN","preenchido":true},"entao_preenchido":["DT_ENCERRA","EVOLUCAO"],"descricao":"Caso classificado exige data de encerramento e evolução.","tipo_inconsistencia":"em_branco"},{"id":"ESN012","tipo":"condicional_obrigatorio","se":{"campo":"ID_MN_RESI","valores":["292740"]},"entao_preenchido":["ID_BAIRRO"],"descricao":"Residente em Salvador deve ter o bairro informado (necessário para a territorialização por distrito sanitário).","tipo_inconsistencia":"em_branco"}]},"sim":{"sistema":"SIM","nome_completo":"Sistema de Informação sobre Mortalidade","descricao":"Base de Declarações de Óbito (DO) do município de Salvador.","orgao":"Subcoordenadoria de Informação em Saúde — SMS Salvador","csv":{"separador":null,"encoding":null},"chave_registro":["NUMERODO"],"data_referencia":"DTOBITO","campos_estratificacao":["CODESTAB","LOCOCOR","CIRCOBITO"],"apelidos_colunas":{"NUMERO_DO":"NUMERODO","DT_OBITO":"DTOBITO","DT_NASC":"DTNASC","DT_CADASTRO":"DTCADASTRO","CAUSA_BASICA":"CAUSABAS","COD_MUN_RES":"CODMUNRES","COD_ESTAB":"CODESTAB"},"parametros":{"data_minima_plausivel":"1890-01-01","defasagem_aceitavel_dias":60,"campo_abrangencia":"CODMUNRES","estratos_esperados":[]},"chaves_duplicidade":[{"id":"DUP_NUMERODO","nome":"Número da DO repetido","campos":["NUMERODO"]},{"id":"DUP_PROVAVEL","nome":"Provável duplicidade (nome + data do óbito + data de nascimento)","campos":["NOME","DTOBITO","DTNASC"]},{"id":"DUP_NOME_MAE","nome":"Provável duplicidade (nome + nome da mãe + data do óbito)","campos":["NOME","NOMEMAE","DTOBITO"]}],"tempestividade":[{"id":"DIGITACAO","rotulo":"Oportunidade da digitação (óbito → cadastro no SIM)","data_inicial":"DTOBITO","data_final":"DTCADASTRO","prazo_dias":30},{"id":"INVESTIGACAO","rotulo":"Oportunidade da investigação (óbito → conclusão da investigação)","data_inicial":"DTOBITO","data_final":"DTCONINV","prazo_dias":120}],"campos":{"NUMERODO":{"rotulo":"Número da DO","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Identificação","regex":"^[0-9]{6,12}$","formato_descricao":"6 a 12 dígitos"},"TIPOBITO":{"rotulo":"Tipo de óbito","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Identificação","dominio":{"1":"Fetal","2":"Não fetal"},"ignorado":["9"]},"DTOBITO":{"rotulo":"Data do óbito","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Identificação","data_minima":"1996-01-01"},"HORAOBITO":{"rotulo":"Hora do óbito","tipo":"texto","bloco":"Identificação","regex":"^([01][0-9]|2[0-3])[0-5][0-9]$","formato_descricao":"HHMM","ignorado":["9999"]},"NATURAL":{"rotulo":"Naturalidade","tipo":"texto","bloco":"Identificação","ignorado":["999"]},"DTNASC":{"rotulo":"Data de nascimento","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Identificação"},"IDADE":{"rotulo":"Idade (código SIM)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Identificação","regex":"^[0-5][0-9]{2}$","formato_descricao":"3 dígitos: unidade (0=minutos,1=horas,2=dias,3=meses,4=anos,5=100+) + quantidade","ignorado":["999","000"]},"SEXO":{"rotulo":"Sexo","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Identificação","dominio":{"1":"Masculino","2":"Feminino","M":"Masculino","F":"Feminino"},"ignorado":["0","9","I"]},"RACACOR":{"rotulo":"Raça/cor","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Identificação","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena"},"ignorado":["9","0"]},"ESTCIV":{"rotulo":"Estado civil","tipo":"categorico","bloco":"Identificação","dominio":{"1":"Solteiro","2":"Casado","3":"Viúvo","4":"Separado judicialmente/divorciado","5":"União estável"},"ignorado":["9","0"]},"ESC":{"rotulo":"Escolaridade (anos de estudo)","tipo":"categorico","essencial":true,"bloco":"Identificação","dominio":{"1":"Nenhuma","2":"1 a 3 anos","3":"4 a 7 anos","4":"8 a 11 anos","5":"12 anos e mais"},"ignorado":["9","0"]},"ESC2010":{"rotulo":"Escolaridade (série/2010)","tipo":"categorico","bloco":"Identificação","dominio":{"0":"Sem escolaridade","1":"Fundamental I (1ª a 4ª)","2":"Fundamental II (5ª a 8ª)","3":"Médio","4":"Superior incompleto","5":"Superior completo"},"ignorado":["9"]},"OCUP":{"rotulo":"Ocupação (CBO)","tipo":"texto","bloco":"Identificação","regex":"^[0-9]{4,6}$","formato_descricao":"código CBO de 4 a 6 dígitos","ignorado":["999999","0000"]},"CODMUNRES":{"rotulo":"Município de residência (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Residência","validador":"ibge","ignorado":["999999","000000"]},"CODBAIRRES":{"rotulo":"Bairro de residência","tipo":"texto","bloco":"Residência"},"LOCOCOR":{"rotulo":"Local de ocorrência","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Ocorrência","dominio":{"1":"Hospital","2":"Outro estabelecimento de saúde","3":"Domicílio","4":"Via pública","5":"Outros","6":"Aldeia indígena"},"ignorado":["9"]},"CODESTAB":{"rotulo":"Estabelecimento de ocorrência (CNES)","tipo":"texto","bloco":"Ocorrência","validador":"cnes","ignorado":["9999999","0000000"]},"CODMUNOCOR":{"rotulo":"Município de ocorrência (IBGE)","tipo":"texto","essencial":true,"bloco":"Ocorrência","validador":"ibge","ignorado":["999999"]},"IDADEMAE":{"rotulo":"Idade da mãe","tipo":"inteiro","bloco":"Óbito fetal/infantil","min":10,"max":60,"ignorado":["99"]},"ESCMAE":{"rotulo":"Escolaridade da mãe","tipo":"categorico","bloco":"Óbito fetal/infantil","dominio":{"1":"Nenhuma","2":"1 a 3 anos","3":"4 a 7 anos","4":"8 a 11 anos","5":"12 anos e mais"},"ignorado":["9","0"]},"QTDFILVIVO":{"rotulo":"Filhos nascidos vivos","tipo":"inteiro","bloco":"Óbito fetal/infantil","min":0,"max":20,"ignorado":["99"]},"QTDFILMORT":{"rotulo":"Perdas fetais/abortos","tipo":"inteiro","bloco":"Óbito fetal/infantil","min":0,"max":20,"ignorado":["99"]},"GRAVIDEZ":{"rotulo":"Tipo de gravidez","tipo":"categorico","bloco":"Óbito fetal/infantil","dominio":{"1":"Única","2":"Dupla","3":"Tripla e mais"},"ignorado":["9"]},"GESTACAO":{"rotulo":"Semanas de gestação","tipo":"categorico","bloco":"Óbito fetal/infantil","dominio":{"1":"Menos de 22 semanas","2":"22 a 27","3":"28 a 31","4":"32 a 36","5":"37 a 41","6":"42 e mais"},"ignorado":["9","0"]},"PARTO":{"rotulo":"Tipo de parto","tipo":"categorico","bloco":"Óbito fetal/infantil","dominio":{"1":"Vaginal","2":"Cesáreo"},"ignorado":["9"]},"OBITOPARTO":{"rotulo":"Morte em relação ao parto","tipo":"categorico","bloco":"Óbito fetal/infantil","dominio":{"1":"Antes","2":"Durante","3":"Depois"},"ignorado":["9"]},"PESO":{"rotulo":"Peso ao nascer (g)","tipo":"inteiro","bloco":"Óbito fetal/infantil","min":100,"max":7000,"ignorado":["9999","0"]},"OBITOGRAV":{"rotulo":"Óbito na gravidez","tipo":"categorico","bloco":"Óbito materno","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"OBITOPUERP":{"rotulo":"Óbito no puerpério","tipo":"categorico","bloco":"Óbito materno","dominio":{"1":"Sim, até 42 dias","2":"Sim, de 43 dias a 1 ano","3":"Não"},"ignorado":["9"]},"ASSISTMED":{"rotulo":"Recebeu assistência médica","tipo":"categorico","bloco":"Assistência","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"EXAME":{"rotulo":"Exame complementar","tipo":"categorico","bloco":"Assistência","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"CIRURGIA":{"rotulo":"Cirurgia","tipo":"categorico","bloco":"Assistência","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"NECROPSIA":{"rotulo":"Necropsia","tipo":"categorico","bloco":"Assistência","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"LINHAA":{"rotulo":"Causa terminal (linha A)","tipo":"texto","bloco":"Causas","essencial":true},"LINHAB":{"rotulo":"Causa antecedente (linha B)","tipo":"texto","bloco":"Causas"},"LINHAC":{"rotulo":"Causa antecedente (linha C)","tipo":"texto","bloco":"Causas"},"LINHAD":{"rotulo":"Causa básica declarada (linha D)","tipo":"texto","bloco":"Causas"},"CAUSABAS":{"rotulo":"Causa básica (CID-10)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Causas","validador":"cid10"},"CAUSABAS_O":{"rotulo":"Causa básica original (antes da investigação)","tipo":"texto","bloco":"Causas","validador":"cid10"},"CIRCOBITO":{"rotulo":"Circunstância do óbito (causas externas)","tipo":"categorico","bloco":"Causas externas","dominio":{"1":"Acidente","2":"Suicídio","3":"Homicídio","4":"Outros"},"ignorado":["9"]},"ACIDTRAB":{"rotulo":"Acidente de trabalho","tipo":"categorico","bloco":"Causas externas","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"FONTE":{"rotulo":"Fonte da informação (causas externas)","tipo":"categorico","bloco":"Causas externas","dominio":{"1":"Ocorrência policial","2":"Hospital","3":"Família","4":"Outra"},"ignorado":["9"]},"ATESTANTE":{"rotulo":"Médico atestante","tipo":"categorico","bloco":"Assistência","dominio":{"1":"Assistente","2":"Substituto","3":"IML","4":"SVO","5":"Outro"},"ignorado":["9"]},"TPPOS":{"rotulo":"Óbito investigado","tipo":"categorico","bloco":"Investigação","dominio":{"S":"Sim","N":"Não"},"ignorado":["9"]},"DTINVESTIG":{"rotulo":"Data da investigação","tipo":"data","bloco":"Investigação","data_minima":"1996-01-01"},"DTCONINV":{"rotulo":"Data da conclusão da investigação","tipo":"data","bloco":"Investigação","data_minima":"1996-01-01"},"FONTEINV":{"rotulo":"Fonte da investigação","tipo":"categorico","bloco":"Investigação","dominio":{"1":"Comitê de mortalidade","2":"Visita domiciliar","3":"Estabelecimento de saúde","4":"Relacionamento com SIH/SINAN","5":"SVO","6":"IML","7":"Outra","8":"Múltiplas fontes"},"ignorado":["9"]},"DTCADASTRO":{"rotulo":"Data do cadastro no sistema","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Processamento","data_minima":"1996-01-01"},"DTRECEBIM":{"rotulo":"Data do recebimento","tipo":"data","bloco":"Processamento","data_minima":"1996-01-01"},"NOME":{"rotulo":"Nome do falecido","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Identificação"},"NOMEMAE":{"rotulo":"Nome da mãe","tipo":"texto","essencial":true,"bloco":"Identificação"}},"regras_cruzadas":[{"id":"SIM001","tipo":"ordem_datas","campos":["DTNASC","DTOBITO"],"descricao":"Data de nascimento deve ser anterior ou igual à data do óbito.","tipo_inconsistencia":"data_invalida"},{"id":"SIM002","tipo":"ordem_datas","campos":["DTOBITO","DTCADASTRO"],"descricao":"O cadastro no sistema não pode ser anterior ao óbito.","tipo_inconsistencia":"data_invalida"},{"id":"SIM003","tipo":"ordem_datas","campos":["DTOBITO","DTCONINV"],"descricao":"A conclusão da investigação não pode ser anterior ao óbito.","tipo_inconsistencia":"data_invalida"},{"id":"SIM004","tipo":"ordem_datas","campos":["DTNASC","DTOBITO"],"max_dias":44000,"descricao":"Idade implausível: mais de 120 anos entre nascimento e óbito.","tipo_inconsistencia":"incoerencia"},{"id":"SIM010","tipo":"condicional_proibido","se":{"campo":"SEXO","valores":["1","M"]},"entao_campo":"OBITOGRAV","valores_proibidos":["1"],"descricao":"Sexo masculino não pode ter óbito na gravidez.","tipo_inconsistencia":"incoerencia"},{"id":"SIM011","tipo":"condicional_proibido","se":{"campo":"SEXO","valores":["1","M"]},"entao_campo":"OBITOPUERP","valores_proibidos":["1","2"],"descricao":"Sexo masculino não pode ter óbito no puerpério.","tipo_inconsistencia":"incoerencia"},{"id":"SIM012","tipo":"condicional_proibido","se":{"campo":"SEXO","valores":["1","M"]},"entao_campo":"GESTACAO","valores_proibidos":["1","2","3","4","5","6"],"descricao":"Semanas de gestação preenchidas para óbito de sexo masculino (fora óbito fetal).","tipo_inconsistencia":"incoerencia"},{"id":"SIM020","tipo":"condicional_obrigatorio","se":{"campo":"TIPOBITO","valores":["1"]},"entao_preenchido":["GESTACAO","PESO","OBITOPARTO"],"descricao":"Óbito fetal deve informar semanas de gestação, peso e momento do óbito em relação ao parto.","tipo_inconsistencia":"em_branco"},{"id":"SIM021","tipo":"condicional_obrigatorio","se":{"campo":"CIRCOBITO","valores":["1","2","3","4"]},"entao_preenchido":["FONTE"],"descricao":"Óbito por causa externa deve informar a fonte da informação.","tipo_inconsistencia":"em_branco"},{"id":"SIM022","tipo":"condicional_obrigatorio","se":{"campo":"ASSISTMED","valores":["1"]},"entao_preenchido":["ATESTANTE"],"descricao":"Com assistência médica declarada, o médico atestante deve estar informado.","tipo_inconsistencia":"em_branco"},{"id":"SIM030","tipo":"condicional_proibido","se":{"campo":"TIPOBITO","valores":["2"]},"entao_campo":"OBITOPARTO","valores_proibidos":["1","2"],"descricao":"Óbito não fetal marcado como ocorrido antes/durante o parto — verificar.","tipo_inconsistencia":"incoerencia"},{"id":"SIM040","tipo":"faixa_condicional","se":{"campo":"TIPOBITO","valores":["1"]},"campo":"PESO","min":100,"max":7000,"descricao":"Peso ao nascer fora da faixa plausível para óbito fetal.","tipo_inconsistencia":"fora_de_faixa"},{"id":"SIM050","tipo":"condicional_obrigatorio","se":{"campo":"TPPOS","valores":["S"]},"entao_preenchido":["DTCONINV","FONTEINV"],"descricao":"Óbito marcado como investigado deve ter data de conclusão e fonte da investigação.","tipo_inconsistencia":"em_branco"},{"id":"SIM060","tipo":"coerencia_valores","combinacoes_proibidas":[{"OBITOGRAV":"1","OBITOPUERP":"1"}],"descricao":"Óbito não pode ser simultaneamente na gravidez e no puerpério.","tipo_inconsistencia":"incoerencia"}],"pesos_atributos":{}},"sinan":{"sistema":"SINAN","nome_completo":"Sistema de Informação de Agravos de Notificação (SINAN NET)","descricao":"Base de notificações compulsórias do município de Salvador.","orgao":"Subcoordenadoria de Informação em Saúde — SMS Salvador","csv":{"separador":null,"encoding":null},"chave_registro":["NU_NOTIFIC","ID_AGRAVO","DT_NOTIFIC"],"data_referencia":"DT_NOTIFIC","campos_estratificacao":["ID_UNIDADE","ID_AGRAVO","ID_BAIRRO","CLASSI_FIN"],"apelidos_colunas":{"NU_NOTIF":"NU_NOTIFIC","DT_NOTIF":"DT_NOTIFIC","ID_MUNICIPIO":"ID_MUNICIP","DT_SINTOMA":"DT_SIN_PRI"},"parametros":{"data_minima_plausivel":"1900-01-01","defasagem_aceitavel_dias":15,"campo_abrangencia":"ID_MN_RESI"},"chaves_duplicidade":[{"id":"DUP_NOTIFIC","nome":"Número de notificação repetido no mesmo agravo","campos":["NU_NOTIFIC","ID_AGRAVO"]},{"id":"DUP_PROVAVEL","nome":"Provável duplicidade (nome + data de nascimento + agravo)","campos":["NM_PACIENT","DT_NASC","ID_AGRAVO"]},{"id":"DUP_MAE_AGRAVO","nome":"Provável duplicidade (nome + nome da mãe + agravo + data dos primeiros sintomas)","campos":["NM_PACIENT","NM_MAE_PAC","ID_AGRAVO","DT_SIN_PRI"]}],"tempestividade":[{"id":"NOTIFICACAO","rotulo":"Oportunidade da notificação (1º sintoma → notificação)","data_inicial":"DT_SIN_PRI","data_final":"DT_NOTIFIC","prazo_dias":7},{"id":"DIGITACAO","rotulo":"Oportunidade da digitação (notificação → digitação)","data_inicial":"DT_NOTIFIC","data_final":"DT_DIGITA","prazo_dias":7},{"id":"INVESTIGACAO","rotulo":"Oportunidade da investigação (notificação → investigação)","data_inicial":"DT_NOTIFIC","data_final":"DT_INVEST","prazo_dias":2},{"id":"ENCERRAMENTO","rotulo":"Oportunidade do encerramento (notificação → encerramento)","data_inicial":"DT_NOTIFIC","data_final":"DT_ENCERRA","prazo_dias":60}],"campos":{"TP_NOT":{"rotulo":"Tipo de notificação","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Notificação","dominio":{"1":"Negativa","2":"Individual","3":"Surto","4":"Agregado"},"ignorado":["9"]},"ID_AGRAVO":{"rotulo":"Agravo/doença (CID-10)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cid10"},"NU_NOTIFIC":{"rotulo":"Número da notificação","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação"},"DT_NOTIFIC":{"rotulo":"Data da notificação","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Notificação","data_minima":"2000-01-01"},"SEM_NOT":{"rotulo":"Semana epidemiológica da notificação","tipo":"texto","bloco":"Notificação","regex":"^[0-9]{4}(0[1-9]|[1-4][0-9]|5[0-3])$","formato_descricao":"AAAASS"},"NU_ANO":{"rotulo":"Ano da notificação","tipo":"inteiro","bloco":"Notificação","min":2000,"max":2100},"SG_UF_NOT":{"rotulo":"UF da notificação","tipo":"texto","essencial":true,"bloco":"Notificação","regex":"^[0-9]{2}$","formato_descricao":"código IBGE da UF"},"ID_MUNICIP":{"rotulo":"Município notificante (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"ibge"},"ID_REGIONA":{"rotulo":"Regional de saúde","tipo":"texto","bloco":"Notificação"},"ID_UNIDADE":{"rotulo":"Unidade notificadora (CNES)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cnes","ignorado":["9999999"]},"DT_SIN_PRI":{"rotulo":"Data dos primeiros sintomas","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Caso","data_minima":"2000-01-01"},"SEM_PRI":{"rotulo":"Semana epidemiológica do 1º sintoma","tipo":"texto","bloco":"Caso","regex":"^[0-9]{4}(0[1-9]|[1-4][0-9]|5[0-3])$","formato_descricao":"AAAASS"},"NM_PACIENT":{"rotulo":"Nome do paciente","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Paciente"},"DT_NASC":{"rotulo":"Data de nascimento","tipo":"data","essencial":true,"bloco":"Paciente"},"NU_IDADE_N":{"rotulo":"Idade (código SINAN)","tipo":"texto","essencial":true,"bloco":"Paciente","regex":"^[1-4][0-9]{3}$","formato_descricao":"4 dígitos: unidade (1=hora,2=dia,3=mês,4=ano) + quantidade"},"CS_SEXO":{"rotulo":"Sexo","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Paciente","dominio":{"M":"Masculino","F":"Feminino","1":"Masculino","2":"Feminino"},"ignorado":["I","9","0"]},"CS_GESTANT":{"rotulo":"Gestante","tipo":"categorico","essencial":true,"bloco":"Paciente","dominio":{"1":"1º trimestre","2":"2º trimestre","3":"3º trimestre","4":"Idade gestacional ignorada","5":"Não","6":"Não se aplica"},"ignorado":["9","0"]},"CS_RACA":{"rotulo":"Raça/cor","tipo":"categorico","essencial":true,"bloco":"Paciente","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena"},"ignorado":["9","0"]},"CS_ESCOL_N":{"rotulo":"Escolaridade","tipo":"categorico","bloco":"Paciente","dominio":{"0":"Analfabeto","1":"1ª a 4ª série incompleta","2":"4ª série completa","3":"5ª a 8ª série incompleta","4":"Fundamental completo","5":"Médio incompleto","6":"Médio completo","7":"Superior incompleto","8":"Superior completo","10":"Não se aplica"},"ignorado":["9","99"]},"NU_CNS":{"rotulo":"Cartão Nacional de Saúde","tipo":"texto","bloco":"Paciente","validador":"cns"},"NM_MAE_PAC":{"rotulo":"Nome da mãe","tipo":"texto","essencial":true,"bloco":"Paciente"},"SG_UF":{"rotulo":"UF de residência","tipo":"texto","essencial":true,"bloco":"Residência","regex":"^[0-9]{2}$"},"ID_MN_RESI":{"rotulo":"Município de residência (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Residência","validador":"ibge","ignorado":["999999"]},"ID_BAIRRO":{"rotulo":"Bairro de residência","tipo":"texto","essencial":true,"bloco":"Residência"},"NM_BAIRRO":{"rotulo":"Nome do bairro","tipo":"texto","bloco":"Residência"},"NU_CEP":{"rotulo":"CEP","tipo":"texto","bloco":"Residência","validador":"cep","ignorado":["00000000"]},"CS_ZONA":{"rotulo":"Zona de residência","tipo":"categorico","bloco":"Residência","dominio":{"1":"Urbana","2":"Rural","3":"Periurbana"},"ignorado":["9"]},"ID_PAIS":{"rotulo":"País de residência","tipo":"texto","bloco":"Residência"},"DT_INVEST":{"rotulo":"Data da investigação","tipo":"data","bloco":"Investigação","data_minima":"2000-01-01"},"ID_OCUPA_N":{"rotulo":"Ocupação (CBO)","tipo":"texto","bloco":"Paciente","regex":"^[0-9]{4,6}$","ignorado":["999999"]},"CLASSI_FIN":{"rotulo":"Classificação final","tipo":"categorico","essencial":true,"bloco":"Encerramento","dominio":{"1":"Confirmado","2":"Descartado","3":"Provável","4":"Confirmado laboratorial","5":"Confirmado clínico-epidemiológico","8":"Inconclusivo"},"ignorado":["9","0"]},"CRITERIO":{"rotulo":"Critério de confirmação","tipo":"categorico","bloco":"Encerramento","dominio":{"1":"Laboratorial","2":"Clínico-epidemiológico","3":"Clínico"},"ignorado":["9"]},"EVOLUCAO":{"rotulo":"Evolução do caso","tipo":"categorico","essencial":true,"bloco":"Encerramento","dominio":{"1":"Cura","2":"Óbito pelo agravo notificado","3":"Óbito por outra causa","4":"Óbito em investigação"},"ignorado":["9","0"]},"DT_OBITO":{"rotulo":"Data do óbito","tipo":"data","bloco":"Encerramento","data_minima":"2000-01-01"},"DT_ENCERRA":{"rotulo":"Data do encerramento","tipo":"data","essencial":true,"bloco":"Encerramento","data_minima":"2000-01-01"},"DT_DIGITA":{"rotulo":"Data da digitação","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Processamento","data_minima":"2000-01-01"},"DT_TRANSUS":{"rotulo":"Data da transferência para o nível superior","tipo":"data","bloco":"Processamento","data_minima":"2000-01-01"},"CS_FLXRET":{"rotulo":"Fluxo de retorno","tipo":"categorico","bloco":"Processamento","dominio":{"0":"Não","1":"Sim, aguardando","2":"Sim, retornado"},"ignorado":["9"]},"NDUPLIC_N":{"rotulo":"Marcador de duplicidade do SINAN","tipo":"categorico","bloco":"Processamento","dominio":{"0":"Não duplicado","1":"Duplicidade identificada","2":"Não é duplicidade"},"ignorado":["9"]}},"regras_cruzadas":[{"id":"SNN001","tipo":"ordem_datas","campos":["DT_SIN_PRI","DT_NOTIFIC"],"descricao":"A notificação não pode ser anterior aos primeiros sintomas.","tipo_inconsistencia":"data_invalida"},{"id":"SNN002","tipo":"ordem_datas","campos":["DT_NOTIFIC","DT_DIGITA"],"descricao":"A digitação não pode ser anterior à notificação.","tipo_inconsistencia":"data_invalida"},{"id":"SNN003","tipo":"ordem_datas","campos":["DT_NOTIFIC","DT_ENCERRA"],"descricao":"O encerramento não pode ser anterior à notificação.","tipo_inconsistencia":"data_invalida"},{"id":"SNN004","tipo":"ordem_datas","campos":["DT_NASC","DT_NOTIFIC"],"descricao":"A notificação não pode ser anterior ao nascimento do paciente.","tipo_inconsistencia":"data_invalida"},{"id":"SNN005","tipo":"ordem_datas","campos":["DT_NOTIFIC","DT_INVEST"],"descricao":"A investigação não pode ser anterior à notificação.","tipo_inconsistencia":"data_invalida"},{"id":"SNN006","tipo":"ordem_datas","campos":["DT_SIN_PRI","DT_OBITO"],"descricao":"O óbito não pode ser anterior aos primeiros sintomas.","tipo_inconsistencia":"data_invalida"},{"id":"SNN010","tipo":"condicional_proibido","se":{"campo":"CS_SEXO","valores":["M","1"]},"entao_campo":"CS_GESTANT","valores_proibidos":["1","2","3","4"],"descricao":"Paciente do sexo masculino marcado como gestante.","tipo_inconsistencia":"incoerencia"},{"id":"SNN011","tipo":"condicional_obrigatorio","se":{"campo":"EVOLUCAO","valores":["2","3"]},"entao_preenchido":["DT_OBITO"],"descricao":"Evolução para óbito exige a data do óbito.","tipo_inconsistencia":"em_branco"},{"id":"SNN012","tipo":"condicional_obrigatorio","se":{"campo":"CLASSI_FIN","valores":["1","2","4","5","8"]},"entao_preenchido":["DT_ENCERRA","EVOLUCAO"],"descricao":"Caso com classificação final exige data de encerramento e evolução.","tipo_inconsistencia":"em_branco"},{"id":"SNN013","tipo":"condicional_obrigatorio","se":{"campo":"CLASSI_FIN","valores":["1","4","5"]},"entao_preenchido":["CRITERIO"],"descricao":"Caso confirmado exige o critério de confirmação.","tipo_inconsistencia":"em_branco"},{"id":"SNN014","tipo":"condicional_proibido","se":{"campo":"CLASSI_FIN","valores":["2"]},"entao_campo":"CRITERIO","valores_proibidos":["1","2","3"],"descricao":"Caso descartado com critério de confirmação preenchido — conferir.","tipo_inconsistencia":"incoerencia"},{"id":"SNN020","tipo":"condicional_obrigatorio","se":{"campo":"TP_NOT","valores":["2"]},"entao_preenchido":["NM_PACIENT","DT_NASC","CS_SEXO","ID_MN_RESI"],"descricao":"Notificação individual exige identificação mínima do paciente.","tipo_inconsistencia":"em_branco"},{"id":"SNN030","tipo":"condicional_proibido","se":{"campo":"NDUPLIC_N","valores":["1"]},"entao_campo":"NDUPLIC_N","valores_proibidos":["1"],"descricao":"Registro marcado como duplicidade pelo próprio SINAN e ainda presente na base.","tipo_inconsistencia":"duplicidade"}]},"sinan_online":{"sistema":"SINAN_ONLINE","nome_completo":"SINAN Online — notificação de tuberculose e hanseníase","descricao":"Base de notificação/acompanhamento dos agravos operados no SINAN Online.","orgao":"Subcoordenadoria de Informação em Saúde — SMS Salvador","csv":{"separador":null,"encoding":null},"chave_registro":["NU_NOTIFIC","ID_AGRAVO"],"data_referencia":"DT_NOTIFIC","campos_estratificacao":["ID_UNIDADE","ID_AGRAVO","SITUA_ENCE","ID_BAIRRO"],"apelidos_colunas":{"NUMERO_NOTIFICACAO":"NU_NOTIFIC","DATA_NOTIFICACAO":"DT_NOTIFIC","DATA_DIAGNOSTICO":"DT_DIAG","UNIDADE_NOTIFICADORA":"ID_UNIDADE","NOME_PACIENTE":"NM_PACIENT","DATA_NASCIMENTO":"DT_NASC","SITUACAO_ENCERRAMENTO":"SITUA_ENCE"},"parametros":{"data_minima_plausivel":"1900-01-01","defasagem_aceitavel_dias":15,"campo_abrangencia":"ID_MN_RESI"},"chaves_duplicidade":[{"id":"DUP_NOTIFIC","nome":"Número de notificação repetido no mesmo agravo","campos":["NU_NOTIFIC","ID_AGRAVO"]},{"id":"DUP_PROVAVEL","nome":"Provável duplicidade (nome + data de nascimento + agravo)","campos":["NM_PACIENT","DT_NASC","ID_AGRAVO"]},{"id":"DUP_CNS","nome":"Provável duplicidade (CNS + agravo + ano do diagnóstico)","campos":["NU_CNS","ID_AGRAVO","DT_DIAG"]}],"tempestividade":[{"id":"NOTIFICACAO","rotulo":"Oportunidade da notificação (diagnóstico → notificação)","data_inicial":"DT_DIAG","data_final":"DT_NOTIFIC","prazo_dias":7},{"id":"INICIO_TRAT","rotulo":"Início do tratamento após o diagnóstico","data_inicial":"DT_DIAG","data_final":"DT_INIC_TR","prazo_dias":7},{"id":"ENCERRAMENTO","rotulo":"Encerramento oportuno do caso (diagnóstico → encerramento)","data_inicial":"DT_DIAG","data_final":"DT_ENCERRA","prazo_dias":270}],"campos":{"NU_NOTIFIC":{"rotulo":"Número da notificação","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação"},"ID_AGRAVO":{"rotulo":"Agravo (CID-10)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cid10"},"DT_NOTIFIC":{"rotulo":"Data da notificação","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Notificação","data_minima":"2008-01-01"},"DT_DIAG":{"rotulo":"Data do diagnóstico","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Notificação","data_minima":"2008-01-01"},"ID_MUNICIP":{"rotulo":"Município notificante (IBGE)","tipo":"texto","essencial":true,"bloco":"Notificação","validador":"ibge"},"ID_UNIDADE":{"rotulo":"Unidade notificadora (CNES)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Notificação","validador":"cnes","ignorado":["9999999"]},"NM_PACIENT":{"rotulo":"Nome do paciente","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Paciente"},"DT_NASC":{"rotulo":"Data de nascimento","tipo":"data","essencial":true,"bloco":"Paciente"},"CS_SEXO":{"rotulo":"Sexo","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Paciente","dominio":{"M":"Masculino","F":"Feminino","1":"Masculino","2":"Feminino"},"ignorado":["I","9"]},"CS_RACA":{"rotulo":"Raça/cor","tipo":"categorico","essencial":true,"bloco":"Paciente","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena"},"ignorado":["9"]},"CS_ESCOL_N":{"rotulo":"Escolaridade","tipo":"categorico","bloco":"Paciente","dominio":{"0":"Analfabeto","1":"1ª a 4ª série incompleta","2":"4ª série completa","3":"5ª a 8ª série incompleta","4":"Fundamental completo","5":"Médio incompleto","6":"Médio completo","7":"Superior incompleto","8":"Superior completo","10":"Não se aplica"},"ignorado":["9"]},"NU_CNS":{"rotulo":"Cartão Nacional de Saúde","tipo":"texto","essencial":true,"bloco":"Paciente","validador":"cns"},"NM_MAE_PAC":{"rotulo":"Nome da mãe","tipo":"texto","essencial":true,"bloco":"Paciente"},"ID_MN_RESI":{"rotulo":"Município de residência (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Residência","validador":"ibge"},"ID_BAIRRO":{"rotulo":"Bairro de residência","tipo":"texto","essencial":true,"bloco":"Residência"},"NU_CEP":{"rotulo":"CEP","tipo":"texto","bloco":"Residência","validador":"cep"},"CS_ZONA":{"rotulo":"Zona de residência","tipo":"categorico","bloco":"Residência","dominio":{"1":"Urbana","2":"Rural","3":"Periurbana"},"ignorado":["9"]},"TRATAMENTO":{"rotulo":"Tipo de entrada/tratamento","tipo":"categorico","essencial":true,"bloco":"Clínico","dominio":{"1":"Caso novo","2":"Recidiva","3":"Reingresso após abandono","4":"Não sabe","5":"Transferência","6":"Pós-óbito"},"ignorado":["9"]},"FORMA":{"rotulo":"Forma clínica","tipo":"categorico","essencial":true,"bloco":"Clínico","dominio":{"1":"Pulmonar","2":"Extrapulmonar","3":"Pulmonar + extrapulmonar"},"ignorado":["9"]},"BACILOSC_E":{"rotulo":"Baciloscopia de escarro (diagnóstico)","tipo":"categorico","bloco":"Clínico","dominio":{"1":"Positiva","2":"Negativa","3":"Não realizada","4":"Não se aplica"},"ignorado":["9"]},"RAIOX_TORA":{"rotulo":"Raio X de tórax","tipo":"categorico","bloco":"Clínico","dominio":{"1":"Suspeito","2":"Normal","3":"Outra patologia","4":"Não realizado"},"ignorado":["9"]},"HIV":{"rotulo":"Resultado do teste de HIV","tipo":"categorico","essencial":true,"bloco":"Clínico","dominio":{"1":"Positivo","2":"Negativo","3":"Em andamento","4":"Não realizado"},"ignorado":["9"]},"DT_INIC_TR":{"rotulo":"Data de início do tratamento","tipo":"data","essencial":true,"bloco":"Tratamento","data_minima":"2008-01-01"},"TRAT_SUPER":{"rotulo":"Tratamento diretamente observado (TDO)","tipo":"categorico","bloco":"Tratamento","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"SITUA_ENCE":{"rotulo":"Situação de encerramento","tipo":"categorico","essencial":true,"bloco":"Encerramento","dominio":{"1":"Cura","2":"Abandono","3":"Óbito por tuberculose","4":"Óbito por outras causas","5":"Transferência","6":"Mudança de diagnóstico","7":"TB drogarresistente","8":"Mudança de esquema","9":"Falência","10":"Abandono primário"},"ignorado":["99"]},"DT_ENCERRA":{"rotulo":"Data do encerramento","tipo":"data","essencial":true,"bloco":"Encerramento","data_minima":"2008-01-01"},"DT_DIGITA":{"rotulo":"Data da digitação","tipo":"data","essencial":true,"bloco":"Processamento","data_minima":"2008-01-01"}},"regras_cruzadas":[{"id":"SOL001","tipo":"ordem_datas","campos":["DT_DIAG","DT_NOTIFIC"],"descricao":"A notificação não pode ser anterior ao diagnóstico.","tipo_inconsistencia":"data_invalida"},{"id":"SOL002","tipo":"ordem_datas","campos":["DT_DIAG","DT_INIC_TR"],"descricao":"O início do tratamento não pode ser anterior ao diagnóstico.","tipo_inconsistencia":"data_invalida"},{"id":"SOL003","tipo":"ordem_datas","campos":["DT_INIC_TR","DT_ENCERRA"],"descricao":"O encerramento não pode ser anterior ao início do tratamento.","tipo_inconsistencia":"data_invalida"},{"id":"SOL004","tipo":"ordem_datas","campos":["DT_NASC","DT_DIAG"],"descricao":"O diagnóstico não pode ser anterior ao nascimento.","tipo_inconsistencia":"data_invalida"},{"id":"SOL010","tipo":"condicional_obrigatorio","se":{"campo":"SITUA_ENCE","preenchido":true},"entao_preenchido":["DT_ENCERRA"],"descricao":"Caso com situação de encerramento exige a data do encerramento.","tipo_inconsistencia":"em_branco"},{"id":"SOL011","tipo":"condicional_obrigatorio","se":{"campo":"FORMA","valores":["1","3"]},"entao_preenchido":["BACILOSC_E"],"descricao":"Forma pulmonar exige o resultado da baciloscopia de escarro.","tipo_inconsistencia":"em_branco"},{"id":"SOL012","tipo":"condicional_obrigatorio","se":{"campo":"TRATAMENTO","valores":["1","2","3"]},"entao_preenchido":["DT_INIC_TR"],"descricao":"Caso em tratamento exige a data de início do tratamento.","tipo_inconsistencia":"em_branco"},{"id":"SOL020","tipo":"condicional_obrigatorio","se":{"campo":"SITUA_ENCE","valores":["2","10"]},"entao_preenchido":["TRAT_SUPER"],"descricao":"Caso encerrado por abandono deve informar se houve tratamento diretamente observado (TDO).","tipo_inconsistencia":"em_branco"},{"id":"SOL021","tipo":"condicional_proibido","se":{"campo":"SITUA_ENCE","valores":["3"]},"entao_campo":"ID_AGRAVO","valores_proibidos":["A30"],"descricao":"Encerramento por 'óbito por tuberculose' em notificação de hanseníase (A30).","tipo_inconsistencia":"incoerencia"}]},"sinasc":{"sistema":"SINASC","nome_completo":"Sistema de Informações sobre Nascidos Vivos","descricao":"Base de Declarações de Nascido Vivo (DN) do município de Salvador.","orgao":"Subcoordenadoria de Informação em Saúde — SMS Salvador","csv":{"separador":null,"encoding":null},"chave_registro":["NUMERODN"],"data_referencia":"DTNASC","campos_estratificacao":["CODESTAB","LOCNASC"],"apelidos_colunas":{"NUMERO_DN":"NUMERODN","DT_NASC":"DTNASC","DT_CADASTRO":"DTCADASTRO","COD_ESTAB":"CODESTAB","COD_MUN_RES":"CODMUNRES"},"parametros":{"data_minima_plausivel":"1930-01-01","defasagem_aceitavel_dias":45,"campo_abrangencia":"CODMUNRES"},"chaves_duplicidade":[{"id":"DUP_NUMERODN","nome":"Número da DN repetido","campos":["NUMERODN"]},{"id":"DUP_PROVAVEL","nome":"Provável duplicidade (nome da mãe + data de nascimento + sexo + peso)","campos":["NOMEMAE","DTNASC","SEXO","PESO"]},{"id":"DUP_MAE_HORA","nome":"Provável duplicidade (nome da mãe + data e hora do nascimento)","campos":["NOMEMAE","DTNASC","HORANASC"]}],"tempestividade":[{"id":"DIGITACAO","rotulo":"Oportunidade da digitação (nascimento → cadastro no SINASC)","data_inicial":"DTNASC","data_final":"DTCADASTRO","prazo_dias":30},{"id":"DECLARACAO","rotulo":"Intervalo entre o nascimento e a emissão da declaração","data_inicial":"DTNASC","data_final":"DTDECLARAC","prazo_dias":7}],"campos":{"NUMERODN":{"rotulo":"Número da DN","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Identificação","regex":"^[0-9]{6,12}$","formato_descricao":"6 a 12 dígitos"},"LOCNASC":{"rotulo":"Local de nascimento","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Nascimento","dominio":{"1":"Hospital","2":"Outro estabelecimento de saúde","3":"Domicílio","4":"Outros","5":"Aldeia indígena"},"ignorado":["9"]},"CODESTAB":{"rotulo":"Estabelecimento de nascimento (CNES)","tipo":"texto","essencial":true,"bloco":"Nascimento","validador":"cnes","ignorado":["9999999"]},"CODMUNNASC":{"rotulo":"Município de nascimento (IBGE)","tipo":"texto","essencial":true,"bloco":"Nascimento","validador":"ibge","ignorado":["999999"]},"DTNASC":{"rotulo":"Data de nascimento","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Nascimento","data_minima":"1996-01-01"},"HORANASC":{"rotulo":"Hora do nascimento","tipo":"texto","bloco":"Nascimento","regex":"^([01][0-9]|2[0-3])[0-5][0-9]$","formato_descricao":"HHMM","ignorado":["9999"]},"SEXO":{"rotulo":"Sexo do recém-nascido","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Recém-nascido","dominio":{"1":"Masculino","2":"Feminino","M":"Masculino","F":"Feminino"},"ignorado":["0","9","I"]},"PESO":{"rotulo":"Peso ao nascer (g)","tipo":"inteiro","obrigatorio":true,"essencial":true,"bloco":"Recém-nascido","min":200,"max":7000,"ignorado":["9999","0"]},"APGAR1":{"rotulo":"Apgar no 1º minuto","tipo":"inteiro","essencial":true,"bloco":"Recém-nascido","min":0,"max":10,"ignorado":["99"]},"APGAR5":{"rotulo":"Apgar no 5º minuto","tipo":"inteiro","essencial":true,"bloco":"Recém-nascido","min":0,"max":10,"ignorado":["99"]},"RACACOR":{"rotulo":"Raça/cor do recém-nascido","tipo":"categorico","essencial":true,"bloco":"Recém-nascido","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena"},"ignorado":["9","0"]},"IDANOMAL":{"rotulo":"Anomalia congênita","tipo":"categorico","essencial":true,"bloco":"Recém-nascido","dominio":{"1":"Sim","2":"Não"},"ignorado":["9"]},"CODANOMAL":{"rotulo":"Anomalia congênita (CID-10)","tipo":"texto","bloco":"Recém-nascido","validador":"cid10"},"IDADEMAE":{"rotulo":"Idade da mãe","tipo":"inteiro","obrigatorio":true,"essencial":true,"bloco":"Mãe","min":10,"max":60,"ignorado":["99"]},"ESTCIVMAE":{"rotulo":"Estado civil da mãe","tipo":"categorico","bloco":"Mãe","dominio":{"1":"Solteira","2":"Casada","3":"Viúva","4":"Separada judicialmente/divorciada","5":"União estável"},"ignorado":["9","0"]},"ESCMAE":{"rotulo":"Escolaridade da mãe (anos de estudo)","tipo":"categorico","essencial":true,"bloco":"Mãe","dominio":{"1":"Nenhuma","2":"1 a 3 anos","3":"4 a 7 anos","4":"8 a 11 anos","5":"12 anos e mais"},"ignorado":["9","0"]},"ESCMAE2010":{"rotulo":"Escolaridade da mãe (série/2010)","tipo":"categorico","bloco":"Mãe","dominio":{"0":"Sem escolaridade","1":"Fundamental I","2":"Fundamental II","3":"Médio","4":"Superior incompleto","5":"Superior completo"},"ignorado":["9"]},"RACACORMAE":{"rotulo":"Raça/cor da mãe","tipo":"categorico","bloco":"Mãe","dominio":{"1":"Branca","2":"Preta","3":"Amarela","4":"Parda","5":"Indígena"},"ignorado":["9","0"]},"CODOCUPMAE":{"rotulo":"Ocupação da mãe (CBO)","tipo":"texto","bloco":"Mãe","regex":"^[0-9]{4,6}$","formato_descricao":"código CBO","ignorado":["999999"]},"DTNASCMAE":{"rotulo":"Data de nascimento da mãe","tipo":"data","bloco":"Mãe"},"CODMUNRES":{"rotulo":"Município de residência (IBGE)","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Residência","validador":"ibge","ignorado":["999999"]},"QTDFILVIVO":{"rotulo":"Filhos nascidos vivos","tipo":"inteiro","bloco":"Mãe","min":0,"max":20,"ignorado":["99"]},"QTDFILMORT":{"rotulo":"Perdas fetais/abortos","tipo":"inteiro","bloco":"Mãe","min":0,"max":20,"ignorado":["99"]},"QTDGESTANT":{"rotulo":"Gestações anteriores","tipo":"inteiro","bloco":"Mãe","min":0,"max":25,"ignorado":["99"]},"QTDPARTNOR":{"rotulo":"Partos vaginais anteriores","tipo":"inteiro","bloco":"Mãe","min":0,"max":25,"ignorado":["99"]},"QTDPARTCES":{"rotulo":"Partos cesáreos anteriores","tipo":"inteiro","bloco":"Mãe","min":0,"max":25,"ignorado":["99"]},"GESTACAO":{"rotulo":"Semanas de gestação (faixa)","tipo":"categorico","essencial":true,"bloco":"Gestação e parto","dominio":{"1":"Menos de 22 semanas","2":"22 a 27","3":"28 a 31","4":"32 a 36","5":"37 a 41","6":"42 e mais"},"ignorado":["9","0"]},"SEMAGESTAC":{"rotulo":"Semanas de gestação (número)","tipo":"inteiro","bloco":"Gestação e parto","min":20,"max":45,"ignorado":["99"]},"GRAVIDEZ":{"rotulo":"Tipo de gravidez","tipo":"categorico","essencial":true,"bloco":"Gestação e parto","dominio":{"1":"Única","2":"Dupla","3":"Tripla e mais"},"ignorado":["9"]},"PARTO":{"rotulo":"Tipo de parto","tipo":"categorico","obrigatorio":true,"essencial":true,"bloco":"Gestação e parto","dominio":{"1":"Vaginal","2":"Cesáreo"},"ignorado":["9"]},"CONSULTAS":{"rotulo":"Consultas de pré-natal (faixa)","tipo":"categorico","essencial":true,"bloco":"Pré-natal","dominio":{"1":"Nenhuma","2":"1 a 3","3":"4 a 6","4":"7 e mais"},"ignorado":["9"]},"CONSPRENAT":{"rotulo":"Número de consultas de pré-natal","tipo":"inteiro","bloco":"Pré-natal","min":0,"max":30,"ignorado":["99"]},"MESPRENAT":{"rotulo":"Mês de início do pré-natal","tipo":"inteiro","bloco":"Pré-natal","min":1,"max":9,"ignorado":["99"]},"DTULTMENST":{"rotulo":"Data da última menstruação","tipo":"data","bloco":"Pré-natal","data_minima":"1995-01-01"},"TPMETESTIM":{"rotulo":"Método de estimativa da idade gestacional","tipo":"categorico","bloco":"Gestação e parto","dominio":{"1":"Exame físico","2":"Outro método"},"ignorado":["9"]},"TPAPRESENT":{"rotulo":"Apresentação do RN","tipo":"categorico","bloco":"Gestação e parto","dominio":{"1":"Cefálico","2":"Pélvica ou podálica","3":"Transversa"},"ignorado":["9"]},"STTRABPART":{"rotulo":"Trabalho de parto induzido","tipo":"categorico","bloco":"Gestação e parto","dominio":{"1":"Sim","2":"Não","3":"Não se aplica"},"ignorado":["9"]},"STCESPARTO":{"rotulo":"Cesárea antes do trabalho de parto","tipo":"categorico","bloco":"Gestação e parto","dominio":{"1":"Sim","2":"Não","3":"Não se aplica"},"ignorado":["9"]},"TPNASCASSI":{"rotulo":"Nascimento assistido por","tipo":"categorico","bloco":"Nascimento","dominio":{"1":"Médico","2":"Enfermeira/obstetriz","3":"Parteira","4":"Outros"},"ignorado":["9"]},"TPFUNCRESP":{"rotulo":"Função do responsável pelo preenchimento","tipo":"categorico","bloco":"Processamento","dominio":{"1":"Médico","2":"Enfermeiro","3":"Parteira","4":"Funcionário do cartório","5":"Outros"},"ignorado":["9"]},"DTDECLARAC":{"rotulo":"Data da declaração","tipo":"data","bloco":"Processamento","data_minima":"1996-01-01"},"DTCADASTRO":{"rotulo":"Data do cadastro no sistema","tipo":"data","obrigatorio":true,"essencial":true,"bloco":"Processamento","data_minima":"1996-01-01"},"NOMEMAE":{"rotulo":"Nome da mãe","tipo":"texto","obrigatorio":true,"essencial":true,"bloco":"Mãe"},"NOMERN":{"rotulo":"Nome do recém-nascido","tipo":"texto","bloco":"Recém-nascido"}},"regras_cruzadas":[{"id":"SNC001","tipo":"ordem_datas","campos":["DTNASC","DTCADASTRO"],"descricao":"O cadastro não pode ser anterior ao nascimento.","tipo_inconsistencia":"data_invalida"},{"id":"SNC002","tipo":"ordem_datas","campos":["DTULTMENST","DTNASC"],"min_dias":140,"max_dias":320,"descricao":"Intervalo entre a última menstruação e o nascimento fora da faixa plausível (20 a 45 semanas).","tipo_inconsistencia":"incoerencia"},{"id":"SNC003","tipo":"ordem_datas","campos":["DTNASCMAE","DTNASC"],"min_dias":3650,"descricao":"Mãe com menos de 10 anos na data do parto.","tipo_inconsistencia":"incoerencia"},{"id":"SNC010","tipo":"condicional_obrigatorio","se":{"campo":"IDANOMAL","valores":["1"]},"entao_preenchido":["CODANOMAL"],"descricao":"Anomalia congênita informada como 'sim' exige o código CID-10 da anomalia.","tipo_inconsistencia":"em_branco"},{"id":"SNC011","tipo":"condicional_proibido","se":{"campo":"IDANOMAL","valores":["2"]},"entao_campo":"CODANOMAL","proibido_preenchido":true,"descricao":"Sem anomalia congênita, o campo de código da anomalia deve ficar vazio.","tipo_inconsistencia":"incoerencia"},{"id":"SNC020","tipo":"faixa_condicional","se":{"campo":"GESTACAO","valores":["5","6"]},"campo":"PESO","min":1500,"max":6500,"descricao":"Peso implausível para gestação a termo (37 semanas ou mais).","tipo_inconsistencia":"incoerencia"},{"id":"SNC021","tipo":"faixa_condicional","se":{"campo":"GESTACAO","valores":["1","2"]},"campo":"PESO","min":200,"max":1800,"descricao":"Peso implausível para gestação de menos de 28 semanas.","tipo_inconsistencia":"incoerencia"},{"id":"SNC030","tipo":"condicional_valores","se":{"campo":"CONSULTAS","valores":["1"]},"entao_campo":"CONSPRENAT","valores_esperados":["0"],"descricao":"Faixa de consultas indica 'nenhuma', mas o número de consultas informado é diferente de zero.","tipo_inconsistencia":"incoerencia"},{"id":"SNC031","tipo":"condicional_proibido","se":{"campo":"CONSULTAS","valores":["1"]},"entao_campo":"MESPRENAT","valores_proibidos":["1","2","3","4","5","6","7","8","9"],"descricao":"Sem consultas de pré-natal não pode haver mês de início do pré-natal.","tipo_inconsistencia":"incoerencia"},{"id":"SNC040","tipo":"comparacao_numerica","campo_a":"QTDPARTNOR","campo_b":"QTDGESTANT","operador":"<=","descricao":"Partos vaginais anteriores não podem superar o total de gestações anteriores.","tipo_inconsistencia":"incoerencia"},{"id":"SNC041","tipo":"comparacao_numerica","campo_a":"QTDPARTCES","campo_b":"QTDGESTANT","operador":"<=","descricao":"Partos cesáreos anteriores não podem superar o total de gestações anteriores.","tipo_inconsistencia":"incoerencia"},{"id":"SNC042","tipo":"comparacao_numerica","campo_a":"APGAR1","campo_b":"APGAR5","operador":"<=","descricao":"Apgar do 5º minuto menor que o do 1º minuto — conferir (possível troca de campos).","tipo_inconsistencia":"incoerencia"},{"id":"SNC050","tipo":"coerencia_valores","combinacoes_proibidas":[{"PARTO":"1","STCESPARTO":"1"}],"descricao":"Parto vaginal declarado junto com cesárea antes do trabalho de parto.","tipo_inconsistencia":"incoerencia"},{"id":"SNC060","tipo":"faixa_condicional","se":{"campo":"GRAVIDEZ","valores":["1"]},"campo":"PESO","min":350,"max":6500,"descricao":"Peso ao nascer fora da faixa plausível para gestação única.","tipo_inconsistencia":"fora_de_faixa"}]}};</script>
+<script>/* QualiSIS no navegador — motor de crítica.
+   Porte fiel do motor em Python (qualisis/regras.py e analise.py): mesmas
+   regras, mesmos indicadores, mesmas fórmulas. Roda inteiramente na máquina
+   do usuário: nenhum dado sai do computador.                               */
+
+'use strict';
+
+/* ------------------------------------------------------------------ tipos */
+const TIPOS = {
+  duplicidade: {
+    rotulo: 'Duplicidade', gravidade: 'Alta', peso: 3,
+    descricao: 'Registro repetido pela chave do sistema ou por chave provável (nome + data + mãe).',
+    atributos: 'Singularidade, Confiabilidade, Precisão'
+  },
+  em_branco: {
+    rotulo: 'Campo em branco', gravidade: 'Alta', peso: 2,
+    descricao: 'Campo essencial sem preenchimento.',
+    atributos: 'Completude, Suficiência, Abrangência'
+  },
+  ignorado: {
+    rotulo: 'Ignorado / Não informado', gravidade: 'Média', peso: 1.5,
+    descricao: 'Preenchido com 9, 99, 999 ou "IGNORADO": consta preenchido, mas não informa nada.',
+    atributos: 'Confiabilidade, Valor informativo, Utilidade'
+  },
+  codigo_invalido: {
+    rotulo: 'Código inválido', gravidade: 'Alta', peso: 2.5,
+    descricao: 'Valor fora do domínio do dicionário de dados (categoria, CID, município, CNES).',
+    atributos: 'Validade, Correção, Precisão, Inequivocidade'
+  },
+  data_invalida: {
+    rotulo: 'Data inválida ou incoerente', gravidade: 'Alta', peso: 2.5,
+    descricao: 'Data inexistente, fora do plausível, no futuro ou fora de ordem cronológica.',
+    atributos: 'Validade, Logicidade, Coerência, Veracidade'
+  },
+  incoerencia: {
+    rotulo: 'Incoerência entre campos', gravidade: 'Alta', peso: 2.5,
+    descricao: 'Combinação impossível entre campos do mesmo registro.',
+    atributos: 'Coerência, Logicidade, Compatibilidade, Veracidade'
+  },
+  formato_invalido: {
+    rotulo: 'Formato inválido', gravidade: 'Média', peso: 1.5,
+    descricao: 'Conteúdo fora da máscara esperada (CNS, CPF, CEP, telefone, nº de DO/DN).',
+    atributos: 'Formato, Legibilidade, Interpretabilidade'
+  },
+  fora_de_faixa: {
+    rotulo: 'Valor fora de faixa', gravidade: 'Média', peso: 2,
+    descricao: 'Valor numérico fora dos limites plausíveis (peso, idade, Apgar, consultas).',
+    atributos: 'Quantidade, Precisão, Veracidade, Correção'
+  },
+  fora_do_prazo: {
+    rotulo: 'Fora do prazo', gravidade: 'Média', peso: 1.5,
+    descricao: 'Notificação, digitação ou encerramento fora do prazo pactuado.',
+    atributos: 'Tempestividade, Atualidade, Tempo de resposta'
+  }
+};
+const ORDEM_TIPOS = ['duplicidade', 'em_branco', 'ignorado', 'codigo_invalido', 'data_invalida',
+  'incoerencia', 'formato_invalido', 'fora_de_faixa', 'fora_do_prazo'];
+
+const FAIXAS = [
+  [95, 'Excelente', 'var(--bom)'],
+  [90, 'Bom', 'var(--bom)'],
+  [80, 'Regular', 'var(--atencao)'],
+  [50, 'Ruim', 'var(--serio)'],
+  [0, 'Muito ruim', 'var(--critico)']
+];
+
+function classificar(pct) {
+  if (pct === null || pct === undefined || Number.isNaN(pct)) return ['Não avaliado', 'var(--tinta-3)'];
+  for (const [limite, rotulo, cor] of FAIXAS) if (pct >= limite) return [rotulo, cor];
+  return ['Muito ruim', 'var(--critico)'];
+}
+
+const PESOS_ATRIBUTO = {
+  Completude: 3, Suficiência: 2, Confiabilidade: 3, Validade: 3, Correção: 3, Precisão: 2,
+  Coerência: 3, Logicidade: 2, Singularidade: 3, Tempestividade: 3, Atualidade: 2,
+  Abrangência: 2, Formato: 1.5, Veracidade: 2, Inequivocidade: 1.5, Compatibilidade: 1.5,
+  Mensurabilidade: 1.5, 'Valor informativo': 2, Ordem: 1
+};
+
+const IGNORADOS_TEXTO = new Set(['IGNORADO', 'IGNORADA', 'IGN', 'NAO INFORMADO', 'NÃO INFORMADO',
+  'NAO INFORMADA', 'NÃO INFORMADA', 'SEM INFORMACAO', 'SEM INFORMAÇÃO', 'NI', 'N/I',
+  'NAO SE APLICA', 'NÃO SE APLICA', '-', '--', '...']);
+
+/* ------------------------------------------------------------ utilidades */
+function semAcento(txt) {
+  return txt.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+}
+function normalizarColuna(nome) {
+  let t = String(nome == null ? '' : nome).replace(/﻿/g, '').trim();
+  t = semAcento(t).replace(/[\s.\-]+/g, '_').replace(/_+/g, '_');
+  return t.replace(/^_|_$/g, '').toUpperCase();
+}
+function normalizarTexto(valor) {
+  return semAcento(String(valor == null ? '' : valor)).toUpperCase().replace(/[^A-Z0-9]+/g, '');
+}
+function soDigitos(valor) { return String(valor == null ? '' : valor).replace(/\D/g, ''); }
+
+function validoCPF(valor) {
+  const n = soDigitos(valor);
+  if (n.length !== 11 || /^(\d)\1{10}$/.test(n)) return false;
+  for (const tam of [9, 10]) {
+    let soma = 0;
+    for (let i = 0; i < tam; i++) soma += Number(n[i]) * (tam + 1 - i);
+    if ((soma * 10) % 11 % 10 !== Number(n[tam])) return false;
+  }
+  return true;
+}
+function validoCNS(valor) {
+  const n = soDigitos(valor);
+  if (n.length !== 15) return false;
+  if (!'12789'.includes(n[0])) return false;
+  let soma = 0;
+  for (let i = 0; i < 15; i++) soma += Number(n[i]) * (15 - i);
+  return soma % 11 === 0;
+}
+const RE_CID10 = /^[A-Z]\d{2}(\.?\d)?$/;
+const VALIDADORES = {
+  cpf: validoCPF,
+  cns: validoCNS,
+  cid10: v => RE_CID10.test(String(v).trim().toUpperCase()),
+  ibge: v => [6, 7].includes(soDigitos(v).length),
+  cnes: v => soDigitos(v).length === 7,
+  cep: v => soDigitos(v).length === 8
+};
+
+/* Datas: devolve o número de dias desde 1970 (inteiro) ou null. */
+const DIAS_MS = 86400000;
+function converterData(valor) {
+  const txt = String(valor == null ? '' : valor).trim();
+  if (!txt) return null;
+  const curto = txt.split(/[ T]/)[0];
+  let a, m, d;
+  let mm;
+  if ((mm = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/.exec(curto))) {
+    d = +mm[1]; m = +mm[2]; a = +mm[3];
+  } else if ((mm = /^(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})$/.exec(curto))) {
+    a = +mm[1]; m = +mm[2]; d = +mm[3];
+  } else if ((mm = /^(\d{4})(\d{2})(\d{2})$/.exec(curto))) {
+    a = +mm[1]; m = +mm[2]; d = +mm[3];
+  } else if ((mm = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{2})$/.exec(curto))) {
+    d = +mm[1]; m = +mm[2]; a = 2000 + +mm[3];
+    if (a > 2069) a -= 100;
+  } else {
+    return null;
+  }
+  if (m < 1 || m > 12 || d < 1 || d > 31 || a < 1) return null;
+  const dt = new Date(Date.UTC(a, m - 1, d));
+  if (dt.getUTCFullYear() !== a || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+  return Math.round(dt.getTime() / DIAS_MS);
+}
+function dataParaTexto(dias) {
+  if (dias === null || dias === undefined) return '—';
+  const dt = new Date(dias * DIAS_MS);
+  const p = n => String(n).padStart(2, '0');
+  return `${p(dt.getUTCDate())}/${p(dt.getUTCMonth() + 1)}/${dt.getUTCFullYear()}`;
+}
+function mesDe(dias) {
+  const dt = new Date(dias * DIAS_MS);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+function converterNumero(valor) {
+  const txt = String(valor == null ? '' : valor).trim().replace(/\./g, '').replace(',', '.');
+  if (!txt) return null;
+  const n = Number(txt);
+  return Number.isFinite(n) ? n : null;
+}
+function hashTexto(txt) {           /* FNV-1a de 32 bits + tamanho: colisão desprezível aqui */
+  let h = 0x811c9dc5;
+  for (let i = 0; i < txt.length; i++) {
+    h ^= txt.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return ((h >>> 0).toString(36)) + ':' + txt.length;
+}
+
+/* ------------------------------------------------------------ preparação */
+function prepararConfig(bruta) {
+  const cfg = JSON.parse(JSON.stringify(bruta));
+  cfg.campos = cfg.campos || {};
+  const campos = {};
+  for (const [nome, specBruta] of Object.entries(cfg.campos)) {
+    const spec = Object.assign({}, specBruta);
+    spec.rotulo = spec.rotulo || nome;
+    spec.tipo = spec.tipo || 'texto';
+    spec.obrigatorio = !!spec.obrigatorio;
+    spec.essencial = spec.essencial === undefined ? spec.obrigatorio : !!spec.essencial;
+    spec.bloco = spec.bloco || 'Geral';
+    if (Array.isArray(spec.dominio)) {
+      const d = {};
+      spec.dominio.forEach(v => { d[String(v).toUpperCase()] = String(v); });
+      spec.dominio = d;
+    } else if (spec.dominio && typeof spec.dominio === 'object') {
+      const d = {};
+      for (const [k, v] of Object.entries(spec.dominio)) d[String(k).trim().toUpperCase()] = v;
+      spec.dominio = d;
+    } else {
+      spec.dominio = null;
+    }
+    const ign = new Set((spec.ignorado || []).map(v => String(v).trim().toUpperCase()));
+    if (spec.ignorado_texto_padrao !== false) IGNORADOS_TEXTO.forEach(v => ign.add(v));
+    spec.ignorado = ign;
+    if (spec.regex) spec._regex = new RegExp(spec.regex);
+    if (spec.data_minima) spec._dmin = converterData(spec.data_minima);
+    if (spec.data_maxima) spec._dmax = converterData(spec.data_maxima);
+    campos[normalizarColuna(nome)] = spec;
+  }
+  cfg.campos = campos;
+  cfg.chave_registro = (cfg.chave_registro || []).map(normalizarColuna);
+  cfg.campos_estratificacao = (cfg.campos_estratificacao || []).map(normalizarColuna);
+  (cfg.chaves_duplicidade || []).forEach(ch => { ch.campos = (ch.campos || []).map(normalizarColuna); });
+  cfg.apelidos = {};
+  for (const [k, v] of Object.entries(cfg.apelidos_colunas || {})) {
+    cfg.apelidos[normalizarColuna(k)] = normalizarColuna(v);
+  }
+  cfg.parametros = cfg.parametros || {};
+  cfg._dataMinima = converterData(cfg.parametros.data_minima_plausivel || '1900-01-01');
+  cfg.data_referencia = cfg.data_referencia ? normalizarColuna(cfg.data_referencia) : null;
+  return cfg;
+}
+
+/* ---------------------------------------------------------------- motor */
+class Motor {
+  constructor(cfg, colunas, diaExtracao) {
+    this.cfg = cfg;
+    this.colunas = colunas;
+    this.diaExtracao = diaExtracao;
+    this.idx = {};
+    colunas.forEach((c, i) => { if (!(c in this.idx)) this.idx[c] = i; });
+
+    this.camposAtivos = Object.keys(cfg.campos).filter(c => c in this.idx);
+    this.essenciais = this.camposAtivos.filter(c => cfg.campos[c].essencial);
+    this.comDominio = this.camposAtivos.filter(c => cfg.campos[c].dominio);
+    this.chavesDup = (cfg.chaves_duplicidade || []).filter(ch => ch.campos.every(c => c in this.idx));
+    this.tempestividade = (cfg.tempestividade || []).filter(t =>
+      normalizarColuna(t.data_inicial) in this.idx && normalizarColuna(t.data_final) in this.idx);
+    this.tempestividade.forEach(t => {
+      t._ini = normalizarColuna(t.data_inicial);
+      t._fim = normalizarColuna(t.data_final);
+    });
+    this.regras = (cfg.regras_cruzadas || []).filter(r => this._aplicavel(r));
+    this.estratos = cfg.campos_estratificacao.filter(c => c in this.idx);
+    this.chaveCampos = cfg.chave_registro.filter(c => c in this.idx);
+    if (!this.chaveCampos.length) this.chaveCampos = this.camposAtivos.slice(0, 3);
+    this.diaMax = diaExtracao;
+    this.diaMin = cfg._dataMinima;
+  }
+
+  _aplicavel(regra) {
+    const usados = new Set();
+    (regra.campos || []).forEach(c => usados.add(normalizarColuna(c)));
+    (regra.entao_preenchido || []).forEach(c => usados.add(normalizarColuna(c)));
+    ['campo', 'campo_a', 'campo_b', 'entao_campo'].forEach(k => {
+      if (regra[k]) usados.add(normalizarColuna(regra[k]));
+    });
+    condicoes(regra.se).forEach(c => { if (c.campo) usados.add(normalizarColuna(c.campo)); });
+    (regra.combinacoes_proibidas || []).forEach(comb =>
+      Object.keys(comb).forEach(c => usados.add(normalizarColuna(c))));
+    for (const c of usados) if (!(c in this.idx)) return false;
+    return true;
+  }
+
+  valor(linha, campo) {
+    const i = this.idx[campo];
+    if (i === undefined) return '';
+    const v = linha[i];
+    return v === undefined || v === null ? '' : String(v).trim();
+  }
+
+  chaveRegistro(linha) {
+    return this.chaveCampos.map(c => normalizarTexto(this.valor(linha, c))).join('|');
+  }
+
+  hashesDup(linha) {
+    const saida = [];
+    for (let i = 0; i < this.chavesDup.length; i++) {
+      const ch = this.chavesDup[i];
+      const partes = [];
+      let faltou = false;
+      for (const campo of ch.campos) {
+        let v = this.valor(linha, campo);
+        const spec = this.cfg.campos[campo];
+        if (spec && spec.tipo === 'data') {
+          const d = converterData(v);
+          v = d === null ? v : String(d);
+        }
+        const norm = normalizarTexto(v);
+        if (!norm) { faltou = true; break; }
+        partes.push(norm);
+      }
+      if (faltou || !partes.length) continue;
+      saida.push(i + '#' + hashTexto(partes.join('')));
+    }
+    return saida;
+  }
+
+  avaliar(linha, duplicados) {
+    const oc = [];
+    const datas = {};
+    const numeros = {};
+    const cfg = this.cfg;
+
+    for (const campo of this.camposAtivos) {
+      const spec = cfg.campos[campo];
+      const valor = this.valor(linha, campo);
+      if (valor === '') {
+        if (spec.obrigatorio || spec.essencial) {
+          oc.push({ campo, tipo: 'em_branco', regra: 'CAMPO_OBRIGATORIO', valor: '',
+            descricao: `'${spec.rotulo}' é campo essencial e está em branco.` });
+        }
+        continue;
+      }
+      const vup = valor.toUpperCase();
+      if (spec.ignorado.has(vup)) {
+        oc.push({ campo, tipo: 'ignorado', regra: 'CODIGO_IGNORADO', valor,
+          descricao: `'${spec.rotulo}' preenchido como ignorado/não informado ('${valor}').` });
+        continue;
+      }
+      if (spec.tipo === 'data') {
+        const d = converterData(valor);
+        if (d === null) {
+          oc.push({ campo, tipo: 'data_invalida', regra: 'DATA_NAO_RECONHECIDA', valor,
+            descricao: `'${spec.rotulo}' não é uma data válida ('${valor}').` });
+        } else {
+          datas[campo] = d;
+          const dmax = spec._dmax !== undefined && spec._dmax !== null ? spec._dmax : this.diaMax;
+          const dmin = spec._dmin !== undefined && spec._dmin !== null ? spec._dmin : this.diaMin;
+          if (d > dmax) {
+            oc.push({ campo, tipo: 'data_invalida', regra: 'DATA_FUTURA', valor,
+              descricao: `'${spec.rotulo}' posterior ao limite aceito (${dataParaTexto(dmax)}).` });
+          } else if (d < dmin) {
+            oc.push({ campo, tipo: 'data_invalida', regra: 'DATA_IMPLAUSIVEL', valor,
+              descricao: `'${spec.rotulo}' anterior ao limite plausível (${dataParaTexto(dmin)}).` });
+          }
+        }
+        continue;
+      }
+      if (spec.tipo === 'inteiro' || spec.tipo === 'decimal') {
+        const n = converterNumero(valor);
+        if (n === null) {
+          oc.push({ campo, tipo: 'formato_invalido', regra: 'NUMERO_INVALIDO', valor,
+            descricao: `'${spec.rotulo}' deveria ser numérico ('${valor}').` });
+          continue;
+        }
+        if (spec.tipo === 'inteiro' && !Number.isInteger(n)) {
+          oc.push({ campo, tipo: 'formato_invalido', regra: 'NUMERO_NAO_INTEIRO', valor,
+            descricao: `'${spec.rotulo}' deveria ser inteiro ('${valor}').` });
+        }
+        numeros[campo] = n;
+        const min = spec.min, max = spec.max;
+        if ((min !== undefined && n < min) || (max !== undefined && n > max)) {
+          oc.push({ campo, tipo: 'fora_de_faixa', regra: 'FORA_DE_FAIXA', valor,
+            descricao: `'${spec.rotulo}' = ${valor} fora da faixa plausível [${min}, ${max}].` });
+        }
+        continue;
+      }
+      if (spec.dominio && !(vup in spec.dominio)) {
+        const validos = Object.keys(spec.dominio).slice(0, 8).join(', ');
+        oc.push({ campo, tipo: 'codigo_invalido', regra: 'FORA_DO_DOMINIO', valor,
+          descricao: `'${spec.rotulo}' = '${valor}' não consta no dicionário de dados (válidos: ${validos}…).` });
+        continue;
+      }
+      if (spec.validador && VALIDADORES[spec.validador] && !VALIDADORES[spec.validador](valor)) {
+        const tipo = ['cid10', 'ibge', 'cnes'].includes(spec.validador) ? 'codigo_invalido' : 'formato_invalido';
+        oc.push({ campo, tipo, regra: 'VALIDADOR_' + spec.validador.toUpperCase(), valor,
+          descricao: `'${spec.rotulo}' = '${valor}' não passa na validação de ${spec.validador.toUpperCase()}.` });
+        continue;
+      }
+      if (spec._regex && !spec._regex.test(valor)) {
+        oc.push({ campo, tipo: 'formato_invalido', regra: 'FORMATO', valor,
+          descricao: `'${spec.rotulo}' = '${valor}' não obedece ao formato esperado (${spec.formato_descricao || spec.regex}).` });
+        continue;
+      }
+      if (spec.tamanho) {
+        const alvo = spec.so_digitos ? soDigitos(valor) : valor;
+        if (alvo.length !== spec.tamanho) {
+          oc.push({ campo, tipo: 'formato_invalido', regra: 'TAMANHO', valor,
+            descricao: `'${spec.rotulo}' deveria ter ${spec.tamanho} caracteres.` });
+        }
+      }
+    }
+
+    for (const regra of this.regras) this._regra(regra, linha, datas, numeros, oc);
+
+    const atrasos = {};
+    for (const t of this.tempestividade) {
+      const ini = datas[t._ini], fim = datas[t._fim];
+      if (ini === undefined || fim === undefined) continue;
+      const dias = fim - ini;
+      atrasos[t.id] = dias;
+      if (t.prazo_dias !== undefined && dias > t.prazo_dias) {
+        oc.push({ campo: t._fim, tipo: 'fora_do_prazo', regra: t.id, valor: String(dias),
+          descricao: `${t.rotulo}: ${dias} dias (prazo de ${t.prazo_dias} dias).` });
+      }
+      if (dias < 0) {
+        oc.push({ campo: t._fim, tipo: 'data_invalida', regra: t.id + '_NEGATIVO', valor: String(dias),
+          descricao: `${t.rotulo}: intervalo negativo (${dias} dias).` });
+      }
+    }
+
+    if (duplicados) {
+      for (const h of this.hashesDup(linha)) {
+        if (!duplicados.has(h)) continue;
+        const ch = this.chavesDup[Number(h.split('#')[0])];
+        for (const campo of ch.campos) {
+          oc.push({ campo, tipo: 'duplicidade', regra: ch.id || 'DUP', valor: this.valor(linha, campo),
+            descricao: `${ch.nome || 'Chave duplicada'}: registro repetido por ${ch.campos.join(', ')}.` });
+        }
+      }
+    }
+
+    return { oc, atrasos, dataRef: cfg.data_referencia ? datas[cfg.data_referencia] : undefined };
+  }
+
+  _cond(se, linha) {
+    const conds = condicoes(se);
+    if (!conds.length) return true;
+    const modo = (se && !Array.isArray(se) && se.modo) ? se.modo : 'todas';
+    const res = conds.map(cond => {
+      const campo = normalizarColuna(cond.campo || '');
+      const valor = this.valor(linha, campo).toUpperCase();
+      let ok = true;
+      if (cond.valores) ok = cond.valores.map(v => String(v).toUpperCase()).includes(valor);
+      if (cond.valores_diferentes_de) {
+        ok = ok && !cond.valores_diferentes_de.map(v => String(v).toUpperCase()).includes(valor);
+      }
+      if (cond.preenchido === true) ok = ok && valor !== '';
+      if (cond.preenchido === false) ok = ok && valor === '';
+      return ok;
+    });
+    return modo === 'todas' ? res.every(Boolean) : res.some(Boolean);
+  }
+
+  _regra(regra, linha, datas, numeros, oc) {
+    const rid = regra.id || regra.tipo;
+    const desc = regra.descricao || rid;
+    const tipoInc = regra.tipo_inconsistencia;
+
+    switch (regra.tipo) {
+      case 'ordem_datas': {
+        const a = normalizarColuna(regra.campos[0]), b = normalizarColuna(regra.campos[1]);
+        const da = datas[a], db = datas[b];
+        if (da === undefined || db === undefined) return;
+        const delta = db - da;
+        const min = regra.min_dias === undefined ? 0 : regra.min_dias;
+        const max = regra.max_dias;
+        if (delta < min || (max !== undefined && delta > max)) {
+          oc.push({ campo: b, tipo: tipoInc || 'data_invalida', regra: rid,
+            valor: this.valor(linha, b), descricao: `${desc} (diferença observada: ${delta} dias).` });
+        }
+        return;
+      }
+      case 'condicional_obrigatorio': {
+        if (!this._cond(regra.se, linha)) return;
+        for (const bruto of regra.entao_preenchido || []) {
+          const campo = normalizarColuna(bruto);
+          const valor = this.valor(linha, campo);
+          const spec = this.cfg.campos[campo];
+          if (valor === '' || (spec && spec.ignorado.has(valor.toUpperCase()))) {
+            oc.push({ campo, tipo: tipoInc || 'incoerencia', regra: rid, valor, descricao: desc });
+          }
+        }
+        return;
+      }
+      case 'condicional_proibido': {
+        if (!this._cond(regra.se, linha)) return;
+        const campo = normalizarColuna(regra.entao_campo);
+        const valor = this.valor(linha, campo).toUpperCase();
+        const proibidos = (regra.valores_proibidos || []).map(v => String(v).toUpperCase());
+        if (proibidos.includes(valor) || (regra.proibido_preenchido && valor !== '')) {
+          oc.push({ campo, tipo: tipoInc || 'incoerencia', regra: rid,
+            valor: this.valor(linha, campo), descricao: desc });
+        }
+        return;
+      }
+      case 'condicional_valores': {
+        if (!this._cond(regra.se, linha)) return;
+        const campo = normalizarColuna(regra.entao_campo);
+        const valor = this.valor(linha, campo).toUpperCase();
+        const esperados = (regra.valores_esperados || []).map(v => String(v).toUpperCase());
+        if (valor !== '' && !esperados.includes(valor)) {
+          oc.push({ campo, tipo: tipoInc || 'incoerencia', regra: rid,
+            valor: this.valor(linha, campo), descricao: desc });
+        }
+        return;
+      }
+      case 'faixa_condicional': {
+        if (!this._cond(regra.se, linha)) return;
+        const campo = normalizarColuna(regra.campo);
+        const n = numeros[campo] !== undefined ? numeros[campo] : converterNumero(this.valor(linha, campo));
+        if (n === null || n === undefined) return;
+        if ((regra.min !== undefined && n < regra.min) || (regra.max !== undefined && n > regra.max)) {
+          oc.push({ campo, tipo: tipoInc || 'fora_de_faixa', regra: rid,
+            valor: this.valor(linha, campo), descricao: `${desc} (valor: ${this.valor(linha, campo)}).` });
+        }
+        return;
+      }
+      case 'comparacao_numerica': {
+        const a = normalizarColuna(regra.campo_a), b = normalizarColuna(regra.campo_b);
+        const na = numeros[a] !== undefined ? numeros[a] : converterNumero(this.valor(linha, a));
+        const nb = numeros[b] !== undefined ? numeros[b] : converterNumero(this.valor(linha, b));
+        if (na === null || nb === null || na === undefined || nb === undefined) return;
+        const op = regra.operador || '<=';
+        const ok = { '<=': na <= nb, '<': na < nb, '>=': na >= nb, '>': na > nb,
+          '==': na === nb, '!=': na !== nb }[op];
+        if (ok === false) {
+          oc.push({ campo: a, tipo: tipoInc || 'incoerencia', regra: rid,
+            valor: this.valor(linha, a), descricao: desc });
+        }
+        return;
+      }
+      case 'coerencia_valores': {
+        for (const comb of regra.combinacoes_proibidas || []) {
+          const bate = Object.entries(comb).every(([k, v]) =>
+            this.valor(linha, normalizarColuna(k)).toUpperCase() === String(v).toUpperCase());
+          if (!bate) continue;
+          for (const k of Object.keys(comb)) {
+            const campo = normalizarColuna(k);
+            oc.push({ campo, tipo: tipoInc || 'incoerencia', regra: rid,
+              valor: this.valor(linha, campo), descricao: desc });
+          }
+        }
+        return;
+      }
+      default:
+    }
+  }
+}
+
+function condicoes(se) {
+  if (!se) return [];
+  return Array.isArray(se) ? se : [se];
+}
+
+/* ----------------------------------------------------------- agregador */
+class Agregador {
+  constructor(motor) {
+    this.motor = motor;
+    this.cfg = motor.cfg;
+    this.n = 0;
+    this.nComInc = 0;
+    this.nCompletos = 0;
+    this.nOcorrencias = 0;
+    this.porTipo = {};
+    this.regPorTipo = {};
+    this.porCampo = {};          // campo -> {tipo: n}
+    this.porRegra = {};          // regra -> {n, tipo, descricao}
+    this.preenchidos = {};
+    this.vazios = {};
+    this.preenchidosDominio = 0;
+    this.valoresInvalidos = {};  // campo -> {valor: n}
+    this.serie = {};             // AAAA-MM -> {registros, ocorrencias, comInc}
+    this.estratos = {};          // campo -> valor -> {...}
+    this.atrasos = {};           // id -> {dias: n}
+    this.noPrazo = {};
+    this.totalPrazo = {};
+    this.diaMinEvento = null;
+    this.diaMaxEvento = null;
+    ORDEM_TIPOS.forEach(t => { this.porTipo[t] = 0; this.regPorTipo[t] = 0; });
+    motor.camposAtivos.forEach(c => { this.preenchidos[c] = 0; this.vazios[c] = 0; this.porCampo[c] = {}; });
+    motor.estratos.forEach(c => { this.estratos[c] = {}; });
+  }
+
+  adicionar(linha, resultado) {
+    const m = this.motor;
+    this.n++;
+    let vaziosEssenciais = 0;
+    for (const campo of m.camposAtivos) {
+      if (m.valor(linha, campo) !== '') {
+        this.preenchidos[campo]++;
+        if (m.cfg.campos[campo].dominio) this.preenchidosDominio++;
+      } else {
+        this.vazios[campo]++;
+        if (m.cfg.campos[campo].essencial) vaziosEssenciais++;
+      }
+    }
+    if (!vaziosEssenciais) this.nCompletos++;
+
+    const tiposNoRegistro = new Set();
+    for (const o of resultado.oc) {
+      this.nOcorrencias++;
+      this.porTipo[o.tipo] = (this.porTipo[o.tipo] || 0) + 1;
+      const alvo = this.porCampo[o.campo] || (this.porCampo[o.campo] = {});
+      alvo[o.tipo] = (alvo[o.tipo] || 0) + 1;
+      const r = this.porRegra[o.regra] || (this.porRegra[o.regra] = { n: 0, tipo: o.tipo, descricao: o.descricao });
+      r.n++;
+      tiposNoRegistro.add(o.tipo);
+      if (['codigo_invalido', 'fora_de_faixa', 'data_invalida'].includes(o.tipo) && o.valor) {
+        const mapa = this.valoresInvalidos[o.campo] || (this.valoresInvalidos[o.campo] = {});
+        const chave = String(o.valor).slice(0, 60);
+        if (Object.keys(mapa).length < 40 || chave in mapa) mapa[chave] = (mapa[chave] || 0) + 1;
+      }
+    }
+    tiposNoRegistro.forEach(t => { this.regPorTipo[t] = (this.regPorTipo[t] || 0) + 1; });
+    const temInc = resultado.oc.length > 0;
+    if (temInc) this.nComInc++;
+
+    for (const [id, dias] of Object.entries(resultado.atrasos)) {
+      const hist = this.atrasos[id] || (this.atrasos[id] = {});
+      hist[dias] = (hist[dias] || 0) + 1;
+      this.totalPrazo[id] = (this.totalPrazo[id] || 0) + 1;
+      const t = m.tempestividade.find(x => x.id === id);
+      if (t && t.prazo_dias !== undefined && dias >= 0 && dias <= t.prazo_dias) {
+        this.noPrazo[id] = (this.noPrazo[id] || 0) + 1;
+      }
+    }
+
+    const dref = resultado.dataRef;
+    if (dref !== undefined && dref !== null) {
+      const chave = mesDe(dref);
+      const b = this.serie[chave] || (this.serie[chave] = { registros: 0, ocorrencias: 0, comInc: 0 });
+      b.registros++; b.ocorrencias += resultado.oc.length; if (temInc) b.comInc++;
+      if (this.diaMinEvento === null || dref < this.diaMinEvento) this.diaMinEvento = dref;
+      if (this.diaMaxEvento === null || dref > this.diaMaxEvento) this.diaMaxEvento = dref;
+    }
+
+    for (const campo of m.estratos) {
+      let valor = m.valor(linha, campo) || '(em branco)';
+      const mapa = this.estratos[campo];
+      if (Object.keys(mapa).length >= 800 && !(valor in mapa)) valor = '(outros)';
+      const b = mapa[valor] || (mapa[valor] = { registros: 0, ocorrencias: 0, comInc: 0 });
+      b.registros++; b.ocorrencias += resultado.oc.length; if (temInc) b.comInc++;
+    }
+  }
+
+  /* --------------------------------------------------------- indicadores */
+  indicadores() {
+    const m = this.motor;
+    const N = this.n;
+    const pct = (a, b) => (!b ? null : Math.round(1000 * a / b) / 10);
+    const nCampos = m.camposAtivos.length;
+    const celulas = N * nCampos;
+    const celEssenciais = N * m.essenciais.length;
+    let vaziosEssenciais = 0;
+    m.essenciais.forEach(c => { vaziosEssenciais += (this.porCampo[c] || {}).em_branco || 0; });
+    let celVazias = 0;
+    Object.values(this.vazios).forEach(v => { celVazias += v; });
+    const preenchidas = celulas - celVazias;
+    const ign = this.porTipo.ignorado;
+    const invalidos = this.porTipo.codigo_invalido + this.porTipo.data_invalida +
+      this.porTipo.formato_invalido + this.porTipo.fora_de_faixa;
+    const regIncoerentes = this.regPorTipo.incoerencia;
+    const regDup = this.regPorTipo.duplicidade;
+    const regData = this.regPorTipo.data_invalida;
+    const regFaixa = this.regPorTipo.fora_de_faixa;
+
+    const ind = [];
+    const add = (nome, valor, num, den, formula, obs) => {
+      const [classe, cor] = classificar(valor);
+      ind.push({ atributo: nome, valor, numerador: num, denominador: den, formula,
+        observacao: obs || '', classificacao: classe, cor });
+    };
+
+    add('Completude', pct(celEssenciais - vaziosEssenciais, celEssenciais),
+      celEssenciais - vaziosEssenciais, celEssenciais,
+      'campos essenciais preenchidos ÷ (registros × campos essenciais)');
+    add('Suficiência', pct(this.nCompletos, N), this.nCompletos, N,
+      'registros com TODOS os campos essenciais preenchidos ÷ registros');
+    add('Confiabilidade', pct(preenchidas - ign, preenchidas), preenchidas - ign, preenchidas,
+      "campos preenchidos com valor informativo ÷ campos preenchidos (exclui 'ignorado')");
+    add('Validade', pct(this.preenchidosDominio - this.porTipo.codigo_invalido, this.preenchidosDominio),
+      this.preenchidosDominio - this.porTipo.codigo_invalido, this.preenchidosDominio,
+      'valores dentro do domínio ÷ valores preenchidos em campos com domínio definido');
+    add('Correção', pct(preenchidas - invalidos, preenchidas), preenchidas - invalidos, preenchidas,
+      'campos sem erro detectável (domínio, data, formato, faixa) ÷ campos preenchidos');
+    const semFormatoFaixa = preenchidas - this.porTipo.fora_de_faixa - this.porTipo.formato_invalido;
+    add('Precisão', pct(semFormatoFaixa, preenchidas), semFormatoFaixa, preenchidas,
+      'campos sem erro de faixa/formato ÷ campos preenchidos');
+    add('Coerência', pct(N - regIncoerentes, N), N - regIncoerentes, N,
+      'registros sem incoerência entre campos ÷ registros');
+    add('Logicidade', pct(Math.max(N - regIncoerentes - regData, 0), N),
+      Math.max(N - regIncoerentes - regData, 0), N,
+      'registros sem incoerência lógica nem data impossível ÷ registros');
+    add('Singularidade', pct(N - regDup, N), N - regDup, N,
+      'registros não duplicados ÷ registros');
+
+    let numT = 0, denT = 0;
+    Object.values(this.noPrazo).forEach(v => { numT += v; });
+    Object.values(this.totalPrazo).forEach(v => { denT += v; });
+    add('Tempestividade', pct(numT, denT), numT, denT,
+      'registros dentro do prazo pactuado ÷ registros com as duas datas preenchidas');
+
+    let defasagem = null, valorAtual = null;
+    const prazoRef = this.cfg.parametros.defasagem_aceitavel_dias || 30;
+    if (this.diaMaxEvento !== null) {
+      defasagem = m.diaExtracao - this.diaMaxEvento;
+      valorAtual = defasagem > prazoRef
+        ? Math.round(10 * Math.max(0, Math.min(100, 100 * prazoRef / Math.max(defasagem, 1)))) / 10
+        : 100;
+    }
+    add('Atualidade', valorAtual, defasagem, prazoRef,
+      'defasagem entre a extração e o evento mais recente, comparada ao prazo aceitável',
+      defasagem === null ? '' : `Defasagem observada: ${defasagem} dias`);
+
+    const campoAbr = this.cfg.parametros.campo_abrangencia
+      ? normalizarColuna(this.cfg.parametros.campo_abrangencia) : null;
+    let valorAbr = null, numAbr = 0, denAbr = 0;
+    const esperados = this.cfg.parametros.estratos_esperados || [];
+    if (campoAbr && esperados.length && this.estratos[campoAbr]) {
+      const presentes = new Set(Object.keys(this.estratos[campoAbr]));
+      numAbr = esperados.filter(e => presentes.has(String(e))).length;
+      denAbr = esperados.length;
+      valorAbr = pct(numAbr, denAbr);
+    } else if (campoAbr && campoAbr in this.preenchidos) {
+      numAbr = this.preenchidos[campoAbr]; denAbr = N; valorAbr = pct(numAbr, denAbr);
+    }
+    add('Abrangência', valorAbr, numAbr, denAbr,
+      'registros com o campo de território preenchido ÷ registros (ou estratos esperados presentes)');
+
+    add('Formato', pct(preenchidas - this.porTipo.formato_invalido, preenchidas),
+      preenchidas - this.porTipo.formato_invalido, preenchidas,
+      'campos com máscara/estrutura corretas ÷ campos preenchidos');
+    const suspeitos = regData + regFaixa + regIncoerentes;
+    add('Veracidade', pct(Math.max(N - suspeitos, 0), N), Math.max(N - suspeitos, 0), N,
+      'registros sem indício de erro material ÷ registros');
+    const inequiv = preenchidas - ign - this.porTipo.codigo_invalido;
+    add('Inequivocidade', pct(inequiv, preenchidas), inequiv, preenchidas,
+      "campos com significado único (sem 'ignorado' e sem código fora do domínio) ÷ campos preenchidos");
+
+    const totalDic = Object.keys(this.cfg.campos).length;
+    add('Compatibilidade', pct(nCampos, totalDic), nCampos, totalDic,
+      'campos do dicionário oficial presentes na exportação ÷ campos do dicionário');
+    add('Mensurabilidade', pct(nCampos, totalDic), nCampos, totalDic,
+      'variáveis necessárias aos indicadores do setor disponíveis na base');
+
+    const uteis = preenchidas - ign - invalidos;
+    add('Valor informativo', pct(uteis, celulas), uteis, celulas,
+      'campos preenchidos, válidos e não ignorados ÷ total de campos da base');
+    add('Ordem', pct(N - regData, N), N - regData, N,
+      'registros com sequência cronológica coerente ÷ registros');
+
+    return ind;
+  }
+
+  escoreGeral(indicadores) {
+    let soma = 0, pesos = 0;
+    for (const d of indicadores) {
+      if (d.valor === null || d.valor === undefined) continue;
+      const peso = PESOS_ATRIBUTO[d.atributo] || 1;
+      soma += d.valor * peso; pesos += peso;
+    }
+    return pesos ? Math.round(10 * soma / pesos) / 10 : null;
+  }
+
+  resumoCampos() {
+    const m = this.motor;
+    const pct = (a, b) => (!b ? null : Math.round(1000 * a / b) / 10);
+    const linhas = m.camposAtivos.map(campo => {
+      const spec = m.cfg.campos[campo];
+      const oc = this.porCampo[campo] || {};
+      const total = Object.values(oc).reduce((a, b) => a + b, 0);
+      const preench = this.preenchidos[campo] || 0;
+      const invalidos = (oc.codigo_invalido || 0) + (oc.data_invalida || 0) +
+        (oc.formato_invalido || 0) + (oc.fora_de_faixa || 0);
+      const frequentes = Object.entries(this.valoresInvalidos[campo] || {})
+        .sort((a, b) => b[1] - a[1]).slice(0, 6);
+      return { campo, rotulo: spec.rotulo, bloco: spec.bloco, essencial: spec.essencial,
+        preenchidos: preench, vazios: this.vazios[campo] || 0,
+        pctPreenchimento: pct(preench, this.n), ignorados: oc.ignorado || 0,
+        pctIgnorado: pct(oc.ignorado || 0, Math.max(preench, 1)), invalidos,
+        incoerencias: oc.incoerencia || 0, duplicidades: oc.duplicidade || 0,
+        foraPrazo: oc.fora_do_prazo || 0, total, tipos: oc, frequentes };
+    });
+    linhas.sort((a, b) => b.total - a.total || a.campo.localeCompare(b.campo));
+    return linhas;
+  }
+
+  resumoRegras() {
+    return Object.entries(this.porRegra)
+      .map(([regra, d]) => ({ regra, tipo: d.tipo, descricao: d.descricao, n: d.n,
+        pct: this.n ? Math.round(1000 * d.n / this.n) / 10 : null }))
+      .sort((a, b) => b.n - a.n);
+  }
+
+  resumoTempestividade() {
+    const quantil = (pares, total, q) => {
+      let acc = 0;
+      for (const [v, f] of pares) { acc += f; if (acc >= q * total) return v; }
+      return pares.length ? pares[pares.length - 1][0] : null;
+    };
+    return Object.entries(this.atrasos).map(([id, hist]) => {
+      const pares = Object.entries(hist).map(([d, f]) => [Number(d), f]).sort((a, b) => a[0] - b[0]);
+      const total = pares.reduce((a, b) => a + b[1], 0);
+      const t = this.motor.tempestividade.find(x => x.id === id) || {};
+      const soma = pares.reduce((a, b) => a + b[0] * b[1], 0);
+      return { id, rotulo: t.rotulo || id, prazo: t.prazo_dias, registros: total,
+        noPrazo: this.noPrazo[id] || 0,
+        pctNoPrazo: total ? Math.round(1000 * (this.noPrazo[id] || 0) / total) / 10 : null,
+        media: total ? Math.round(10 * soma / total) / 10 : null,
+        p25: quantil(pares, total, 0.25), mediana: quantil(pares, total, 0.5),
+        p75: quantil(pares, total, 0.75), p90: quantil(pares, total, 0.9),
+        maximo: pares.length ? pares[pares.length - 1][0] : null,
+        negativos: pares.filter(p => p[0] < 0).reduce((a, b) => a + b[1], 0),
+        histograma: pares };
+    });
+  }
+
+  resumoEstratos(campo, top) {
+    const mapa = this.estratos[campo] || {};
+    return Object.entries(mapa)
+      .map(([valor, v]) => ({ valor, registros: v.registros, ocorrencias: v.ocorrencias,
+        comInc: v.comInc,
+        pctComInc: v.registros ? Math.round(1000 * v.comInc / v.registros) / 10 : null,
+        porRegistro: v.registros ? Math.round(100 * v.ocorrencias / v.registros) / 100 : 0 }))
+      .sort((a, b) => b.registros - a.registros).slice(0, top || 25);
+  }
+
+  resumoSerie() {
+    return Object.entries(this.serie).sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([periodo, v]) => ({ periodo, registros: v.registros, ocorrencias: v.ocorrencias,
+        comInc: v.comInc,
+        pctComInc: v.registros ? Math.round(1000 * v.comInc / v.registros) / 10 : null }));
+  }
+}
+</script>
+<script>/* Base fictícia do SIM, gerada na hora, para conhecer a ferramenta sem usar
+   dado real. Nomes, números de DO e datas são inventados por sorteio.       */
+
+'use strict';
+
+function gerarExemploSIM(n) {
+  n = n || 900;
+  let semente = 20260807;
+  const rnd = () => {                      // xorshift32: reprodutível e bem distribuído
+    semente ^= semente << 13; semente >>>= 0;
+    semente ^= semente >>> 17;
+    semente ^= semente << 5; semente >>>= 0;
+    return semente / 4294967296;
+  };
+  const escolha = lista => lista[Math.floor(rnd() * lista.length)];
+  const inteiro = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const talvez = (prob, valor, alternativo) => (rnd() > prob ? valor : (alternativo || ''));
+
+  const PRENOMES = ['MARIA', 'JOSE', 'ANA', 'JOAO', 'ANTONIO', 'FRANCISCA', 'CARLOS', 'PAULO',
+    'ADRIANA', 'LUCAS', 'JULIANA', 'MARCOS', 'PATRICIA', 'RAFAEL', 'CAMILA', 'BRUNO'];
+  const SOBRENOMES = ['SILVA', 'SANTOS', 'OLIVEIRA', 'SOUZA', 'PEREIRA', 'COSTA', 'RODRIGUES',
+    'ALMEIDA', 'NASCIMENTO', 'LIMA', 'ARAUJO', 'FERREIRA', 'CARVALHO', 'GOMES'];
+  const CNES = ['2748080', '0003859', '2400123', '6432198', '9999999', '2748081', '12345'];
+  const CID = ['I219', 'J189', 'C349', 'E149', 'I64', 'A419', 'R99', 'W878', 'X959', 'V892'];
+  const nome = () => `${escolha(PRENOMES)} ${escolha(SOBRENOMES)} ${escolha(SOBRENOMES)}`;
+  const dataBR = dias => {
+    const dt = new Date(dias * 86400000);
+    const p = x => String(x).padStart(2, '0');
+    return `${p(dt.getUTCDate())}/${p(dt.getUTCMonth() + 1)}/${dt.getUTCFullYear()}`;
+  };
+
+  const hoje = Math.floor(Date.now() / 86400000);
+  const inicio = hoje - 400;
+  const colunas = ['NUMERODO', 'TIPOBITO', 'DTOBITO', 'HORAOBITO', 'DTNASC', 'IDADE', 'SEXO',
+    'RACACOR', 'ESTCIV', 'ESC', 'OCUP', 'CODMUNRES', 'LOCOCOR', 'CODESTAB', 'CODMUNOCOR',
+    'IDADEMAE', 'GRAVIDEZ', 'GESTACAO', 'PARTO', 'OBITOPARTO', 'PESO', 'OBITOGRAV', 'OBITOPUERP',
+    'ASSISTMED', 'EXAME', 'CIRURGIA', 'NECROPSIA', 'LINHAA', 'CAUSABAS', 'CIRCOBITO', 'ACIDTRAB',
+    'FONTE', 'ATESTANTE', 'TPPOS', 'DTINVESTIG', 'DTCONINV', 'FONTEINV', 'DTCADASTRO',
+    'NOME', 'NOMEMAE'];
+
+  const linhas = [];
+  for (let i = 0; i < n; i++) {
+    const dtObito = inicio + inteiro(0, 330);
+    const idade = inteiro(0, 95);
+    const dtNasc = dtObito - idade * 365 - inteiro(0, 364);
+    const sexo = escolha(['1', '2']);
+    const fetal = rnd() < 0.08;
+    const atraso = escolha([3, 7, 12, 20, 28, 35, 60, 95, 140]);
+    const causa = talvez(0.04, escolha(CID), 'XX99');
+    const investigado = rnd() < 0.25 ? 'S' : 'N';
+    const reg = {
+      NUMERODO: String(9000000 + i),
+      TIPOBITO: fetal ? '1' : '2',
+      DTOBITO: dataBR(dtObito),
+      HORAOBITO: talvez(0.12, String(inteiro(0, 23)).padStart(2, '0') + String(inteiro(0, 59)).padStart(2, '0'), '9999'),
+      DTNASC: dataBR(rnd() < 0.01 ? dtObito + inteiro(1, 300) : dtNasc),
+      IDADE: '4' + String(Math.min(idade, 99)).padStart(2, '0'),
+      SEXO: sexo,
+      RACACOR: talvez(0.22, escolha(['1', '2', '3', '4', '5']), '9'),
+      ESTCIV: talvez(0.18, escolha(['1', '2', '3', '4', '5'])),
+      ESC: talvez(0.3, escolha(['1', '2', '3', '4', '5']), '9'),
+      OCUP: talvez(0.25, String(inteiro(1000, 999999))),
+      CODMUNRES: talvez(0.03, '292740', '29274'),
+      LOCOCOR: talvez(0.06, escolha(['1', '2', '3', '4', '5']), '9'),
+      CODESTAB: talvez(0.15, escolha(CNES)),
+      CODMUNOCOR: '292740',
+      IDADEMAE: fetal ? String(inteiro(15, 44)) : '',
+      GRAVIDEZ: fetal ? escolha(['1', '1', '2']) : '',
+      GESTACAO: fetal ? talvez(0.25, escolha(['3', '4', '5'])) : '',
+      PARTO: fetal ? escolha(['1', '2', '9']) : '',
+      OBITOPARTO: fetal ? talvez(0.3, escolha(['1', '2', '3'])) : '',
+      PESO: fetal ? talvez(0.2, String(inteiro(500, 4200)), '99999') : '',
+      OBITOGRAV: '', OBITOPUERP: '',
+      ASSISTMED: talvez(0.1, escolha(['1', '2']), '9'),
+      EXAME: escolha(['1', '2', '9']),
+      CIRURGIA: escolha(['1', '2', '9']),
+      NECROPSIA: escolha(['1', '2', '9']),
+      LINHAA: escolha(CID),
+      CAUSABAS: causa,
+      CIRCOBITO: '', ACIDTRAB: '', FONTE: '',
+      ATESTANTE: talvez(0.12, escolha(['1', '2', '3', '4', '5'])),
+      TPPOS: investigado,
+      DTINVESTIG: investigado === 'S' ? dataBR(dtObito + inteiro(10, 200)) : '',
+      DTCONINV: investigado === 'S' ? talvez(0.35, dataBR(dtObito + inteiro(20, 260))) : '',
+      FONTEINV: investigado === 'S' ? talvez(0.3, escolha(['1', '2', '3', '4', '5', '6'])) : '',
+      DTCADASTRO: dataBR(dtObito + atraso),
+      NOME: nome(),
+      NOMEMAE: talvez(0.1, nome())
+    };
+    if (sexo === '2' && idade >= 10 && idade <= 49) {
+      reg.OBITOGRAV = escolha(['1', '2', '2', '9']);
+      reg.OBITOPUERP = escolha(['1', '2', '3', '9']);
+    }
+    if (rnd() < 0.012) { reg.SEXO = '1'; reg.OBITOGRAV = '1'; }   // incoerência proposital
+    if ('VWXY'.includes(causa[0])) {
+      reg.CIRCOBITO = talvez(0.3, escolha(['1', '2', '3', '4']), '9');
+      reg.FONTE = talvez(0.45, escolha(['1', '2', '3', '4']));
+      reg.ACIDTRAB = escolha(['1', '2', '9']);
+    }
+    linhas.push(reg);
+  }
+  for (let i = 0; i < Math.max(4, Math.round(n / 150)); i++) {   // duplicidades propositais
+    linhas.push(Object.assign({}, linhas[inteiro(0, linhas.length - 1)]));
+  }
+
+  const corpo = linhas.map(l => colunas.map(c => l[c] === undefined ? '' : l[c]).join(';'));
+  return '﻿' + [colunas.join(';')].concat(corpo).join('\r\n');
+}
+</script>
+<script>/* QualiSIS no navegador — leitura do CSV, execução e interface.
+   Tudo acontece na máquina do usuário: o arquivo nunca é enviado a lugar nenhum. */
+
+'use strict';
+
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+const TAM_BLOCO = 4 * 1024 * 1024;      // 4 MB por leitura
+const LIMITE_LINHAS_TABELA = 20000;     // linhas inconsistentes guardadas para exibir/exportar
+const LIMITE_OCORRENCIAS_CSV = 300000;
+
+const estado = {
+  sistema: null,
+  arquivo: null,
+  arquivoAnterior: null,
+  resultado: null,
+  pagina: 0,
+  filtroTipo: '',
+  filtroTexto: ''
+};
+
+/* ---------------------------------------------------------------- formato */
+function nBR(v, casas) {
+  if (v === null || v === undefined || v === '' || Number.isNaN(v)) return '—';
+  return Number(v).toLocaleString('pt-BR',
+    { minimumFractionDigits: casas || 0, maximumFractionDigits: casas || 0 });
+}
+function pctBR(v) { return (v === null || v === undefined) ? '—' : nBR(v, 1) + '%'; }
+function esc(txt) {
+  return String(txt === null || txt === undefined ? '' : txt)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function tamanhoLegivel(bytes) {
+  const un = ['B', 'KB', 'MB', 'GB'];
+  let i = 0, v = bytes;
+  while (v >= 1024 && i < un.length - 1) { v /= 1024; i++; }
+  return nBR(v, i ? 1 : 0) + ' ' + un[i];
+}
+
+/* --------------------------------------------------------- leitura do CSV */
+class ParserCSV {
+  constructor(sep) {
+    this.sep = sep; this.resto = ''; this.emAspas = false; this.campos = []; this.campo = '';
+  }
+  alimentar(txt, cb) {
+    if (!this.emAspas && this.campo === '' && this.campos.length === 0 && txt.indexOf('"') === -1) {
+      const buffer = this.resto + txt;
+      const linhas = buffer.split('\n');
+      this.resto = linhas.pop();
+      for (const l of linhas) {
+        const lim = l.charCodeAt(l.length - 1) === 13 ? l.slice(0, -1) : l;
+        if (lim !== '') cb(lim.split(this.sep));
+      }
+      return;
+    }
+    const s = this.resto + txt;
+    this.resto = '';
+    for (let i = 0; i < s.length; i++) {
+      const ch = s[i];
+      if (this.emAspas) {
+        if (ch === '"') {
+          if (s[i + 1] === '"') { this.campo += '"'; i++; } else { this.emAspas = false; }
+        } else { this.campo += ch; }
+        continue;
+      }
+      if (ch === '"' && this.campo === '') { this.emAspas = true; continue; }
+      if (ch === this.sep) { this.campos.push(this.campo); this.campo = ''; continue; }
+      if (ch === '\n') {
+        this.campos.push(this.campo);
+        const linha = this.campos;
+        this.campos = []; this.campo = '';
+        if (!(linha.length === 1 && linha[0].trim() === '')) cb(linha);
+        continue;
+      }
+      if (ch === '\r') continue;
+      this.campo += ch;
+    }
+  }
+  finalizar(cb) {
+    if (this.resto) this.alimentar('\n', cb);
+    if (this.campo !== '' || this.campos.length) {
+      this.campos.push(this.campo);
+      const linha = this.campos;
+      this.campos = []; this.campo = '';
+      if (!(linha.length === 1 && linha[0].trim() === '')) cb(linha);
+    }
+  }
+}
+
+/* --------------------------------------------------------- leitura do DBF */
+class ParserDBF {
+  static async lerArquivo(file, cb) {
+    const cabecalho = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+    const numRegistros = new DataView(cabecalho.buffer).getUint32(4, true);
+    const tamHeader = new DataView(cabecalho.buffer).getUint16(8, true);
+    const tamRegistro = new DataView(cabecalho.buffer).getUint16(10, true);
+
+    const campos = [];
+    const fieldData = new Uint8Array(await file.slice(32, tamHeader).arrayBuffer());
+    for (let i = 0; i < fieldData.length; i += 32) {
+      if (fieldData[i] === 0x0D) break;
+      const nome = new TextDecoder().decode(fieldData.slice(i, i + 11)).split('\0')[0].trim();
+      const tipo = String.fromCharCode(fieldData[i + 11]);
+      const tamanho = fieldData[i + 16];
+      const decimais = fieldData[i + 17];
+      if (nome) campos.push({ nome, tipo, tamanho, decimais });
+    }
+
+    cb(campos.map(c => c.nome));
+
+    const offset = tamHeader;
+    for (let regNum = 0; regNum < numRegistros; regNum++) {
+      const inicio = offset + regNum * tamRegistro;
+      const fim = Math.min(inicio + tamRegistro, file.size);
+      const regData = new Uint8Array(await file.slice(inicio, fim).arrayBuffer());
+
+      if (regData[0] !== 0x20) continue;
+
+      const valores = [];
+      let pos = 1;
+      for (const campo of campos) {
+        const dados = regData.slice(pos, pos + campo.tamanho);
+        pos += campo.tamanho;
+        const txt = new TextDecoder().decode(dados).trim();
+        valores.push(txt);
+      }
+      cb(valores);
+    }
+  }
+}
+
+async function detectarFormato(file) {
+  const amostraBuf = await file.slice(0, 32).arrayBuffer();
+  const primeirosBytes = new Uint8Array(amostraBuf);
+
+  // Detecta DBF: tipo de arquivo + ano >= 2000
+  if ([0x03, 0x83, 0x8B, 0xCB].includes(primeirosBytes[0])) {
+    const ano = primeirosBytes[1] + 1900;
+    if (ano >= 1900 && ano <= 2100) return { tipo: 'dbf' };
+  }
+
+  // Senão, trata como CSV
+  const totalBuf = await file.slice(0, Math.min(file.size, 262144)).arrayBuffer();
+  let encoding = 'utf-8';
+  try { new TextDecoder('utf-8', { fatal: true }).decode(totalBuf); }
+  catch (e) { encoding = 'windows-1252'; }
+  const texto = new TextDecoder(encoding).decode(totalBuf);
+  const primeira = texto.split('\n')[0] || '';
+  let sep = ';', melhor = 0;
+  for (const cand of [';', ',', '\t', '|']) {
+    const qtd = primeira.split(cand).length - 1;
+    if (qtd > melhor) { melhor = qtd; sep = cand; }
+  }
+  return { tipo: 'csv', encoding, sep };
+}
+
+async function percorrer(file, formato, aoLinha, aoProgresso) {
+  if (formato.tipo === 'dbf') {
+    let numero = 0;
+    await ParserDBF.lerArquivo(file, (dados) => {
+      numero++;
+      aoLinha(dados, numero);
+      if (aoProgresso && numero % 100 === 0) {
+        aoProgresso(Math.min(numero / 10000, 1), numero);
+      }
+    });
+    return numero;
+  }
+
+  const parser = new ParserCSV(formato.sep);
+  const decoder = new TextDecoder(formato.encoding);
+  let lido = 0, numero = 0;
+  for (let off = 0; off < file.size; off += TAM_BLOCO) {
+    const buf = await file.slice(off, off + TAM_BLOCO).arrayBuffer();
+    lido += buf.byteLength;
+    const texto = decoder.decode(buf, { stream: true });
+    parser.alimentar(texto, campos => { numero++; aoLinha(campos, numero); });
+    if (aoProgresso) {
+      aoProgresso(lido / file.size, numero);
+      await new Promise(r => setTimeout(r, 0));
+    }
+  }
+  parser.finalizar(campos => { numero++; aoLinha(campos, numero); });
+  return numero;
+}
+
+/* --------------------------------------------------------------- análise */
+function colunasDe(cabecalho, cfg) {
+  const vistas = {};
+  return cabecalho.map((bruto, i) => {
+    let nome = normalizarColuna(bruto);
+    if (cfg.apelidos[nome]) nome = cfg.apelidos[nome];
+    if (!nome) nome = 'COLUNA_' + (i + 1);
+    if (vistas[nome]) { vistas[nome]++; nome = nome + '_' + vistas[nome]; } else { vistas[nome] = 1; }
+    return nome;
+  });
+}
+
+async function analisar(file, cfgBruta, opcoes) {
+  const op = opcoes || {};
+  const aoEtapa = op.aoEtapa || (() => {});
+  const cfg = prepararConfig(cfgBruta);
+  const formato = await detectarFormato(file);
+
+  const diaExtracao = op.diaExtracao !== undefined && op.diaExtracao !== null
+    ? op.diaExtracao : Math.floor(file.lastModified / 86400000);
+
+  /* --- passagem 1: cabeçalho e duplicidades ---------------------------- */
+  let colunas = null, motor = null;
+  const vistos = new Set(), duplicados = new Set();
+  await percorrer(file, formato, (campos, numero) => {
+    if (numero === 1) {
+      colunas = colunasDe(campos, cfg);
+      motor = new Motor(cfg, colunas, diaExtracao);
+      return;
+    }
+    for (const h of motor.hashesDup(campos)) {
+      if (vistos.has(h)) duplicados.add(h); else vistos.add(h);
+    }
+  }, (fracao, n) => aoEtapa(1, fracao, n));
+  vistos.clear();
+  if (!motor) throw new Error('O arquivo parece vazio — não há nem uma linha de cabeçalho.');
+
+  /* --- passagem 2: crítica registro a registro -------------------------- */
+  const ag = new Agregador(motor);
+  const linhas = [];
+  const ocorrenciasCSV = [];
+  let linhasOmitidas = 0;
+  const chavesAtuais = new Set();
+  const assinaturasAtuais = new Set();
+  const comparar = !!op.anterior;
+  const novas = {}, persistentes = {}, novasCampo = {}, persistentesCampo = {};
+
+  await percorrer(file, formato, (campos, numero) => {
+    if (numero === 1) return;
+    const resultado = motor.avaliar(campos, duplicados);
+    ag.adicionar(campos, resultado);
+
+    const chaveHash = hashTexto(motor.chaveRegistro(campos) || ('__linha__' + numero));
+    if (comparar) chavesAtuais.add(chaveHash);
+
+    if (resultado.oc.length) {
+      if (linhas.length < LIMITE_LINHAS_TABELA) {
+        const porCampo = {};
+        let gravidade = 0;
+        const tiposPresentes = [];
+        const detalhes = [];
+        for (const o of resultado.oc) {
+          const atual = porCampo[o.campo];
+          if (!atual || TIPOS[o.tipo].peso > TIPOS[atual].peso) porCampo[o.campo] = o.tipo;
+          gravidade += TIPOS[o.tipo].peso;
+          if (!tiposPresentes.includes(o.tipo)) tiposPresentes.push(o.tipo);
+          if (detalhes.length < 12) detalhes.push(`[${TIPOS[o.tipo].rotulo}] ${o.descricao}`);
+        }
+        tiposPresentes.sort((a, b) => TIPOS[b].peso - TIPOS[a].peso);
+        linhas.push({ numero, valores: campos, porCampo, tipos: tiposPresentes,
+          dominante: tiposPresentes[0], gravidade: Math.round(gravidade * 10) / 10,
+          qtd: resultado.oc.length, detalhe: detalhes.join(' | '),
+          chave: motor.chaveRegistro(campos).replace(/\|+$/, '') });
+      } else {
+        linhasOmitidas++;
+      }
+      for (const o of resultado.oc) {
+        if (ocorrenciasCSV.length < LIMITE_OCORRENCIAS_CSV) {
+          ocorrenciasCSV.push([numero, motor.chaveRegistro(campos), o.campo,
+            (cfg.campos[o.campo] || {}).rotulo || o.campo, o.tipo, TIPOS[o.tipo].rotulo,
+            o.regra, o.valor, o.descricao]);
+        }
+        if (comparar) {
+          const assinatura = chaveHash + '|' + o.campo + '|' + o.tipo + '|' + o.regra;
+          assinaturasAtuais.add(assinatura);
+          if (op.anterior.assinaturas.has(assinatura)) {
+            persistentes[o.tipo] = (persistentes[o.tipo] || 0) + 1;
+            persistentesCampo[o.campo] = (persistentesCampo[o.campo] || 0) + 1;
+          } else {
+            novas[o.tipo] = (novas[o.tipo] || 0) + 1;
+            novasCampo[o.campo] = (novasCampo[o.campo] || 0) + 1;
+          }
+        }
+      }
+    }
+  }, (fracao, n) => aoEtapa(2, fracao, n));
+
+  /* --- comparação com o envio anterior --------------------------------- */
+  let comparacao = null;
+  if (comparar) {
+    const corrigidas = {}, semRegistro = {}, corrigidasCampo = {};
+    let registrosNovos = 0, registrosMantidos = 0;
+    chavesAtuais.forEach(c => {
+      if (op.anterior.chaves.has(c)) registrosMantidos++; else registrosNovos++;
+    });
+    let registrosAusentes = 0;
+    op.anterior.chaves.forEach(c => { if (!chavesAtuais.has(c)) registrosAusentes++; });
+    op.anterior.assinaturas.forEach(ass => {
+      if (assinaturasAtuais.has(ass)) return;
+      const partes = ass.split('|');
+      const chave = partes[0], campo = partes[1], tipo = partes[2];
+      if (chavesAtuais.has(chave)) {
+        corrigidas[tipo] = (corrigidas[tipo] || 0) + 1;
+        corrigidasCampo[campo] = (corrigidasCampo[campo] || 0) + 1;
+      } else {
+        semRegistro[tipo] = (semRegistro[tipo] || 0) + 1;
+      }
+    });
+    const soma = o => Object.values(o).reduce((a, b) => a + b, 0);
+    comparacao = { corrigidas, persistentes, novas, semRegistro, corrigidasCampo,
+      persistentesCampo, novasCampo, registrosNovos, registrosMantidos, registrosAusentes,
+      totalCorrigidas: soma(corrigidas), totalPersistentes: soma(persistentes),
+      totalNovas: soma(novas), totalSemRegistro: soma(semRegistro),
+      registrosAnterior: op.anterior.chaves.size, arquivo: op.anterior.nome };
+    const base = comparacao.totalCorrigidas + comparacao.totalPersistentes;
+    comparacao.resolutividade = base ? Math.round(1000 * comparacao.totalCorrigidas / base) / 10 : null;
+  }
+
+  const indicadores = ag.indicadores();
+  return { cfg, motor, ag, colunas, formato, linhas, linhasOmitidas, ocorrenciasCSV,
+    indicadores, escore: ag.escoreGeral(indicadores), comparacao, diaExtracao,
+    arquivo: file.name, tamanho: file.size,
+    duplicidadesEncontradas: duplicados.size };
+}
+
+/** Processa o envio anterior só para extrair as assinaturas das ocorrências. */
+async function assinaturasDe(file, cfgBruta, aoEtapa, diaExtracao) {
+  const cfg = prepararConfig(cfgBruta);
+  const formato = await detectarFormato(file);
+  const dia = diaExtracao !== undefined && diaExtracao !== null
+    ? diaExtracao : Math.floor(file.lastModified / 86400000);
+  let colunas = null, motor = null;
+  const vistos = new Set(), duplicados = new Set();
+  await percorrer(file, formato, (campos, numero) => {
+    if (numero === 1) { colunas = colunasDe(campos, cfg); motor = new Motor(cfg, colunas, dia); return; }
+    for (const h of motor.hashesDup(campos)) {
+      if (vistos.has(h)) duplicados.add(h); else vistos.add(h);
+    }
+  }, (f, n) => aoEtapa(0, f, n));
+  vistos.clear();
+  const chaves = new Set(), assinaturas = new Set();
+  await percorrer(file, formato, (campos, numero) => {
+    if (numero === 1) return;
+    const r = motor.avaliar(campos, duplicados);
+    const chaveHash = hashTexto(motor.chaveRegistro(campos) || ('__linha__' + numero));
+    chaves.add(chaveHash);
+    for (const o of r.oc) assinaturas.add(chaveHash + '|' + o.campo + '|' + o.tipo + '|' + o.regra);
+  }, (f, n) => aoEtapa(0.5, f, n));
+  return { chaves, assinaturas, nome: file.name };
+}
+
+/* ------------------------------------------------------------- interface */
+function montarSistemas() {
+  const alvo = $('#sistemas');
+  alvo.innerHTML = '';
+  const ordem = ['sim', 'sinasc', 'sinan', 'sinan_online', 'esus_sinan'];
+  const listadas = Object.keys(CONFIGS).sort((a, b) => {
+    const ia = ordem.indexOf(a), ib = ordem.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b);
+  });
+  listadas.forEach(sigla => {
+    const cfg = CONFIGS[sigla];
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sistema';
+    b.setAttribute('aria-pressed', 'false');
+    b.dataset.sigla = sigla;
+    b.innerHTML = `<b>${esc(cfg.sistema)}</b><small>${esc(cfg.nome_completo)}</small>`;
+    b.addEventListener('click', () => {
+      estado.sistema = sigla;
+      $$('.sistema').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sigla === sigla)));
+      atualizarBotao();
+    });
+    alvo.appendChild(b);
+  });
+}
+
+function atualizarBotao() {
+  const pronto = !!(estado.sistema && estado.arquivo);
+  $('#analisar').disabled = !pronto;
+  $('#resumo-escolha').innerHTML = pronto
+    ? `Pronto: <strong>${esc(CONFIGS[estado.sistema].sistema)}</strong> · <code>${esc(estado.arquivo.name)}</code> (${tamanhoLegivel(estado.arquivo.size)})`
+    : 'Escolha o sistema e o arquivo para liberar o botão.';
+}
+
+function ligarArquivo(inputId, zonaId, campo, rotuloId) {
+  const input = $(inputId), zona = $(zonaId);
+  const definir = file => {
+    if (!file) return;
+    estado[campo] = file;
+    $(rotuloId).innerHTML = `<strong>${esc(file.name)}</strong> · ${tamanhoLegivel(file.size)}`;
+    atualizarBotao();
+  };
+  input.addEventListener('change', () => definir(input.files[0]));
+  ['dragenter', 'dragover'].forEach(ev => zona.addEventListener(ev, e => {
+    e.preventDefault(); zona.classList.add('sobre');
+  }));
+  ['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, e => {
+    e.preventDefault(); zona.classList.remove('sobre');
+  }));
+  zona.addEventListener('drop', e => definir(e.dataTransfer.files[0]));
+  zona.addEventListener('click', e => { if (e.target.tagName !== 'BUTTON') input.click(); });
+  zona.querySelectorAll('button').forEach(b => b.addEventListener('click', () => input.click()));
+}
+
+function mostrarProgresso(texto, fracao) {
+  $('#progresso').classList.remove('oculto');
+  $('#barra').style.width = Math.round(fracao * 100) + '%';
+  $('#texto-progresso').textContent = texto;
+}
+
+async function executar() {
+  const cfg = CONFIGS[estado.sistema];
+  $('#analisar').disabled = true;
+  $('#erro').classList.add('oculto');
+  $('#resultados').innerHTML = '';
+  const dataInf = $('#data-extracao').value;
+  const diaExtracao = dataInf ? converterData(dataInf) : null;
+
+  try {
+    let anterior = null;
+    const temAnterior = !!estado.arquivoAnterior;
+    const passos = temAnterior ? 4 : 2;
+    let passoAtual = 0;
+    const etapa = (qual, fracao, n) => {
+      const nomes = { 0: 'Lendo o envio anterior', 0.5: 'Analisando o envio anterior',
+        1: 'Procurando duplicidades', 2: 'Aplicando as críticas' };
+      const base = { 0: 0, 0.5: 1, 1: temAnterior ? 2 : 0, 2: temAnterior ? 3 : 1 }[qual];
+      mostrarProgresso(`${nomes[qual]} — ${nBR(n)} registros lidos`,
+        (base + fracao) / passos);
+    };
+
+    if (temAnterior) {
+      anterior = await assinaturasDe(estado.arquivoAnterior, cfg, etapa, diaExtracao);
+    }
+    const resultado = await analisar(estado.arquivo, cfg,
+      { aoEtapa: etapa, anterior, diaExtracao });
+    estado.resultado = resultado;
+    estado.pagina = 0;
+    mostrarProgresso('Concluído.', 1);
+    setTimeout(() => $('#progresso').classList.add('oculto'), 600);
+    renderizar(resultado);
+    $('#navegacao').classList.remove('oculto');
+    $('#resultados').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (erro) {
+    console.error(erro);
+    $('#progresso').classList.add('oculto');
+    const caixa = $('#erro');
+    caixa.classList.remove('oculto');
+    caixa.innerHTML = `<strong>Não foi possível analisar este arquivo.</strong><br>${esc(erro.message || erro)}
+      <br><br>Confira se o arquivo é o CSV exportado do sistema e se o sistema escolhido é o certo.`;
+  } finally {
+    $('#analisar').disabled = false;
+  }
+}
+
+/* ---------------------------------------------------------- renderização */
+function medidor(valor, cor) {
+  const v = valor === null || valor === undefined ? 0 : Math.max(0, Math.min(100, valor));
+  return `<div class="medidor"><span class="valor">${pctBR(valor)}</span>
+    <span class="trilho"><span class="preenchido" style="width:${v}%;background:${cor}"></span></span></div>`;
+}
+function pastilha(texto, cor) {
+  return `<span class="pastilha" style="color:${cor}">${esc(texto)}</span>`;
+}
+function amostra(tipo) { return `<span class="amostra" style="background:var(--c-${tipo})"></span>`; }
+
+function legendaTipos(tiposUsados) {
+  return `<div class="legenda">${tiposUsados.map(t =>
+    `<span>${amostra(t)}${esc(TIPOS[t].rotulo)}</span>`).join('')}</div>`;
+}
+
+function renderizar(r) {
+  const ag = r.ag, m = r.motor;
+  const partes = [];
+  const [faixa, cor] = classificar(r.escore);
+  const tiposUsados = ORDEM_TIPOS.filter(t => ag.porTipo[t] > 0);
+
+  /* resumo ------------------------------------------------------------- */
+  const ladrilhos = [
+    ['Registros analisados', nBR(ag.n), 'linhas da base'],
+    ['Registros com inconsistência', nBR(ag.nComInc),
+      pctBR(ag.n ? 100 * ag.nComInc / ag.n : null) + ' do total'],
+    ['Ocorrências detectadas', nBR(ag.nOcorrencias),
+      nBR(ag.n ? ag.nOcorrencias / ag.n : 0, 2) + ' por registro'],
+    ['Registros completos', nBR(ag.nCompletos), 'todos os campos essenciais preenchidos']
+  ];
+  if (r.comparacao) {
+    ladrilhos.push(['Resolutividade', pctBR(r.comparacao.resolutividade),
+      `${nBR(r.comparacao.totalCorrigidas)} corrigidas desde o envio anterior`]);
+  }
+  partes.push(`<section class="painel" id="p-resumo">
+    <div class="cabeca-painel"><h2>Resumo da base</h2>
+      <span class="nota">${esc(r.arquivo)} · ${tamanhoLegivel(r.tamanho)} ·
+      eventos de ${dataParaTexto(ag.diaMinEvento)} a ${dataParaTexto(ag.diaMaxEvento)}</span></div>
+    <div class="heroi"><div class="escore" style="color:${cor}">${pctBR(r.escore)}</div>
+      <div>${pastilha(faixa, cor)}
+      <p class="nota" style="margin-top:6px">Escore global ponderado dos atributos que podem ser
+      medidos na base. Compare cada sistema com ele mesmo ao longo do tempo.</p></div></div>
+    <div class="mosaico">${ladrilhos.map(([rot, val, obs]) =>
+      `<div class="ladrilho"><div class="rot">${esc(rot)}</div><div class="val">${val}</div>
+       <div class="obs">${esc(obs)}</div></div>`).join('')}</div>
+  </section>`);
+
+  /* indicadores --------------------------------------------------------- */
+  partes.push(`<section class="painel" id="p-indicadores">
+    <h2>Indicadores por atributo de qualidade</h2>
+    <p class="nota">Cada percentual traz numerador, denominador e fórmula — dá para refazer a conta
+    à mão. Os atributos que não se medem na base (clareza, acessibilidade, segurança, utilidade…)
+    são avaliados pelo instrumento em planilha, descrito na metodologia.</p>
+    <div class="rolagem"><table><thead><tr><th>Atributo</th><th>Indicador</th>
+      <th>Classificação</th><th class="num">Numerador</th><th class="num">Denominador</th>
+      <th>Como é calculado</th></tr></thead><tbody>
+      ${r.indicadores.map(d => `<tr>
+        <td><strong>${esc(d.atributo)}</strong></td>
+        <td style="min-width:170px">${medidor(d.valor, d.cor)}</td>
+        <td>${d.valor === null ? '—' : pastilha(d.classificacao, d.cor)}</td>
+        <td class="num">${nBR(d.numerador)}</td><td class="num">${nBR(d.denominador)}</td>
+        <td class="nota">${esc(d.formula)}${d.observacao ? ' — ' + esc(d.observacao) : ''}</td>
+      </tr>`).join('')}
+    </tbody></table></div></section>`);
+
+  /* tipos --------------------------------------------------------------- */
+  const maxTipo = Math.max(...ORDEM_TIPOS.map(t => ag.porTipo[t] || 0), 1);
+  partes.push(`<section class="painel" id="p-tipos">
+    <h2>Inconsistências por tipo</h2>
+    <p class="nota">A cor de cada tipo é a mesma usada na tabela de linhas, mais abaixo.</p>
+    <div class="rolagem"><table><thead><tr><th>Tipo</th><th class="num">Ocorrências</th>
+      <th>Peso no total</th><th class="num">Registros atingidos</th><th class="num">% dos registros</th>
+      <th>Gravidade</th><th>Atributos impactados</th></tr></thead><tbody>
+      ${tiposUsados.map(t => {
+        const n = ag.porTipo[t], regs = ag.regPorTipo[t];
+        return `<tr><td>${amostra(t)}<strong>${esc(TIPOS[t].rotulo)}</strong>
+          <div class="nota" style="font-size:12px">${esc(TIPOS[t].descricao)}</div></td>
+          <td class="num">${nBR(n)}</td>
+          <td style="min-width:150px"><div class="medidor"><span class="valor">${pctBR(100 * n / ag.nOcorrencias)}</span>
+            <span class="trilho"><span class="preenchido" style="width:${100 * n / maxTipo}%;background:var(--c-${t})"></span></span></div></td>
+          <td class="num">${nBR(regs)}</td><td class="num">${pctBR(100 * regs / ag.n)}</td>
+          <td>${esc(TIPOS[t].gravidade)}</td><td class="nota">${esc(TIPOS[t].atributos)}</td></tr>`;
+      }).join('')}
+    </tbody></table></div></section>`);
+
+  /* campos -------------------------------------------------------------- */
+  const campos = ag.resumoCampos();
+  partes.push(`<section class="painel" id="p-campos">
+    <h2>Campo a campo</h2>
+    <p class="nota">Ordenado pelo total de problemas. É desta lista que sai o que cobrar das
+    unidades notificadoras.</p>
+    ${legendaTipos(tiposUsados)}
+    <div class="rolagem"><table><thead><tr><th>Campo</th><th>Essencial</th><th>Preenchimento</th>
+      <th class="num">Em branco</th><th class="num">Ignorados</th><th class="num">Inválidos</th>
+      <th class="num">Incoerências</th><th class="num">Duplicidades</th><th class="num">Fora do prazo</th>
+      <th>Valores inválidos mais frequentes</th></tr></thead><tbody>
+      ${campos.slice(0, 60).map(l => {
+        const [, corC] = classificar(l.pctPreenchimento);
+        return `<tr><td><strong>${esc(l.rotulo)}</strong><div class="nota mono" style="font-size:11.5px">${esc(l.campo)}</div></td>
+        <td>${l.essencial ? 'Sim' : ''}</td><td style="min-width:160px">${medidor(l.pctPreenchimento, corC)}</td>
+        <td class="num">${nBR(l.vazios)}</td><td class="num">${nBR(l.ignorados)}</td>
+        <td class="num">${nBR(l.invalidos)}</td><td class="num">${nBR(l.incoerencias)}</td>
+        <td class="num">${nBR(l.duplicidades)}</td><td class="num">${nBR(l.foraPrazo)}</td>
+        <td class="nota">${esc(l.frequentes.map(([v, n]) => `${v} (${n})`).join('; '))}</td></tr>`;
+      }).join('')}
+    </tbody></table></div></section>`);
+
+  /* prazos -------------------------------------------------------------- */
+  const temp = ag.resumoTempestividade();
+  if (temp.length) {
+    partes.push(`<section class="painel" id="p-prazos">
+      <h2>Prazos e oportunidade</h2>
+      <p class="nota">Use a <strong>mediana</strong>, não a média: a média é puxada por poucos
+      registros muito atrasados. Intervalo negativo não é atraso, é erro de digitação de data.</p>
+      <div class="rolagem"><table><thead><tr><th>Indicador de prazo</th><th class="num">Prazo</th>
+        <th class="num">Registros</th><th>Dentro do prazo</th><th class="num">Média</th>
+        <th class="num">P25</th><th class="num">Mediana</th><th class="num">P75</th>
+        <th class="num">P90</th><th class="num">Máximo</th><th class="num">Negativos</th>
+      </tr></thead><tbody>
+        ${temp.map(t => {
+          const [, corT] = classificar(t.pctNoPrazo);
+          return `<tr><td><strong>${esc(t.rotulo)}</strong></td><td class="num">${nBR(t.prazo)} d</td>
+          <td class="num">${nBR(t.registros)}</td><td style="min-width:160px">${medidor(t.pctNoPrazo, corT)}</td>
+          <td class="num">${nBR(t.media, 1)}</td><td class="num">${nBR(t.p25)}</td>
+          <td class="num">${nBR(t.mediana)}</td><td class="num">${nBR(t.p75)}</td>
+          <td class="num">${nBR(t.p90)}</td><td class="num">${nBR(t.maximo)}</td>
+          <td class="num">${nBR(t.negativos)}</td></tr>`;
+        }).join('')}
+      </tbody></table></div></section>`);
+  }
+
+  /* estratos ------------------------------------------------------------ */
+  if (m.estratos.length) {
+    const blocos = m.estratos.map(campo => {
+      const dados = ag.resumoEstratos(campo, 15);
+      if (!dados.length) return '';
+      const rot = (r.cfg.campos[campo] || {}).rotulo || campo;
+      return `<h3>${esc(rot)}</h3><div class="rolagem"><table><thead><tr><th>Valor</th>
+        <th class="num">Registros</th><th class="num">Ocorrências</th>
+        <th>Registros com inconsistência</th><th class="num">Ocorrências por registro</th>
+        </tr></thead><tbody>${dados.map(d => {
+          const [, corE] = classificar(100 - (d.pctComInc || 0));
+          return `<tr><td>${esc(d.valor)}</td><td class="num">${nBR(d.registros)}</td>
+          <td class="num">${nBR(d.ocorrencias)}</td>
+          <td style="min-width:160px">${medidor(d.pctComInc, corE)}</td>
+          <td class="num">${nBR(d.porRegistro, 2)}</td></tr>`;
+        }).join('')}</tbody></table></div>`;
+    }).join('');
+    partes.push(`<section class="painel" id="p-estratos"><h2>Onde estão os problemas</h2>
+      <p class="nota">Por unidade notificadora, agravo, local de ocorrência — a lista de trabalho
+      da devolutiva.</p>${blocos}</section>`);
+  }
+
+  /* comparativo --------------------------------------------------------- */
+  if (r.comparacao) {
+    const c = r.comparacao;
+    const linhasTipo = ORDEM_TIPOS.map(t => {
+      const corr = c.corrigidas[t] || 0, pers = c.persistentes[t] || 0, nov = c.novas[t] || 0;
+      const sem = c.semRegistro[t] || 0;
+      const antes = corr + pers + sem;
+      if (!antes && !nov) return '';
+      const resolvido = (corr + pers) ? Math.round(1000 * corr / (corr + pers)) / 10 : null;
+      const [, corR] = classificar(resolvido);
+      return `<tr><td>${amostra(t)}${esc(TIPOS[t].rotulo)}</td><td class="num">${nBR(antes)}</td>
+        <td class="num">${nBR(corr)}</td><td style="min-width:150px">${medidor(resolvido, corR)}</td>
+        <td class="num">${nBR(pers)}</td><td class="num">${nBR(nov)}</td>
+        <td class="num">${nBR(sem)}</td></tr>`;
+    }).join('');
+    const tiles = [
+      ['Taxa de resolutividade', pctBR(c.resolutividade), 'corrigidas ÷ (corrigidas + persistentes)'],
+      ['Corrigidas', nBR(c.totalCorrigidas), 'apontadas antes e resolvidas'],
+      ['Persistentes', nBR(c.totalPersistentes), 'apontadas antes e ainda abertas'],
+      ['Novas', nBR(c.totalNovas), 'surgiram neste envio'],
+      ['Registros novos', nBR(c.registrosNovos), 'entraram na base acumulada'],
+      ['Registros que sumiram', nBR(c.registrosAusentes), 'conferir expurgo ou exclusão']
+    ];
+    partes.push(`<section class="painel" id="p-comparativo">
+      <h2>Comparação com o envio anterior</h2>
+      <p class="nota">Referência: <code>${esc(c.arquivo)}</code> (${nBR(c.registrosAnterior)} registros).
+      Cada registro é acompanhado pela chave
+      <code>${esc(r.cfg.chave_registro.join(' + ') || 'configurada')}</code>.</p>
+      <div class="mosaico">${tiles.map(([rot, val, obs]) =>
+        `<div class="ladrilho"><div class="rot">${esc(rot)}</div><div class="val">${val}</div>
+         <div class="obs">${esc(obs)}</div></div>`).join('')}</div>
+      <h3>Por tipo de inconsistência</h3>
+      <div class="rolagem"><table><thead><tr><th>Tipo</th><th class="num">Existiam antes</th>
+        <th class="num">Corrigidas</th><th>% resolvido</th><th class="num">Persistentes</th>
+        <th class="num">Novas</th><th class="num">Sem registro</th></tr></thead>
+        <tbody>${linhasTipo}</tbody></table></div>
+      <div class="aviso">"Sem registro" são inconsistências do envio anterior cujo registro não
+      está mais na base. Não conte como correção antes de conferir o que houve com ele.</div>
+    </section>`);
+  }
+
+  /* providências --------------------------------------------------------- */
+  partes.push(`<section class="painel" id="p-providencias"><h2>Providências sugeridas</h2>
+    <ul class="providencias">${providencias(r).map(t => `<li>${t}</li>`).join('')}</ul></section>`);
+
+  /* tabela de linhas ------------------------------------------------------ */
+  partes.push(`<section class="painel" id="p-linhas">
+    <div class="cabeca-painel"><h2>Linhas com inconsistência</h2>
+      <span class="nota">${nBR(r.linhas.length)} linha(s) listada(s)${r.linhasOmitidas
+        ? ` — outras ${nBR(r.linhasOmitidas)} não couberam na tela; use a exportação` : ''}</span></div>
+    ${legendaTipos(tiposUsados)}
+    <div class="filtros">
+      <label class="campo">Tipo
+        <select id="filtro-tipo"><option value="">todos</option>
+          ${tiposUsados.map(t => `<option value="${t}">${esc(TIPOS[t].rotulo)}</option>`).join('')}
+        </select></label>
+      <label class="campo">Procurar
+        <input type="search" id="filtro-texto" placeholder="nome, número, unidade…" size="26"></label>
+      <span class="nota" id="contagem-filtro"></span>
+    </div>
+    <div class="tabelao" id="tabelao"></div>
+    <div class="paginacao">
+      <button class="botao discreto" id="pagina-anterior">← anteriores</button>
+      <span id="rotulo-pagina"></span>
+      <button class="botao discreto" id="pagina-proxima">próximas →</button>
+    </div></section>`);
+
+  /* exportar -------------------------------------------------------------- */
+  partes.push(`<section class="painel" id="p-exportar"><h2>Levar o resultado para fora</h2>
+    <p class="nota">A página inteira imprime em A4 (ou salva em PDF) pela impressão do navegador.
+    Os arquivos abaixo abrem no Excel.</p>
+    <div class="acoes-download">
+      <button class="botao" id="btn-imprimir">Imprimir / salvar em PDF</button>
+      <button class="botao secundario" id="btn-planilha">Baixar planilha colorida</button>
+      <button class="botao secundario" id="btn-ocorrencias">Baixar lista de ocorrências (CSV)</button>
+      <button class="botao secundario" id="btn-indicadores">Baixar indicadores (CSV)</button>
+    </div>
+    <p class="nota" id="aviso-download" style="margin-top:10px"></p>
+    <h3>Ficha técnica desta análise</h3>
+    <div class="rolagem"><table><tbody>
+      ${[['Sistema', `${r.cfg.sistema} — ${r.cfg.nome_completo}`],
+         ['Arquivo', r.arquivo], ['Tamanho', tamanhoLegivel(r.tamanho)],
+         ['Codificação detectada', r.formato.encoding],
+         ['Separador detectado', r.formato.sep === '\t' ? 'tabulação' : r.formato.sep],
+         ['Data de extração considerada', dataParaTexto(r.diaExtracao)],
+         ['Colunas no arquivo', nBR(r.colunas.length)],
+         ['Campos avaliados', nBR(m.camposAtivos.length) + ' de ' + nBR(Object.keys(r.cfg.campos).length) + ' do dicionário'],
+         ['Regras cruzadas aplicadas', nBR(m.regras.length)],
+         ['Chaves de duplicidade', m.chavesDup.map(c => c.nome || c.id).join(' · ') || '—'],
+         ['Campos do dicionário ausentes no arquivo',
+          Object.keys(r.cfg.campos).filter(c => !m.camposAtivos.includes(c)).join(', ') || 'nenhum'],
+         ['Colunas do arquivo fora do dicionário',
+          r.colunas.filter(c => !(c in r.cfg.campos)).join(', ') || 'nenhuma'],
+         ['Análise feita em', new Date().toLocaleString('pt-BR')]
+        ].map(([k, v]) => `<tr><td style="width:270px"><strong>${esc(k)}</strong></td>
+          <td class="nota">${esc(v)}</td></tr>`).join('')}
+    </tbody></table></div></section>`);
+
+  $('#resultados').innerHTML = partes.join('');
+  ligarInteracoes(r);
+  desenharTabela();
+}
+
+function providencias(r) {
+  const ag = r.ag, itens = [];
+  const campos = ag.resumoCampos();
+  const brancos = campos.filter(c => c.essencial && (c.pctPreenchimento || 100) < 90).slice(0, 5);
+  if (brancos.length) {
+    itens.push('Priorizar o preenchimento dos campos essenciais com maior lacuna: ' +
+      brancos.map(c => `<strong>${esc(c.rotulo)}</strong> (${pctBR(c.pctPreenchimento)} preenchido)`).join(', ') +
+      ' — devolutiva às unidades e reforço no treinamento.');
+  }
+  const ign = campos.filter(c => (c.pctIgnorado || 0) > 10)
+    .sort((a, b) => b.pctIgnorado - a.pctIgnorado).slice(0, 5);
+  if (ign.length) {
+    itens.push("Reduzir o uso do código 'ignorado' em " +
+      ign.map(c => `<strong>${esc(c.rotulo)}</strong> (${pctBR(c.pctIgnorado)})`).join(', ') +
+      ' — o campo consta preenchido, mas não gera informação utilizável.');
+  }
+  if (ag.regPorTipo.duplicidade) {
+    itens.push(`Conferir <strong>${nBR(ag.regPorTipo.duplicidade)} registro(s)</strong> marcados como
+      duplicidade (filtro "Duplicidade" na tabela) e resolver no sistema de origem. Duplicidade
+      provável é hipótese a conferir, nunca ordem de exclusão automática.`);
+  }
+  ag.resumoTempestividade().forEach(t => {
+    if (t.pctNoPrazo !== null && t.pctNoPrazo < 80) {
+      itens.push(`Melhorar a oportunidade de <strong>${esc(t.rotulo)}</strong>: apenas
+        ${pctBR(t.pctNoPrazo)} dentro do prazo de ${t.prazo} dias (mediana observada:
+        ${nBR(t.mediana)} dias).`);
+    }
+    if (t.negativos) {
+      itens.push(`Corrigir ${nBR(t.negativos)} registro(s) com intervalo negativo em
+        <strong>${esc(t.rotulo)}</strong> — indica erro de digitação de data.`);
+    }
+  });
+  r.motor.estratos.forEach(campo => {
+    const piores = ag.resumoEstratos(campo, 200).filter(d => d.registros >= 30)
+      .sort((a, b) => (b.pctComInc || 0) - (a.pctComInc || 0)).slice(0, 3);
+    if (piores.length && piores[0].pctComInc) {
+      const rot = (r.cfg.campos[campo] || {}).rotulo || campo;
+      itens.push(`Pactuar plano de correção com os maiores focos em <strong>${esc(rot)}</strong>: ` +
+        piores.map(d => `${esc(d.valor)} (${pctBR(d.pctComInc)})`).join(', ') + '.');
+    }
+  });
+  if (r.comparacao) {
+    if ((r.comparacao.resolutividade || 0) < 50) {
+      itens.push(`Resolutividade abaixo de 50%: rever o fluxo de devolutiva — as listas estão
+        chegando a quem pode corrigir? Há prazo pactuado de retorno?`);
+    }
+    if (r.comparacao.totalNovas > r.comparacao.totalCorrigidas) {
+      itens.push(`Entraram mais inconsistências novas do que foram corrigidas: atuar na origem
+        (crítica no momento da digitação), não só na correção posterior.`);
+    }
+  }
+  const fracos = r.indicadores.filter(d => d.valor !== null)
+    .sort((a, b) => a.valor - b.valor).slice(0, 3);
+  if (fracos.length) {
+    itens.push('Atributos com pior desempenho nesta avaliação: ' +
+      fracos.map(d => `<strong>${esc(d.atributo)}</strong> (${pctBR(d.valor)})`).join(', ') +
+      ' — definir meta de melhoria para o próximo envio.');
+  }
+  itens.push(`Guardar este arquivo CSV: na próxima análise, informe-o em "envio anterior" para
+    medir quanto do que foi apontado hoje já terá sido corrigido.`);
+  return itens;
+}
+
+/* ------------------------------------------------------- tabela de linhas */
+function linhasFiltradas() {
+  const r = estado.resultado;
+  if (!r) return [];
+  const texto = estado.filtroTexto.trim().toUpperCase();
+  return r.linhas.filter(l => {
+    if (estado.filtroTipo && !l.tipos.includes(estado.filtroTipo)) return false;
+    if (texto && !l.valores.some(v => String(v).toUpperCase().includes(texto))) return false;
+    return true;
+  });
+}
+
+function desenharTabela() {
+  const r = estado.resultado;
+  if (!r) return;
+  const POR_PAGINA = 100;
+  const dados = linhasFiltradas();
+  const total = dados.length;
+  const paginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+  if (estado.pagina >= paginas) estado.pagina = paginas - 1;
+  const fatia = dados.slice(estado.pagina * POR_PAGINA, (estado.pagina + 1) * POR_PAGINA);
+
+  const cabecalho = ['Linha', 'Chave', 'Problemas', 'Gravidade', 'Tipos']
+    .concat(r.colunas.map(c => (r.cfg.campos[c] || {}).rotulo || c)).concat(['O que há de errado']);
+  const corpo = fatia.map(l => {
+    const celulas = r.colunas.map((c, i) => {
+      const tipo = l.porCampo[c];
+      return `<td class="${tipo || ''}">${esc(l.valores[i] === undefined ? '' : l.valores[i])}</td>`;
+    }).join('');
+    return `<tr class="marcada" style="--cor-linha:var(--c-${l.dominante})">
+      <td>${l.numero}</td><td>${esc(l.chave)}</td><td class="num">${l.qtd}</td>
+      <td class="num">${nBR(l.gravidade, 1)}</td>
+      <td>${l.tipos.map(t => amostra(t)).join('')}${esc(l.tipos.map(t => TIPOS[t].rotulo).join(', '))}</td>
+      ${celulas}<td class="detalhe" title="${esc(l.detalhe)}">${esc(l.detalhe)}</td></tr>`;
+  }).join('');
+
+  $('#tabelao').innerHTML = `<table><thead><tr>${cabecalho.map(c =>
+    `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${corpo ||
+    '<tr><td colspan="6">Nenhuma linha corresponde ao filtro.</td></tr>'}</tbody></table>`;
+  $('#rotulo-pagina').textContent = `página ${estado.pagina + 1} de ${paginas}`;
+  $('#contagem-filtro').textContent = `${nBR(total)} linha(s) no filtro atual`;
+  $('#pagina-anterior').disabled = estado.pagina === 0;
+  $('#pagina-proxima').disabled = estado.pagina >= paginas - 1;
+}
+
+/* -------------------------------------------------------------- exportar */
+async function entregarArquivo(nome, conteudo, alternativaTxt) {
+  const aviso = $('#aviso-download');
+  const escrever = t => { if (aviso) aviso.textContent = t; };
+  try {
+    if (window.claude && typeof window.claude.use === 'function') {
+      const downloads = await window.claude.use('downloads');
+      if (downloads) {
+        try {
+          await downloads.save({ filename: nome, data: conteudo });
+          escrever(`Arquivo "${nome}" enviado para download.`);
+          return;
+        } catch (erro) {
+          if (erro && erro.code === 'extension_not_enabled' && alternativaTxt) {
+            await downloads.save({ filename: alternativaTxt, data: conteudo });
+            escrever(`Baixado como "${alternativaTxt}". Renomeie a extensão para abrir no Excel.`);
+            return;
+          }
+          if (erro && erro.code === 'declined') { escrever('Download cancelado.'); return; }
+          throw erro;
+        }
+      }
+    }
+    const blob = new Blob([conteudo], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = nome;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    escrever(`Arquivo "${nome}" salvo na pasta de downloads.`);
+  } catch (erro) {
+    escrever('Não foi possível salvar o arquivo aqui. Use "Imprimir / salvar em PDF", ' +
+      'ou abra esta página salva no seu computador.');
+    console.error(erro);
+  }
+}
+
+function csvDe(cabecalho, linhas) {
+  const limpa = v => {
+    const t = String(v === null || v === undefined ? '' : v);
+    return /[;"\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  };
+  return '﻿' + [cabecalho.join(';')].concat(linhas.map(l => l.map(limpa).join(';'))).join('\r\n');
+}
+
+function planilhaColorida() {
+  const r = estado.resultado;
+  /* cores claras fixas: a planilha abre no Excel com fundo branco, independentemente
+     do tema em que a página estiver sendo vista */
+  const cores = { duplicidade: '#FAE0DF', em_branco: '#FBEECB', ignorado: '#FBE1D3',
+    codigo_invalido: '#E6E2FA', data_invalida: '#D9E8F8', incoerencia: '#D6EFE7',
+    formato_invalido: '#FADFEB', fora_de_faixa: '#DFF0D4', fora_do_prazo: '#E6E9E8' };
+  const cab = ['Linha', 'Chave', 'Problemas', 'Gravidade', 'Tipos']
+    .concat(r.colunas.map(c => (r.cfg.campos[c] || {}).rotulo || c)).concat(['O que há de errado']);
+  const linhas = r.linhas.map(l => {
+    const celulas = r.colunas.map((c, i) => {
+      const tipo = l.porCampo[c];
+      const fundo = tipo ? ` style="background:${cores[tipo]}"` : '';
+      return `<td${fundo}>${esc(l.valores[i] === undefined ? '' : l.valores[i])}</td>`;
+    }).join('');
+    const cor = cores[l.dominante];
+    return `<tr><td style="background:${cor}">${l.numero}</td>
+      <td style="background:${cor}">${esc(l.chave)}</td>
+      <td style="background:${cor}">${l.qtd}</td>
+      <td style="background:${cor}">${nBR(l.gravidade, 1)}</td>
+      <td style="background:${cor}">${esc(l.tipos.map(t => TIPOS[t].rotulo).join(', '))}</td>
+      ${celulas}<td>${esc(l.detalhe)}</td></tr>`;
+  }).join('');
+  const legenda = ORDEM_TIPOS.map(t =>
+    `<tr><td style="background:${cores[t]}">${esc(TIPOS[t].rotulo)}</td>
+     <td>${esc(TIPOS[t].descricao)}</td></tr>`).join('');
+  return `<html><head><meta charset="utf-8"><title>Inconsistências ${esc(r.cfg.sistema)}</title></head>
+    <body><h2>Inconsistências — ${esc(r.cfg.sistema)} — ${esc(r.arquivo)}</h2>
+    <table border="1" cellspacing="0" cellpadding="3">
+      <tr>${cab.map(c => `<th style="background:#2f4858;color:#fff">${esc(c)}</th>`).join('')}</tr>
+      ${linhas}</table>
+    <h3>Legenda das cores</h3><table border="1" cellspacing="0" cellpadding="3">${legenda}</table>
+    </body></html>`;
+}
+
+/* ------------------------------------------------------------ interações */
+function ligarInteracoes(r) {
+  $('#filtro-tipo').addEventListener('change', e => {
+    estado.filtroTipo = e.target.value; estado.pagina = 0; desenharTabela();
+  });
+  let temporizador = null;
+  $('#filtro-texto').addEventListener('input', e => {
+    clearTimeout(temporizador);
+    const v = e.target.value;
+    temporizador = setTimeout(() => {
+      estado.filtroTexto = v; estado.pagina = 0; desenharTabela();
+    }, 220);
+  });
+  $('#pagina-anterior').addEventListener('click', () => {
+    if (estado.pagina > 0) { estado.pagina--; desenharTabela(); }
+  });
+  $('#pagina-proxima').addEventListener('click', () => { estado.pagina++; desenharTabela(); });
+  $('#btn-imprimir').addEventListener('click', () => window.print());
+  $('#btn-planilha').addEventListener('click', () => {
+    entregarArquivo(`${r.cfg.sistema}_inconsistencias.html`, planilhaColorida(),
+      `${r.cfg.sistema}_inconsistencias.txt`);
+  });
+  $('#btn-ocorrencias').addEventListener('click', () => {
+    const csv = csvDe(['linha', 'chave', 'campo', 'rotulo', 'tipo', 'tipo_rotulo', 'regra',
+      'valor', 'descricao'], r.ocorrenciasCSV);
+    entregarArquivo(`${r.cfg.sistema}_ocorrencias.csv`, csv, `${r.cfg.sistema}_ocorrencias.txt`);
+  });
+  $('#btn-indicadores').addEventListener('click', () => {
+    const csv = csvDe(['atributo', 'valor_pct', 'classificacao', 'numerador', 'denominador',
+      'formula', 'observacao'],
+      r.indicadores.map(d => [d.atributo, d.valor, d.classificacao, d.numerador, d.denominador,
+        d.formula, d.observacao]));
+    entregarArquivo(`${r.cfg.sistema}_indicadores.csv`, csv, `${r.cfg.sistema}_indicadores.txt`);
+  });
+}
+
+/* ----------------------------------------------------------------- início */
+document.addEventListener('DOMContentLoaded', () => {
+  montarSistemas();
+  ligarArquivo('#arquivo', '#zona-arquivo', 'arquivo', '#rotulo-arquivo');
+  ligarArquivo('#arquivo-anterior', '#zona-anterior', 'arquivoAnterior', '#rotulo-anterior');
+  $('#analisar').addEventListener('click', executar);
+  $('#exemplo').addEventListener('click', carregarExemplo);
+  atualizarBotao();
+});
+
+/* Base fictícia embutida, para conhecer a ferramenta sem usar dado real. */
+function carregarExemplo() {
+  const csv = gerarExemploSIM();
+  const file = new File([csv], 'EXEMPLO_SIM_ficticio.csv', { type: 'text/csv' });
+  estado.sistema = 'sim';
+  $$('.sistema').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sigla === 'sim')));
+  estado.arquivo = file;
+  $('#rotulo-arquivo').innerHTML =
+    `<strong>EXEMPLO_SIM_ficticio.csv</strong> · ${tamanhoLegivel(file.size)} · dados inventados`;
+  atualizarBotao();
+  executar();
+}
+</script>

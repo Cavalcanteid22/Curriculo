@@ -1,0 +1,776 @@
+{
+  "_leia_me": "Dicionário de crítica do SINASC. Confira os nomes das colunas com a SUA exportação: 'python executar.py validar -s sinasc -b sua_base.csv'.",
+  "sistema": "SINASC",
+  "nome_completo": "Sistema de Informações sobre Nascidos Vivos",
+  "descricao": "Base de Declarações de Nascido Vivo (DN) do município de Salvador.",
+  "orgao": "Subcoordenadoria de Informação em Saúde — SMS Salvador",
+  "csv": {
+    "separador": null,
+    "encoding": null
+  },
+  "chave_registro": [
+    "NUMERODN"
+  ],
+  "data_referencia": "DTNASC",
+  "campos_estratificacao": [
+    "CODESTAB",
+    "LOCNASC"
+  ],
+  "apelidos_colunas": {
+    "NUMERO_DN": "NUMERODN",
+    "DT_NASC": "DTNASC",
+    "DT_CADASTRO": "DTCADASTRO",
+    "COD_ESTAB": "CODESTAB",
+    "COD_MUN_RES": "CODMUNRES"
+  },
+  "parametros": {
+    "data_minima_plausivel": "1930-01-01",
+    "defasagem_aceitavel_dias": 45,
+    "campo_abrangencia": "CODMUNRES"
+  },
+  "chaves_duplicidade": [
+    {
+      "id": "DUP_NUMERODN",
+      "nome": "Número da DN repetido",
+      "campos": [
+        "NUMERODN"
+      ]
+    },
+    {
+      "id": "DUP_PROVAVEL",
+      "nome": "Provável duplicidade (nome da mãe + data de nascimento + sexo + peso)",
+      "campos": [
+        "NOMEMAE",
+        "DTNASC",
+        "SEXO",
+        "PESO"
+      ]
+    },
+    {
+      "id": "DUP_MAE_HORA",
+      "nome": "Provável duplicidade (nome da mãe + data e hora do nascimento)",
+      "campos": [
+        "NOMEMAE",
+        "DTNASC",
+        "HORANASC"
+      ]
+    }
+  ],
+  "tempestividade": [
+    {
+      "id": "DIGITACAO",
+      "rotulo": "Oportunidade da digitação (nascimento → cadastro no SINASC)",
+      "data_inicial": "DTNASC",
+      "data_final": "DTCADASTRO",
+      "prazo_dias": 30
+    },
+    {
+      "id": "DECLARACAO",
+      "rotulo": "Intervalo entre o nascimento e a emissão da declaração",
+      "data_inicial": "DTNASC",
+      "data_final": "DTDECLARAC",
+      "prazo_dias": 7
+    }
+  ],
+  "campos": {
+    "NUMERODN": {
+      "rotulo": "Número da DN",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Identificação",
+      "regex": "^[0-9]{6,12}$",
+      "formato_descricao": "6 a 12 dígitos"
+    },
+    "LOCNASC": {
+      "rotulo": "Local de nascimento",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Nascimento",
+      "dominio": {
+        "1": "Hospital",
+        "2": "Outro estabelecimento de saúde",
+        "3": "Domicílio",
+        "4": "Outros",
+        "5": "Aldeia indígena"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CODESTAB": {
+      "rotulo": "Estabelecimento de nascimento (CNES)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Nascimento",
+      "validador": "cnes",
+      "ignorado": [
+        "9999999"
+      ]
+    },
+    "CODMUNNASC": {
+      "rotulo": "Município de nascimento (IBGE)",
+      "tipo": "texto",
+      "essencial": true,
+      "bloco": "Nascimento",
+      "validador": "ibge",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "DTNASC": {
+      "rotulo": "Data de nascimento",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Nascimento",
+      "data_minima": "1996-01-01"
+    },
+    "HORANASC": {
+      "rotulo": "Hora do nascimento",
+      "tipo": "texto",
+      "bloco": "Nascimento",
+      "regex": "^([01][0-9]|2[0-3])[0-5][0-9]$",
+      "formato_descricao": "HHMM",
+      "ignorado": [
+        "9999"
+      ]
+    },
+    "SEXO": {
+      "rotulo": "Sexo do recém-nascido",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "dominio": {
+        "1": "Masculino",
+        "2": "Feminino",
+        "M": "Masculino",
+        "F": "Feminino"
+      },
+      "ignorado": [
+        "0",
+        "9",
+        "I"
+      ]
+    },
+    "PESO": {
+      "rotulo": "Peso ao nascer (g)",
+      "tipo": "inteiro",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "min": 200,
+      "max": 7000,
+      "ignorado": [
+        "9999",
+        "0"
+      ]
+    },
+    "APGAR1": {
+      "rotulo": "Apgar no 1º minuto",
+      "tipo": "inteiro",
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "min": 0,
+      "max": 10,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "APGAR5": {
+      "rotulo": "Apgar no 5º minuto",
+      "tipo": "inteiro",
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "min": 0,
+      "max": 10,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "RACACOR": {
+      "rotulo": "Raça/cor do recém-nascido",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "IDANOMAL": {
+      "rotulo": "Anomalia congênita",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Recém-nascido",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CODANOMAL": {
+      "rotulo": "Anomalia congênita (CID-10)",
+      "tipo": "texto",
+      "bloco": "Recém-nascido",
+      "validador": "cid10"
+    },
+    "IDADEMAE": {
+      "rotulo": "Idade da mãe",
+      "tipo": "inteiro",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Mãe",
+      "min": 10,
+      "max": 60,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "ESTCIVMAE": {
+      "rotulo": "Estado civil da mãe",
+      "tipo": "categorico",
+      "bloco": "Mãe",
+      "dominio": {
+        "1": "Solteira",
+        "2": "Casada",
+        "3": "Viúva",
+        "4": "Separada judicialmente/divorciada",
+        "5": "União estável"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "ESCMAE": {
+      "rotulo": "Escolaridade da mãe (anos de estudo)",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Mãe",
+      "dominio": {
+        "1": "Nenhuma",
+        "2": "1 a 3 anos",
+        "3": "4 a 7 anos",
+        "4": "8 a 11 anos",
+        "5": "12 anos e mais"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "ESCMAE2010": {
+      "rotulo": "Escolaridade da mãe (série/2010)",
+      "tipo": "categorico",
+      "bloco": "Mãe",
+      "dominio": {
+        "0": "Sem escolaridade",
+        "1": "Fundamental I",
+        "2": "Fundamental II",
+        "3": "Médio",
+        "4": "Superior incompleto",
+        "5": "Superior completo"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "RACACORMAE": {
+      "rotulo": "Raça/cor da mãe",
+      "tipo": "categorico",
+      "bloco": "Mãe",
+      "dominio": {
+        "1": "Branca",
+        "2": "Preta",
+        "3": "Amarela",
+        "4": "Parda",
+        "5": "Indígena"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "CODOCUPMAE": {
+      "rotulo": "Ocupação da mãe (CBO)",
+      "tipo": "texto",
+      "bloco": "Mãe",
+      "regex": "^[0-9]{4,6}$",
+      "formato_descricao": "código CBO",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "DTNASCMAE": {
+      "rotulo": "Data de nascimento da mãe",
+      "tipo": "data",
+      "bloco": "Mãe"
+    },
+    "CODMUNRES": {
+      "rotulo": "Município de residência (IBGE)",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Residência",
+      "validador": "ibge",
+      "ignorado": [
+        "999999"
+      ]
+    },
+    "QTDFILVIVO": {
+      "rotulo": "Filhos nascidos vivos",
+      "tipo": "inteiro",
+      "bloco": "Mãe",
+      "min": 0,
+      "max": 20,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "QTDFILMORT": {
+      "rotulo": "Perdas fetais/abortos",
+      "tipo": "inteiro",
+      "bloco": "Mãe",
+      "min": 0,
+      "max": 20,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "QTDGESTANT": {
+      "rotulo": "Gestações anteriores",
+      "tipo": "inteiro",
+      "bloco": "Mãe",
+      "min": 0,
+      "max": 25,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "QTDPARTNOR": {
+      "rotulo": "Partos vaginais anteriores",
+      "tipo": "inteiro",
+      "bloco": "Mãe",
+      "min": 0,
+      "max": 25,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "QTDPARTCES": {
+      "rotulo": "Partos cesáreos anteriores",
+      "tipo": "inteiro",
+      "bloco": "Mãe",
+      "min": 0,
+      "max": 25,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "GESTACAO": {
+      "rotulo": "Semanas de gestação (faixa)",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Menos de 22 semanas",
+        "2": "22 a 27",
+        "3": "28 a 31",
+        "4": "32 a 36",
+        "5": "37 a 41",
+        "6": "42 e mais"
+      },
+      "ignorado": [
+        "9",
+        "0"
+      ]
+    },
+    "SEMAGESTAC": {
+      "rotulo": "Semanas de gestação (número)",
+      "tipo": "inteiro",
+      "bloco": "Gestação e parto",
+      "min": 20,
+      "max": 45,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "GRAVIDEZ": {
+      "rotulo": "Tipo de gravidez",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Única",
+        "2": "Dupla",
+        "3": "Tripla e mais"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "PARTO": {
+      "rotulo": "Tipo de parto",
+      "tipo": "categorico",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Vaginal",
+        "2": "Cesáreo"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CONSULTAS": {
+      "rotulo": "Consultas de pré-natal (faixa)",
+      "tipo": "categorico",
+      "essencial": true,
+      "bloco": "Pré-natal",
+      "dominio": {
+        "1": "Nenhuma",
+        "2": "1 a 3",
+        "3": "4 a 6",
+        "4": "7 e mais"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "CONSPRENAT": {
+      "rotulo": "Número de consultas de pré-natal",
+      "tipo": "inteiro",
+      "bloco": "Pré-natal",
+      "min": 0,
+      "max": 30,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "MESPRENAT": {
+      "rotulo": "Mês de início do pré-natal",
+      "tipo": "inteiro",
+      "bloco": "Pré-natal",
+      "min": 1,
+      "max": 9,
+      "ignorado": [
+        "99"
+      ]
+    },
+    "DTULTMENST": {
+      "rotulo": "Data da última menstruação",
+      "tipo": "data",
+      "bloco": "Pré-natal",
+      "data_minima": "1995-01-01"
+    },
+    "TPMETESTIM": {
+      "rotulo": "Método de estimativa da idade gestacional",
+      "tipo": "categorico",
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Exame físico",
+        "2": "Outro método"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "TPAPRESENT": {
+      "rotulo": "Apresentação do RN",
+      "tipo": "categorico",
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Cefálico",
+        "2": "Pélvica ou podálica",
+        "3": "Transversa"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "STTRABPART": {
+      "rotulo": "Trabalho de parto induzido",
+      "tipo": "categorico",
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não",
+        "3": "Não se aplica"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "STCESPARTO": {
+      "rotulo": "Cesárea antes do trabalho de parto",
+      "tipo": "categorico",
+      "bloco": "Gestação e parto",
+      "dominio": {
+        "1": "Sim",
+        "2": "Não",
+        "3": "Não se aplica"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "TPNASCASSI": {
+      "rotulo": "Nascimento assistido por",
+      "tipo": "categorico",
+      "bloco": "Nascimento",
+      "dominio": {
+        "1": "Médico",
+        "2": "Enfermeira/obstetriz",
+        "3": "Parteira",
+        "4": "Outros"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "TPFUNCRESP": {
+      "rotulo": "Função do responsável pelo preenchimento",
+      "tipo": "categorico",
+      "bloco": "Processamento",
+      "dominio": {
+        "1": "Médico",
+        "2": "Enfermeiro",
+        "3": "Parteira",
+        "4": "Funcionário do cartório",
+        "5": "Outros"
+      },
+      "ignorado": [
+        "9"
+      ]
+    },
+    "DTDECLARAC": {
+      "rotulo": "Data da declaração",
+      "tipo": "data",
+      "bloco": "Processamento",
+      "data_minima": "1996-01-01"
+    },
+    "DTCADASTRO": {
+      "rotulo": "Data do cadastro no sistema",
+      "tipo": "data",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Processamento",
+      "data_minima": "1996-01-01"
+    },
+    "NOMEMAE": {
+      "rotulo": "Nome da mãe",
+      "tipo": "texto",
+      "obrigatorio": true,
+      "essencial": true,
+      "bloco": "Mãe"
+    },
+    "NOMERN": {
+      "rotulo": "Nome do recém-nascido",
+      "tipo": "texto",
+      "bloco": "Recém-nascido"
+    }
+  },
+  "regras_cruzadas": [
+    {
+      "id": "SNC001",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTNASC",
+        "DTCADASTRO"
+      ],
+      "descricao": "O cadastro não pode ser anterior ao nascimento.",
+      "tipo_inconsistencia": "data_invalida"
+    },
+    {
+      "id": "SNC002",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTULTMENST",
+        "DTNASC"
+      ],
+      "min_dias": 140,
+      "max_dias": 320,
+      "descricao": "Intervalo entre a última menstruação e o nascimento fora da faixa plausível (20 a 45 semanas).",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC003",
+      "tipo": "ordem_datas",
+      "campos": [
+        "DTNASCMAE",
+        "DTNASC"
+      ],
+      "min_dias": 3650,
+      "descricao": "Mãe com menos de 10 anos na data do parto.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC010",
+      "tipo": "condicional_obrigatorio",
+      "se": {
+        "campo": "IDANOMAL",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_preenchido": [
+        "CODANOMAL"
+      ],
+      "descricao": "Anomalia congênita informada como 'sim' exige o código CID-10 da anomalia.",
+      "tipo_inconsistencia": "em_branco"
+    },
+    {
+      "id": "SNC011",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "IDANOMAL",
+        "valores": [
+          "2"
+        ]
+      },
+      "entao_campo": "CODANOMAL",
+      "proibido_preenchido": true,
+      "descricao": "Sem anomalia congênita, o campo de código da anomalia deve ficar vazio.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC020",
+      "tipo": "faixa_condicional",
+      "se": {
+        "campo": "GESTACAO",
+        "valores": [
+          "5",
+          "6"
+        ]
+      },
+      "campo": "PESO",
+      "min": 1500,
+      "max": 6500,
+      "descricao": "Peso implausível para gestação a termo (37 semanas ou mais).",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC021",
+      "tipo": "faixa_condicional",
+      "se": {
+        "campo": "GESTACAO",
+        "valores": [
+          "1",
+          "2"
+        ]
+      },
+      "campo": "PESO",
+      "min": 200,
+      "max": 1800,
+      "descricao": "Peso implausível para gestação de menos de 28 semanas.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC030",
+      "tipo": "condicional_valores",
+      "se": {
+        "campo": "CONSULTAS",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_campo": "CONSPRENAT",
+      "valores_esperados": [
+        "0"
+      ],
+      "descricao": "Faixa de consultas indica 'nenhuma', mas o número de consultas informado é diferente de zero.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC031",
+      "tipo": "condicional_proibido",
+      "se": {
+        "campo": "CONSULTAS",
+        "valores": [
+          "1"
+        ]
+      },
+      "entao_campo": "MESPRENAT",
+      "valores_proibidos": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "descricao": "Sem consultas de pré-natal não pode haver mês de início do pré-natal.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC040",
+      "tipo": "comparacao_numerica",
+      "campo_a": "QTDPARTNOR",
+      "campo_b": "QTDGESTANT",
+      "operador": "<=",
+      "descricao": "Partos vaginais anteriores não podem superar o total de gestações anteriores.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC041",
+      "tipo": "comparacao_numerica",
+      "campo_a": "QTDPARTCES",
+      "campo_b": "QTDGESTANT",
+      "operador": "<=",
+      "descricao": "Partos cesáreos anteriores não podem superar o total de gestações anteriores.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC042",
+      "tipo": "comparacao_numerica",
+      "campo_a": "APGAR1",
+      "campo_b": "APGAR5",
+      "operador": "<=",
+      "descricao": "Apgar do 5º minuto menor que o do 1º minuto — conferir (possível troca de campos).",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC050",
+      "tipo": "coerencia_valores",
+      "combinacoes_proibidas": [
+        {
+          "PARTO": "1",
+          "STCESPARTO": "1"
+        }
+      ],
+      "descricao": "Parto vaginal declarado junto com cesárea antes do trabalho de parto.",
+      "tipo_inconsistencia": "incoerencia"
+    },
+    {
+      "id": "SNC060",
+      "tipo": "faixa_condicional",
+      "se": {
+        "campo": "GRAVIDEZ",
+        "valores": [
+          "1"
+        ]
+      },
+      "campo": "PESO",
+      "min": 350,
+      "max": 6500,
+      "descricao": "Peso ao nascer fora da faixa plausível para gestação única.",
+      "tipo_inconsistencia": "fora_de_faixa"
+    }
+  ]
+}

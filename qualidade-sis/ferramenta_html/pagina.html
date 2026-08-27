@@ -1,0 +1,111 @@
+<title>QualiSIS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>/*CSS*/</style>
+
+<div class="envelope">
+
+  <header class="cabecalho">
+    <div class="marca">
+      <div class="selo" aria-hidden="true">Q</div>
+      <div>
+        <div class="sobrenome">Subcoordenadoria de Informação em Saúde — SMS Salvador</div>
+        <h1>Qualidade dos sistemas de informação</h1>
+      </div>
+    </div>
+    <p class="subtitulo">Arraste o CSV do SIM, SINAN, SINASC, e-SUS SINAN ou SINAN Online e veja,
+    linha a linha e em cores, o que está inconsistente — e quanto já foi corrigido desde o último
+    envio. <strong>O arquivo não sai do seu computador</strong>: tudo é processado aqui, dentro do
+    navegador.</p>
+  </header>
+
+  <div class="etapas">
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">1</span>
+        <strong>Escolha o sistema</strong>
+        <span class="dica">o dicionário de crítica muda conforme o sistema</span></div>
+      <div class="sistemas" id="sistemas"></div>
+    </div>
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">2</span>
+        <strong>Escolha o arquivo CSV ou DBF</strong>
+        <span class="dica">exportado do sistema, sem ter sido aberto no Excel antes</span></div>
+      <div class="solta" id="zona-arquivo">
+        <strong>Arraste o arquivo para cá</strong>
+        <p>ou <button type="button" class="botao secundario">procurar no computador</button></p>
+        <input type="file" id="arquivo" accept=".csv,.txt,.dbf,text/csv" class="oculto">
+      </div>
+      <div class="arquivo-escolhido" id="rotulo-arquivo"></div>
+
+      <details class="opcional">
+        <summary>Comparar com o envio anterior (opcional, mas é o que mede a resolutividade)</summary>
+        <p style="margin-top:8px">Informe o CSV ou DBF do envio passado. A ferramenta acompanha cada
+        registro pela chave e mostra o que foi <strong>corrigido</strong>, o que
+        <strong>persiste</strong> e o que é <strong>novo</strong>.</p>
+        <div class="solta" id="zona-anterior" style="padding:16px">
+          <button type="button" class="botao discreto">escolher o arquivo do envio anterior</button>
+          <input type="file" id="arquivo-anterior" accept=".csv,.txt,.dbf,text/csv" class="oculto">
+        </div>
+        <div class="arquivo-escolhido" id="rotulo-anterior"></div>
+      </details>
+
+      <div class="linha-controles">
+        <label class="campo">Data da extração
+          <input type="date" id="data-extracao">
+        </label>
+        <span class="nota">em branco = usa a data do arquivo</span>
+      </div>
+    </div>
+
+    <div class="cartao">
+      <div class="rotulo-etapa"><span class="numero-etapa">3</span>
+        <strong>Analisar</strong></div>
+      <div class="linha-controles">
+        <button class="botao" id="analisar" disabled>Analisar a base</button>
+        <button class="botao discreto" id="exemplo">Ver um exemplo com dados inventados</button>
+      </div>
+      <p class="nota" id="resumo-escolha" style="margin-top:10px"></p>
+      <div class="progresso oculto" id="progresso">
+        <div class="barra-fora"><div class="barra-dentro" id="barra"></div></div>
+        <p id="texto-progresso"></p>
+      </div>
+      <div class="aviso erro oculto" id="erro"></div>
+    </div>
+
+  </div>
+
+  <nav class="navegacao oculto" id="navegacao" aria-label="Seções do resultado">
+    <a href="#p-resumo">Resumo</a>
+    <a href="#p-indicadores">Indicadores</a>
+    <a href="#p-tipos">Tipos</a>
+    <a href="#p-campos">Campos</a>
+    <a href="#p-prazos">Prazos</a>
+    <a href="#p-estratos">Onde estão</a>
+    <a href="#p-comparativo">Comparação</a>
+    <a href="#p-providencias">Providências</a>
+    <a href="#p-linhas">Linhas</a>
+    <a href="#p-exportar">Exportar</a>
+  </nav>
+
+  <main id="resultados"></main>
+
+  <footer class="rodape">
+    <p><strong>Como ler as cores.</strong> Vermelho: duplicidade. Amarelo: campo essencial em
+    branco. Laranja: preenchido como ignorado. Roxo: código fora do dicionário. Azul: data
+    inválida ou fora de ordem. Verde-água: incoerência entre campos. Rosa: formato inválido
+    (CNS, CPF, CEP). Verde: valor fora da faixa plausível. Cinza: fora do prazo pactuado.</p>
+    <p><strong>Proteção de dados.</strong> A base contém dado pessoal sensível. Nada é enviado
+    pela internet — a análise roda inteiramente neste navegador. Ao devolver a lista para uma
+    unidade, filtre e envie apenas as linhas daquela unidade.</p>
+    <p>Os dicionários de crítica (campos, domínios, prazos e regras) acompanham a versão para
+    computador, no repositório do setor, e podem ser ajustados sem programação.</p>
+  </footer>
+</div>
+
+<script>/*CONFIGS*/</script>
+<script>/*MOTOR*/</script>
+<script>/*EXEMPLO*/</script>
+<script>/*APP*/</script>
