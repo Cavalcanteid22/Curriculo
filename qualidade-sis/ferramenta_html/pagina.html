@@ -31,23 +31,23 @@
 
     <div class="cartao">
       <div class="rotulo-etapa"><span class="numero-etapa">2</span>
-        <strong>Escolha o arquivo CSV</strong>
+        <strong>Escolha o arquivo CSV ou DBF</strong>
         <span class="dica">exportado do sistema, sem ter sido aberto no Excel antes</span></div>
       <div class="solta" id="zona-arquivo">
         <strong>Arraste o arquivo para cá</strong>
         <p>ou <button type="button" class="botao secundario">procurar no computador</button></p>
-        <input type="file" id="arquivo" accept=".csv,.txt,text/csv" class="oculto">
+        <input type="file" id="arquivo" accept=".csv,.txt,.dbf,text/csv" class="oculto">
       </div>
       <div class="arquivo-escolhido" id="rotulo-arquivo"></div>
 
       <details class="opcional">
         <summary>Comparar com o envio anterior (opcional, mas é o que mede a resolutividade)</summary>
-        <p style="margin-top:8px">Informe o CSV do envio passado. A ferramenta acompanha cada
+        <p style="margin-top:8px">Informe o CSV ou DBF do envio passado. A ferramenta acompanha cada
         registro pela chave e mostra o que foi <strong>corrigido</strong>, o que
         <strong>persiste</strong> e o que é <strong>novo</strong>.</p>
         <div class="solta" id="zona-anterior" style="padding:16px">
-          <button type="button" class="botao discreto">escolher o CSV do envio anterior</button>
-          <input type="file" id="arquivo-anterior" accept=".csv,.txt,text/csv" class="oculto">
+          <button type="button" class="botao discreto">escolher o arquivo do envio anterior</button>
+          <input type="file" id="arquivo-anterior" accept=".csv,.txt,.dbf,text/csv" class="oculto">
         </div>
         <div class="arquivo-escolhido" id="rotulo-anterior"></div>
       </details>

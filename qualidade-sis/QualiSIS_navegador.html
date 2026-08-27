@@ -358,23 +358,23 @@ code, .mono { font-family: "IBM Plex Mono", monospace; font-size: .92em; }
 
     <div class="cartao">
       <div class="rotulo-etapa"><span class="numero-etapa">2</span>
-        <strong>Escolha o arquivo CSV</strong>
+        <strong>Escolha o arquivo CSV ou DBF</strong>
         <span class="dica">exportado do sistema, sem ter sido aberto no Excel antes</span></div>
       <div class="solta" id="zona-arquivo">
         <strong>Arraste o arquivo para cá</strong>
         <p>ou <button type="button" class="botao secundario">procurar no computador</button></p>
-        <input type="file" id="arquivo" accept=".csv,.txt,text/csv" class="oculto">
+        <input type="file" id="arquivo" accept=".csv,.txt,.dbf,text/csv" class="oculto">
       </div>
       <div class="arquivo-escolhido" id="rotulo-arquivo"></div>
 
       <details class="opcional">
         <summary>Comparar com o envio anterior (opcional, mas é o que mede a resolutividade)</summary>
-        <p style="margin-top:8px">Informe o CSV do envio passado. A ferramenta acompanha cada
+        <p style="margin-top:8px">Informe o CSV ou DBF do envio passado. A ferramenta acompanha cada
         registro pela chave e mostra o que foi <strong>corrigido</strong>, o que
         <strong>persiste</strong> e o que é <strong>novo</strong>.</p>
         <div class="solta" id="zona-anterior" style="padding:16px">
-          <button type="button" class="botao discreto">escolher o CSV do envio anterior</button>
-          <input type="file" id="arquivo-anterior" accept=".csv,.txt,text/csv" class="oculto">
+          <button type="button" class="botao discreto">escolher o arquivo do envio anterior</button>
+          <input type="file" id="arquivo-anterior" accept=".csv,.txt,.dbf,text/csv" class="oculto">
         </div>
         <div class="arquivo-escolhido" id="rotulo-anterior"></div>
       </details>
@@ -1445,22 +1445,86 @@ class ParserCSV {
   }
 }
 
+/* --------------------------------------------------------- leitura do DBF */
+class ParserDBF {
+  static async lerArquivo(file, cb) {
+    const cabecalho = new Uint8Array(await file.slice(0, 32).arrayBuffer());
+    const numRegistros = new DataView(cabecalho.buffer).getUint32(4, true);
+    const tamHeader = new DataView(cabecalho.buffer).getUint16(8, true);
+    const tamRegistro = new DataView(cabecalho.buffer).getUint16(10, true);
+
+    const campos = [];
+    const fieldData = new Uint8Array(await file.slice(32, tamHeader).arrayBuffer());
+    for (let i = 0; i < fieldData.length; i += 32) {
+      if (fieldData[i] === 0x0D) break;
+      const nome = new TextDecoder().decode(fieldData.slice(i, i + 11)).split('\0')[0].trim();
+      const tipo = String.fromCharCode(fieldData[i + 11]);
+      const tamanho = fieldData[i + 16];
+      const decimais = fieldData[i + 17];
+      if (nome) campos.push({ nome, tipo, tamanho, decimais });
+    }
+
+    cb(campos.map(c => c.nome));
+
+    const offset = tamHeader;
+    for (let regNum = 0; regNum < numRegistros; regNum++) {
+      const inicio = offset + regNum * tamRegistro;
+      const fim = Math.min(inicio + tamRegistro, file.size);
+      const regData = new Uint8Array(await file.slice(inicio, fim).arrayBuffer());
+
+      if (regData[0] !== 0x20) continue;
+
+      const valores = [];
+      let pos = 1;
+      for (const campo of campos) {
+        const dados = regData.slice(pos, pos + campo.tamanho);
+        pos += campo.tamanho;
+        const txt = new TextDecoder().decode(dados).trim();
+        valores.push(txt);
+      }
+      cb(valores);
+    }
+  }
+}
+
 async function detectarFormato(file) {
-  const amostraBuf = await file.slice(0, Math.min(file.size, 262144)).arrayBuffer();
+  const amostraBuf = await file.slice(0, 32).arrayBuffer();
+  const primeirosBytes = new Uint8Array(amostraBuf);
+
+  // Detecta DBF: tipo de arquivo + ano >= 2000
+  if ([0x03, 0x83, 0x8B, 0xCB].includes(primeirosBytes[0])) {
+    const ano = primeirosBytes[1] + 1900;
+    if (ano >= 1900 && ano <= 2100) return { tipo: 'dbf' };
+  }
+
+  // Senão, trata como CSV
+  const totalBuf = await file.slice(0, Math.min(file.size, 262144)).arrayBuffer();
   let encoding = 'utf-8';
-  try { new TextDecoder('utf-8', { fatal: true }).decode(amostraBuf); }
+  try { new TextDecoder('utf-8', { fatal: true }).decode(totalBuf); }
   catch (e) { encoding = 'windows-1252'; }
-  const texto = new TextDecoder(encoding).decode(amostraBuf);
+  const texto = new TextDecoder(encoding).decode(totalBuf);
   const primeira = texto.split('\n')[0] || '';
   let sep = ';', melhor = 0;
   for (const cand of [';', ',', '\t', '|']) {
     const qtd = primeira.split(cand).length - 1;
     if (qtd > melhor) { melhor = qtd; sep = cand; }
   }
-  return { encoding, sep };
+  return { tipo: 'csv', encoding, sep };
 }
 
 async function percorrer(file, formato, aoLinha, aoProgresso) {
+  if (formato.tipo === 'dbf') {
+    let numero = 0;
+    await ParserDBF.lerArquivo(file, (dados) => {
+      numero++;
+      aoLinha(dados, numero);
+      if (aoProgresso && numero % 100 === 0) {
+        aoProgresso(Math.min(numero / 10000, 1), numero);
+      }
+    });
+    return numero;
+  }
+
   const parser = new ParserCSV(formato.sep);
   const decoder = new TextDecoder(formato.encoding);
   let lido = 0, numero = 0;
