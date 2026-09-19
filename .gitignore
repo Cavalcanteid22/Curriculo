@@ -1,0 +1,18 @@
+# Resultados gerados pela ferramenta — contêm dados pessoais sensíveis
+# e nunca devem ser versionados.
+resultados_elosis/
+ELO-SIS/
+bases_ficticias/
+*.xlsx
+*.docx
+trilha_auditoria.json
+
+# Exceção: os documentos-fonte do projeto
+!docs/**/*.docx
+
+# Artefatos do Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
