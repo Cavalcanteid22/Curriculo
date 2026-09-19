@@ -29,6 +29,13 @@ _PAGINAS_DE_CODIGO = {
 
 _ORDEM_TENTATIVAS = ("cp850", "cp1252", "latin-1", "utf-8")
 
+# Identificadores de versão do byte 0 do cabeçalho, conforme a especificação do
+# formato: dBase III/IV/5, FoxPro e Visual FoxPro, com e sem memorandos.
+_VERSOES_CONHECIDAS = {
+    0x02, 0x03, 0x04, 0x05, 0x07, 0x30, 0x31, 0x32, 0x43, 0x63, 0x7B,
+    0x83, 0x8B, 0x8E, 0xB3, 0xCB, 0xE5, 0xF5, 0xFB,
+}
+
 
 class ErroDBF(Exception):
     """Falha na leitura de arquivo DBF."""
@@ -82,6 +89,23 @@ class LeitorDBF:
         (self.versao, ano, mes, dia, self.n_registros,
          self.tamanho_cabecalho, self.tamanho_registro) = struct.unpack(
             "<BBBBIHH", cabecalho[:12])
+
+        # Validação do cabeçalho. Sem ela, um arquivo que não é DBF é lido como
+        # se fosse: os bytes iniciais viram "campos" plausíveis e o erro se
+        # manifesta adiante como base vazia, mensagem que não diz ao usuário o
+        # que realmente aconteceu.
+        if self.versao not in _VERSOES_CONHECIDAS:
+            raise ErroDBF(
+                f"O arquivo não parece ser um DBF válido: a identificação de "
+                f"versão ({self.versao:#04x}) não corresponde a nenhum formato "
+                f"dBase ou FoxPro conhecido.")
+        if not 33 <= self.tamanho_cabecalho <= 65_535:
+            raise ErroDBF("O arquivo não parece ser um DBF válido: tamanho de "
+                          "cabeçalho fora dos limites do formato.")
+        if not 1 < self.tamanho_registro <= 65_535:
+            raise ErroDBF("O arquivo não parece ser um DBF válido: tamanho de "
+                          "registro fora dos limites do formato.")
+
         self._id_pagina = cabecalho[29]
         try:
             self.data_atualizacao = date(1900 + ano if ano < 80 else 2000 + (ano - 100)

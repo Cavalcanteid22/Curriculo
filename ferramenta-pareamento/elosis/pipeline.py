@@ -223,8 +223,14 @@ def executar(configuracao: Configuracao,
                                                    perspectiva)
 
     if not resultado.bases:
-        raise ErroLeitura("Nenhuma base pôde ser lida. Verifique os arquivos "
-                          "selecionados e os avisos apresentados.")
+        # A mensagem precisa dizer o que houve com cada arquivo. Um erro
+        # genérico deixaria o usuário sem saber se o problema é o formato, a
+        # permissão de leitura ou o conteúdo do arquivo.
+        detalhes = ("\n  • " + "\n  • ".join(resultado.avisos)
+                    if resultado.avisos else "")
+        raise ErroLeitura(
+            f"Nenhuma das {len(configuracao.arquivos)} base(s) selecionada(s) "
+            f"pôde ser lida.{detalhes}")
 
     resultado.variaveis_comuns = identificar_variaveis_comuns(resultado.harmonizadas)
     resultado.dicionario_harmonizacao = registrar_dicionario_harmonizacao(
