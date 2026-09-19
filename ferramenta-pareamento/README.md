@@ -117,11 +117,44 @@ python -m elosis analisar *.dbf -s resultados/ --referencia amostra_revisada.csv
 # Ajustando os limiares
 python -m elosis analisar *.dbf --limiar 0.92 --limiar-revisao 0.87
 
+# Base anual completa: abas restritas aos registros com pendência
+python -m elosis analisar *.dbf -s resultados/ --apenas-pendencias
+
 # Gerando bases fictícias para treinamento
 python -m elosis gerar-exemplo -s bases_exemplo/ --formato dbf
 ```
 
 `python -m elosis analisar --help` lista todas as opções.
+
+---
+
+## Arquivos grandes
+
+A ferramenta foi construída para bases anuais completas. A leitura é feita por
+blocos, o leitor DBF opera por fluxo e o pareamento usa blocagem, de modo que a
+memória permanece em patamar compatível com estações de trabalho comuns.
+
+Ordens de grandeza observadas em teste com 135 mil registros distribuídos em
+três bases (61 mil no SINAN, 26 mil no SIM, 48 mil no SINASC), em máquina
+modesta:
+
+| Etapa | Tempo aproximado |
+|---|---|
+| Leitura e qualificação das três bases | menos de 1 minuto |
+| Pareamento (três relacionamentos) | 3 a 5 minutos |
+| Geração da planilha e do relatório | 3 a 6 minutos |
+
+O maior custo está na escrita das abas das bases, proporcional ao número de
+células. Para bases anuais completas, recomenda-se a opção **“incluir apenas
+registros com pendência”** (`--apenas-pendencias` na linha de comando): as abas
+passam a conter somente os registros amarelos e vermelhos, reduzindo o arquivo
+a cerca de um quinto. Nada se perde para o trabalho de correção — os registros
+verdes são, por definição, os que nada exigem —, e a aba assinala a restrição
+no próprio subtítulo, mantendo as contagens referidas à base completa.
+
+Se a estação dispuser de pouca memória, a opção `--limite N` lê apenas os
+primeiros N registros de cada base, o que permite verificar a configuração
+antes da execução completa.
 
 ---
 

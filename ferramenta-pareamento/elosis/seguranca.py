@@ -36,6 +36,15 @@ _tentativas_bloqueadas: list[dict] = []
 _socket_connect_original = socket.socket.connect
 _socket_connect_ex_original = socket.socket.connect_ex
 _getaddrinfo_original = socket.getaddrinfo
+# A resolução de nomes precisa ser bloqueada em todas as suas formas: uma
+# consulta de DNS é, por si só, um canal de saída — o nome consultado viaja
+# para fora da estação e pode carregar dados codificados no subdomínio.
+_resolucao_original = {
+    nome: getattr(socket, nome)
+    for nome in ("gethostbyname", "gethostbyname_ex", "gethostbyaddr",
+                 "getnameinfo")
+    if hasattr(socket, nome)
+}
 
 
 class SaidaDeRedeBloqueada(RuntimeError):
@@ -90,17 +99,35 @@ def ativar_modo_cofre() -> None:
             return 1  # ECONNREFUSED simbólico
         return _socket_connect_ex_original(self, endereco)
 
+    def _nome_e_local(host) -> bool:
+        texto = str(host)
+        return host in _LOOPBACK or texto.startswith("127.") or texto == "::1"
+
     def getaddrinfo(host, *args, **kwargs):
-        if host not in _LOOPBACK and not str(host).startswith("127."):
+        if not _nome_e_local(host):
             _registrar_tentativa(host)
             raise SaidaDeRedeBloqueada(
                 f"ELO-SIS em modo cofre: resolução de nome bloqueada ({host})."
             )
         return _getaddrinfo_original(host, *args, **kwargs)
 
+    def _bloquear_resolucao(nome_da_funcao, original):
+        def substituta(alvo, *args, **kwargs):
+            if not _nome_e_local(alvo):
+                _registrar_tentativa(alvo)
+                raise SaidaDeRedeBloqueada(
+                    f"ELO-SIS em modo cofre: resolução de nome bloqueada "
+                    f"({alvo}). Nenhum dado é enviado para a nuvem."
+                )
+            return original(alvo, *args, **kwargs)
+        return substituta
+
     socket.socket.connect = connect          # type: ignore[assignment]
     socket.socket.connect_ex = connect_ex    # type: ignore[assignment]
     socket.getaddrinfo = getaddrinfo         # type: ignore[assignment]
+    for nome_da_funcao, original in _resolucao_original.items():
+        setattr(socket, nome_da_funcao,
+                _bloquear_resolucao(nome_da_funcao, original))
     _bloqueio_ativo.set()
 
 
@@ -109,6 +136,8 @@ def desativar_modo_cofre() -> None:
     socket.socket.connect = _socket_connect_original      # type: ignore[assignment]
     socket.socket.connect_ex = _socket_connect_ex_original  # type: ignore[assignment]
     socket.getaddrinfo = _getaddrinfo_original            # type: ignore[assignment]
+    for nome_da_funcao, original in _resolucao_original.items():
+        setattr(socket, nome_da_funcao, original)
     _bloqueio_ativo.clear()
 
 

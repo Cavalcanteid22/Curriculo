@@ -356,7 +356,7 @@ def parear_probabilistico(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
                           limiar: float = LIMIAR_PAREAMENTO,
                           limiar_revisao: float = LIMIAR_REVISAO_MANUAL,
                           maximo_comparacoes: int = 50_000_000,
-                          bloco_maximo: int = 1500,
+                          comparacoes_maximas_por_bloco: int = 250_000,
                           progresso=None) -> tuple[list[Par], int, int]:
     """Compara, sob blocagem, os registros não pareados no estágio determinístico."""
     colunas_a = _extrair_colunas(quadro_a)
@@ -375,8 +375,14 @@ def parear_probabilistico(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
             break
         lista_a = blocos_a[chave]
         lista_b = blocos_b[chave]
-        if len(lista_a) * len(lista_b) > bloco_maximo * bloco_maximo:
-            continue  # bloco degenerado: chave sem poder de seleção
+        if len(lista_a) * len(lista_b) > comparacoes_maximas_por_bloco:
+            # Bloco degenerado: a chave perdeu poder de seleção, em geral
+            # porque milhares de registros compartilham um mesmo valor padrão
+            # (uma data de nascimento convencional, por exemplo). Percorrê-lo
+            # custaria mais do que toda a rodada e produziria sobretudo ruído.
+            # Os pares nele contidos continuam elegíveis pelas demais chaves
+            # de blocagem, que são mais seletivas.
+            continue
         for linha_a in lista_a:
             if excedeu_teto:
                 break
