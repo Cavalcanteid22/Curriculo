@@ -573,10 +573,10 @@ def calcular_oportunidade(quadro: pd.DataFrame, perfil: PerfilSistema,
     }]
 
 
-def detectar_consistencia_interna(quadro: pd.DataFrame, achados: list[Achado],
+def detectar_consistencia_interna(total_registros: int, achados: list[Achado],
                                   perfil: PerfilSistema) -> list[dict]:
     """Sumariza as divergências lógicas por tipo."""
-    total = len(quadro)
+    total = total_registros
     contagem = Counter(a.tipo for a in achados if a.dimensao == "Consistência")
     linhas_afetadas = {a.linha for a in achados if a.dimensao == "Consistência"}
     resumo = [{
@@ -665,7 +665,8 @@ def qualificar_base(quadro: pd.DataFrame, perfil: PerfilSistema,
     )
     resultado.completude = calcular_completude(quadro, perfil, mapeamento)
     resultado.acuracia = calcular_acuracia(quadro, achados, perfil, mapeamento)
-    resultado.consistencia = detectar_consistencia_interna(quadro, achados, perfil)
+    resultado.consistencia = detectar_consistencia_interna(len(quadro), achados,
+                                                           perfil)
     resultado.oportunidade = calcular_oportunidade(quadro, perfil, mapeamento)
     resultado.classificacao_linhas = classificar_linhas(quadro, achados)
     resultado.escore_global = calcular_escore_global(resultado)

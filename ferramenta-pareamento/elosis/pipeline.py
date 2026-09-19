@@ -294,9 +294,10 @@ def executar(configuracao: Configuracao,
 # --------------------------------------------------------------------------- #
 
 def _atualizar_consistencia(qualidade: ResultadoQualidade, perfil) -> list[dict]:
+    """Recalcula o resumo de consistência após a inclusão das duplicidades."""
     from .qualidade import detectar_consistencia_interna
-    quadro_fantasma = pd.DataFrame(index=range(qualidade.total_registros))
-    return detectar_consistencia_interna(quadro_fantasma, qualidade.achados, perfil)
+    return detectar_consistencia_interna(qualidade.total_registros,
+                                         qualidade.achados, perfil)
 
 
 def _recalcular_escore(qualidade: ResultadoQualidade) -> float:
