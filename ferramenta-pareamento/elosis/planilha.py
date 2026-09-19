@@ -721,8 +721,23 @@ def _recomendacao_do_par(par) -> str:
             "problema nas próximas execuções.")
 
 
-def _linhas_nao_pareados(resultado: ResultadoExecucao) -> list[dict]:
-    saida = []
+def _linhas_nao_pareados(resultado: ResultadoExecucao) -> tuple[list[dict], dict]:
+    """Lista os registros sem par que comportam ação corretiva.
+
+    A distinção é a razão de ser desta aba. Um registro que não pareou por lhe
+    faltarem as chaves é um problema de qualidade, corrigível na base nativa.
+    Um registro cujas chaves estão completas e ainda assim não encontrou
+    correspondente apenas indica que a pessoa não consta da outra base — o que
+    é o resultado esperado para a maior parte dos registros e não enseja
+    providência alguma.
+
+    Listar os segundos produziria, em bases municipais completas, centenas de
+    milhares de linhas sem uso, encobrindo justamente as que exigem ação. Eles
+    são, por isso, contabilizados e reportados no subtítulo da aba.
+    """
+    saida: list[dict] = []
+    omitidos: dict[str, int] = defaultdict(int)
+
     for pareamento in resultado.pareamentos:
         for sigla, linhas, contraparte in (
                 (pareamento.base_a, pareamento.nao_pareados_a, pareamento.base_b),
@@ -732,6 +747,9 @@ def _linhas_nao_pareados(resultado: ResultadoExecucao) -> list[dict]:
             classificacao = resultado.qualidade[sigla].classificacao_linhas
             for linha in linhas:
                 motivo = _motivo_nao_pareamento(quadro, mapa, linha)
+                if not motivo["acionavel"]:
+                    omitidos[pareamento.rotulo] += 1
+                    continue
                 saida.append({
                     "RELACIONAMENTO": pareamento.rotulo,
                     "BASE_DE_ORIGEM": sigla,
@@ -745,10 +763,11 @@ def _linhas_nao_pareados(resultado: ResultadoExecucao) -> list[dict]:
                                                      "DATA_NASCIMENTO"),
                     "QUALIDADE_DO_REGISTRO": (classificacao.at[linha]
                                               if classificacao is not None else ""),
+                    "CHAVES_AUSENTES": motivo["chaves_ausentes"],
                     "MOTIVO_PROVAVEL": motivo["motivo"],
                     "RECOMENDACAO": motivo["recomendacao"],
                 })
-    return saida
+    return saida, dict(omitidos)
 
 
 def _valor_seguro(quadro, mapa, linha, canonica) -> str:
@@ -771,6 +790,8 @@ def _motivo_nao_pareamento(quadro, mapa, linha) -> dict:
 
     if len(ausentes) >= 2:
         return {
+            "acionavel": True,
+            "chaves_ausentes": "; ".join(ausentes),
             "motivo": (f"Chaves de pareamento ausentes: {', '.join(ausentes)}. "
                        "Com menos de duas chaves preenchidas, não há base para "
                        "afirmar identidade."),
@@ -780,6 +801,8 @@ def _motivo_nao_pareamento(quadro, mapa, linha) -> dict:
         }
     if ausentes:
         return {
+            "acionavel": True,
+            "chaves_ausentes": ausentes[0],
             "motivo": (f"Chave ausente: {ausentes[0]}. O pareamento foi tentado "
                        "com as chaves remanescentes, sem sucesso."),
             "recomendacao": (f"Preencher o campo '{ausentes[0]}' na base nativa "
@@ -787,13 +810,13 @@ def _motivo_nao_pareamento(quadro, mapa, linha) -> dict:
                              "execuções futuras."),
         }
     return {
-        "motivo": ("Chaves preenchidas, sem correspondente nas demais bases "
-                   "acima do limiar de similaridade. O mais provável é que a "
-                   "pessoa realmente não conste da outra base."),
+        "acionavel": False,
+        "chaves_ausentes": "",
+        "motivo": ("Chaves preenchidas, sem correspondente na outra base acima "
+                   "do limiar de similaridade. O mais provável é que a pessoa "
+                   "realmente não conste da outra base."),
         "recomendacao": ("Nenhuma ação corretiva necessária quanto à qualidade "
-                         "do registro. Se houver suspeita fundada de que a "
-                         "pessoa consta da outra base, conferir grafia do nome "
-                         "e data de nascimento nos dois sistemas."),
+                         "do registro."),
     }
 
 
@@ -1096,12 +1119,27 @@ def gerar_planilha(resultado: ResultadoExecucao,
          f"pôde decidir sozinha."),
         "CLASSIFICACAO_DO_PAR", {REVISAO_MANUAL: AMARELO}, larguras_pares)
 
-    _aba_simples(livro, "43_NAO_PAREADOS", _linhas_nao_pareados(resultado),
-                 "Registros sem par identificado",
-                 ("Para cada registro sem par, a coluna MOTIVO_PROVAVEL "
-                  "distingue a ausência de chaves — problema de qualidade, "
-                  "corrigível — da ausência real da pessoa na outra base."),
-                 larguras={"MOTIVO_PROVAVEL": 62, "RECOMENDACAO": 62})
+    nao_pareados, omitidos_por_relacionamento = _linhas_nao_pareados(resultado)
+    total_omitidos = sum(omitidos_por_relacionamento.values())
+    detalhe_omitidos = ("; ".join(f"{rotulo}: {quantidade}"
+                                  for rotulo, quantidade
+                                  in omitidos_por_relacionamento.items())
+                        if omitidos_por_relacionamento else "")
+    _aba_simples(livro, "43_NAO_PAREADOS", nao_pareados,
+                 "Registros sem par que comportam ação corretiva",
+                 (f"Esta aba lista apenas os registros que não parearam por "
+                  f"lhes faltarem chaves de identificação — situação "
+                  f"corrigível na base nativa. Outros {total_omitidos} "
+                  f"registros também não parearam, mas com as chaves "
+                  f"completas, o que indica apenas que a pessoa não consta da "
+                  f"outra base: resultado esperado, que não enseja "
+                  f"providência e por isso não é listado registro a registro"
+                  + (f" ({detalhe_omitidos})" if detalhe_omitidos else "")
+                  + ". A situação de cada registro quanto ao pareamento consta "
+                    "também das abas das bases, na coluna SITUACAO NO "
+                    "PAREAMENTO."),
+                 larguras={"MOTIVO_PROVAVEL": 58, "RECOMENDACAO": 58,
+                           "CHAVES_AUSENTES": 30})
 
     # --- Indicadores e análises ----------------------------------------- #
     indicadores = [linha for v in resultado.validacoes for linha in v.como_linhas()]
