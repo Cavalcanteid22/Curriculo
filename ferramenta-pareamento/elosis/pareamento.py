@@ -236,21 +236,46 @@ def _verificar_divergencias(quadro_a, quadro_b, linha_a: int, linha_b: int,
 # Estágio 2 — probabilístico
 # --------------------------------------------------------------------------- #
 
-def _construir_blocos(quadro: pd.DataFrame, linhas: list[int]) -> dict[str, list[int]]:
+# Variáveis efetivamente consultadas durante a comparação. Extraí-las uma
+# única vez, como dicionários de listas, evita milhões de acessos célula a
+# célula ao pandas — que, em bases municipais completas, dominavam o tempo
+# total de execução.
+_VARIAVEIS_DE_COMPARACAO = (
+    list(PESOS_PROBABILISTICO) + list(PESOS_AUXILIARES)
+    + ["NOME_FONETICO", "MAE_FONETICO"])
+
+
+def _extrair_colunas(quadro: pd.DataFrame) -> dict[str, list[str]]:
+    """Materializa como listas as colunas usadas na comparação."""
+    extraidas: dict[str, list[str]] = {}
+    vazio = [""] * len(quadro)
+    for variavel in _VARIAVEIS_DE_COMPARACAO:
+        coluna = (f"H_{variavel}" if variavel in ("NOME_FONETICO", "MAE_FONETICO")
+                  else PREFIXO_HARMONIZADO + variavel)
+        if coluna in quadro.columns:
+            extraidas[variavel] = quadro[coluna].astype(str).str.strip().tolist()
+        else:
+            extraidas[variavel] = vazio
+    return extraidas
+
+
+def _construir_blocos(colunas: dict[str, list[str]],
+                      linhas: list[int]) -> dict[str, list[int]]:
     """Chaves de blocagem múltiplas — basta coincidir em uma para comparar."""
     blocos: dict[str, list[int]] = defaultdict(list)
-    tem = quadro.columns
+    foneticos = colunas["NOME_FONETICO"]
+    maes = colunas["MAE_FONETICO"]
+    nascimentos = colunas["DATA_NASCIMENTO"]
+    nomes = colunas["NOME"]
+    sexos = colunas["SEXO"]
 
     for linha in linhas:
-        fonetico = str(quadro["H_NOME_FONETICO"].at[linha]) if "H_NOME_FONETICO" in tem else ""
-        mae_fonetico = str(quadro["H_MAE_FONETICO"].at[linha]) if "H_MAE_FONETICO" in tem else ""
-        nascimento = str(quadro[PREFIXO_HARMONIZADO + "DATA_NASCIMENTO"].at[linha]) \
-            if PREFIXO_HARMONIZADO + "DATA_NASCIMENTO" in tem else ""
+        fonetico = foneticos[linha]
+        mae_fonetico = maes[linha]
+        nascimento = nascimentos[linha]
         ano = nascimento[:4]
-        nome = str(quadro[PREFIXO_HARMONIZADO + "NOME"].at[linha]) \
-            if PREFIXO_HARMONIZADO + "NOME" in tem else ""
-        sexo = str(quadro[PREFIXO_HARMONIZADO + "SEXO"].at[linha]) \
-            if PREFIXO_HARMONIZADO + "SEXO" in tem else ""
+        nome = nomes[linha]
+        sexo = sexos[linha]
 
         if fonetico and ano:
             blocos[f"F{fonetico}|{ano}"].append(linha)
@@ -261,11 +286,13 @@ def _construir_blocos(quadro: pd.DataFrame, linhas: list[int]) -> dict[str, list
         if nome and ano:
             blocos[f"P{nome[:5]}|{ano}"].append(linha)
         if nome and sexo and ano:
-            blocos[f"S{nome.split()[-1][:5] if nome.split() else ''}|{sexo}|{ano}"].append(linha)
+            partes = nome.split()
+            blocos[f"S{partes[-1][:5] if partes else ''}|{sexo}|{ano}"].append(linha)
     return blocos
 
 
-def calcular_escore(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
+def calcular_escore(colunas_a: dict[str, list[str]],
+                    colunas_b: dict[str, list[str]],
                     linha_a: int, linha_b: int) -> tuple[float, dict[str, float]]:
     """Escore Jaro-Winkler ponderado por campo, com ajuste por variáveis auxiliares.
 
@@ -281,11 +308,8 @@ def calcular_escore(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
     componentes: list[tuple[float, float]] = []
 
     for variavel, peso in PESOS_PROBABILISTICO.items():
-        coluna = PREFIXO_HARMONIZADO + variavel
-        if coluna not in quadro_a.columns or coluna not in quadro_b.columns:
-            continue
-        valor_a = str(quadro_a[coluna].at[linha_a]).strip()
-        valor_b = str(quadro_b[coluna].at[linha_b]).strip()
+        valor_a = colunas_a[variavel][linha_a]
+        valor_b = colunas_b[variavel][linha_b]
         if not valor_a or not valor_b:
             continue
         if variavel == "DATA_NASCIMENTO":
@@ -307,11 +331,8 @@ def calcular_escore(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
     # Variáveis auxiliares: bonificam a concordância e penalizam a divergência.
     ajuste = 0.0
     for variavel, peso in PESOS_AUXILIARES.items():
-        coluna = PREFIXO_HARMONIZADO + variavel
-        if coluna not in quadro_a.columns or coluna not in quadro_b.columns:
-            continue
-        valor_a = str(quadro_a[coluna].at[linha_a]).strip()
-        valor_b = str(quadro_b[coluna].at[linha_b]).strip()
+        valor_a = colunas_a[variavel][linha_a]
+        valor_b = colunas_b[variavel][linha_b]
         if not valor_a or not valor_b:
             continue
         if variavel in ("CPF", "CNS"):
@@ -338,8 +359,10 @@ def parear_probabilistico(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
                           bloco_maximo: int = 1500,
                           progresso=None) -> tuple[list[Par], int, int]:
     """Compara, sob blocagem, os registros não pareados no estágio determinístico."""
-    blocos_a = _construir_blocos(quadro_a, candidatos_a)
-    blocos_b = _construir_blocos(quadro_b, candidatos_b)
+    colunas_a = _extrair_colunas(quadro_a)
+    colunas_b = _extrair_colunas(quadro_b)
+    blocos_a = _construir_blocos(colunas_a, candidatos_a)
+    blocos_b = _construir_blocos(colunas_b, candidatos_b)
     chaves_comuns = set(blocos_a) & set(blocos_b)
 
     melhores: dict[int, tuple[float, int, dict]] = {}
@@ -366,7 +389,7 @@ def parear_probabilistico(quadro_a: pd.DataFrame, quadro_b: pd.DataFrame,
                 if comparacoes > maximo_comparacoes:
                     excedeu_teto = True
                     break
-                escore, escores = calcular_escore(quadro_a, quadro_b,
+                escore, escores = calcular_escore(colunas_a, colunas_b,
                                                   linha_a, linha_b)
                 if escore < limiar_revisao:
                     continue

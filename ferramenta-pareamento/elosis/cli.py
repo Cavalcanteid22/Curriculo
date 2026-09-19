@@ -72,6 +72,12 @@ def construir_analisador() -> argparse.ArgumentParser:
                                "pseudônimos na planilha de saída.")
     analisar.add_argument("--limite", type=int, default=None,
                           help="Lê no máximo N registros por base (para teste).")
+    analisar.add_argument("--apenas-pendencias", action="store_true",
+                          help=("Nas abas das bases, inclui somente os "
+                                "registros com pendência (amarelos e "
+                                "vermelhos). Recomendado para bases anuais "
+                                "completas: reduz muito o tamanho do arquivo "
+                                "sem perda para o trabalho de correção."))
     analisar.add_argument("--sem-relatorio", action="store_true",
                           help="Não gera o relatório em formato Word.")
     analisar.add_argument("--sem-planilha", action="store_true",
@@ -131,6 +137,7 @@ def _executar_analise(argumentos) -> int:
         arquivo_referencia=argumentos.referencia,
         perspectivas=perspectivas,
         modo_cofre=not argumentos.permitir_rede,
+        somente_pendencias_nas_bases=argumentos.apenas_pendencias,
     )
 
     def progresso(passo: str, fracao: float) -> None:

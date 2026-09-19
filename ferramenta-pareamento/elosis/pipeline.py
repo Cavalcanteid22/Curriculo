@@ -57,6 +57,11 @@ class Configuracao:
     arquivo_referencia: Path | None = None
     perspectivas: dict[str, str] = field(default_factory=dict)
     modo_cofre: bool = True
+    # Em bases municipais completas, as abas das bases chegam a dezenas de
+    # milhares de linhas. Restringi-las aos registros com pendência produz
+    # um arquivo de trabalho muito mais leve, sem perda para a equipe: os
+    # registros verdes são, por definição, os que nada exigem.
+    somente_pendencias_nas_bases: bool = False
     sistemas_forcados: dict[str, str] = field(default_factory=dict)
 
 
@@ -129,6 +134,7 @@ def executar(configuracao: Configuracao,
         populacao_referencia=configuracao.populacao_referencia,
         horizonte_projecao_meses=configuracao.horizonte_projecao,
         pseudonimizacao_na_saida=configuracao.pseudonimizar_saida,
+        somente_pendencias_nas_bases=configuracao.somente_pendencias_nas_bases,
         modo_cofre=configuracao.modo_cofre,
         perspectivas=configuracao.perspectivas,
     )

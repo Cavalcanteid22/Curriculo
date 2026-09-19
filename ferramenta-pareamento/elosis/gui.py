@@ -71,6 +71,7 @@ class JanelaPrincipal(ttk.Frame):
         self.populacao = tk.IntVar(value=2_418_005)
         self.horizonte = tk.IntVar(value=6)
         self.pseudonimizar = tk.BooleanVar(value=False)
+        self.apenas_pendencias = tk.BooleanVar(value=False)
         self.gerar_planilha_var = tk.BooleanVar(value=True)
         self.gerar_relatorio_var = tk.BooleanVar(value=True)
         self.perspectiva = tk.StringVar(value="automática")
@@ -282,6 +283,18 @@ class JanelaPrincipal(ttk.Frame):
                         variable=self.pseudonimizar).pack(side="left",
                                                           padx=(16, 0))
 
+        linha_pendencias = ttk.Frame(analise)
+        linha_pendencias.grid(row=5, column=0, columnspan=3, sticky="w",
+                              pady=(4, 0))
+        ttk.Checkbutton(
+            linha_pendencias,
+            text="Nas abas das bases, incluir apenas registros com pendência",
+            variable=self.apenas_pendencias).pack(side="left")
+        ttk.Label(linha_pendencias,
+                  text=("Recomendado para bases anuais completas — reduz muito "
+                        "o tamanho do arquivo."),
+                  style="Nota.TLabel").pack(side="left", padx=(8, 0))
+
     def _campo(self, pai, linha: int, rotulo: str, variavel, nota: str) -> None:
         ttk.Label(pai, text=rotulo).grid(row=linha, column=0, sticky="w",
                                          pady=2)
@@ -480,6 +493,7 @@ class JanelaPrincipal(ttk.Frame):
             arquivo_referencia=(Path(self.referencia.get())
                                 if self.referencia.get().strip() else None),
             perspectivas=perspectivas,
+            somente_pendencias_nas_bases=bool(self.apenas_pendencias.get()),
         )
 
         self.em_execucao = True

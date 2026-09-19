@@ -60,8 +60,17 @@ ALINHAMENTO_CABECALHO = Alignment(horizontal="center", vertical="center",
                                   wrap_text=True)
 BORDA_FINA = Border(*[Side(style="thin", color="BFBFBF")] * 4)
 
+ALINHAMENTO_TOPO = Alignment(vertical="top")
+ALINHAMENTO_QUEBRA = Alignment(vertical="top", wrap_text=True)
+ALINHAMENTO_CENTRO = Alignment(horizontal="center", vertical="top")
+
 LARGURA_MAXIMA = 62
 LARGURA_MINIMA = 9
+
+# Acima deste número de células, as bordas das células de dados deixam de ser
+# aplicadas. São puramente cosméticas e, nessa ordem de grandeza, custam mais
+# tempo de geração e tamanho de arquivo do que agregam em legibilidade.
+LIMITE_CELULAS_COM_BORDA = 120_000
 
 # Colunas analíticas acrescentadas ao final de cada base.
 COLUNAS_ANALITICAS = [
@@ -131,14 +140,41 @@ def _escrever_quadro(aba: Worksheet, linhas: list[dict] | pd.DataFrame,
         celula.border = BORDA_FINA
     aba.row_dimensions[linha_cabecalho].height = 32
 
-    for deslocamento, registro in enumerate(registros, start=1):
-        for indice, coluna in enumerate(colunas, start=1):
-            valor = registro.get(coluna, "")
-            celula = aba.cell(row=linha_cabecalho + deslocamento, column=indice,
-                              value=_converter(valor))
-            celula.alignment = Alignment(vertical="top",
-                                         wrap_text=len(_texto(valor)) > 45)
-            celula.border = BORDA_FINA
+    total_celulas = len(registros) * len(colunas)
+    aplicar_borda = total_celulas <= LIMITE_CELULAS_COM_BORDA
+    # Em abas muito extensas, o alinhamento é aplicado apenas às colunas de
+    # texto longo, que dele dependem para permanecer legíveis. Aplicá-lo a
+    # todas as células dobraria o tempo de geração sem ganho perceptível.
+    alinhar_tudo = total_celulas <= LIMITE_CELULAS_COM_BORDA
+
+    # As colunas que comportam texto longo são decididas uma única vez, pela
+    # amostra, em vez de medidas célula a célula.
+    colunas_com_quebra = _colunas_de_texto_longo(colunas, registros)
+    indices_com_quebra = [i for i, c in enumerate(colunas, start=1)
+                          if c in colunas_com_quebra]
+
+    # A escrita em bloco é sensivelmente mais rápida do que a atribuição
+    # célula a célula, e é por ela que passam todas as linhas de dados.
+    for registro in registros:
+        aba.append([_converter(registro.get(coluna, "")) for coluna in colunas])
+
+    primeira_linha = linha_cabecalho + 1
+    ultima_linha = linha_cabecalho + len(registros)
+    if alinhar_tudo:
+        for linha_planilha in aba.iter_rows(min_row=primeira_linha,
+                                            max_row=ultima_linha,
+                                            max_col=len(colunas)):
+            for indice, celula in enumerate(linha_planilha, start=1):
+                celula.alignment = (ALINHAMENTO_QUEBRA
+                                    if indice in indices_com_quebra
+                                    else ALINHAMENTO_TOPO)
+                if aplicar_borda:
+                    celula.border = BORDA_FINA
+    elif indices_com_quebra:
+        for indice in indices_com_quebra:
+            for linha_planilha in range(primeira_linha, ultima_linha + 1):
+                aba.cell(row=linha_planilha, column=indice).alignment = (
+                    ALINHAMENTO_QUEBRA)
 
     _ajustar_larguras(aba, colunas, registros, linha_cabecalho, larguras)
     if registros:
@@ -147,6 +183,20 @@ def _escrever_quadro(aba: Worksheet, linhas: list[dict] | pd.DataFrame,
             f"{get_column_letter(len(colunas))}{linha_cabecalho + len(registros)}")
     aba.freeze_panes = congelar or f"A{linha_cabecalho + 1}"
     return linha_cabecalho + 1
+
+
+def _colunas_de_texto_longo(colunas: list[str], registros: list[dict],
+                            amostra: int = 300) -> set[str]:
+    """Colunas cujos valores justificam quebra automática de linha."""
+    longas = set()
+    for registro in registros[:amostra]:
+        for coluna in colunas:
+            if coluna in longas:
+                continue
+            valor = registro.get(coluna, "")
+            if isinstance(valor, str) and len(valor) > 45:
+                longas.add(coluna)
+    return longas
 
 
 def _converter(valor):
@@ -300,8 +350,21 @@ def _situacao_no_pareamento(resultado: ResultadoExecucao,
             else:
                 continue
             destino = ("pareados" if par.classificacao == PAREADO else "revisao")
+            # Um par determinístico de escore 1,000 pode ir à revisão por
+            # chave ambígua ou por divergência em variável auxiliar. Sem dizer
+            # qual foi o motivo, a planilha deixa o técnico sem saber o que
+            # conferir.
+            motivo = ""
+            if par.classificacao == REVISAO_MANUAL:
+                if par.divergencias:
+                    motivo = f"; motivo: divergência em {'; '.join(par.divergencias)}"
+                elif "mesma chave" in par.justificativa:
+                    motivo = ("; motivo: mais de um registro da outra base "
+                              "compartilha esta chave")
+                else:
+                    motivo = "; motivo: escore na faixa de revisão manual"
             situacao[linha][destino].append(
-                f"{contraparte} (escore {par.escore:.3f}, {par.regra})")
+                f"{contraparte} (escore {par.escore:.3f}, {par.regra}{motivo})")
 
     consolidada: dict[int, dict] = {}
     for linha, dados in situacao.items():
@@ -441,6 +504,14 @@ def _aba_base(livro: Workbook, resultado: ResultadoExecucao, sigla: str,
     completo = pd.concat([quadro, analiticas], axis=1)
     completo.insert(0, "LINHA_NA_BASE", [i + 2 for i in range(len(completo))])
 
+    restricao = ""
+    if resultado.configuracao.somente_pendencias_nas_bases:
+        completo = completo[completo["CLASSIFICACAO"] != VERDE]
+        restricao = (" ATENÇÃO: esta aba foi restringida aos registros com "
+                     "pendência, conforme a opção escolhida na execução. Os "
+                     "registros sem inconsistência não constam desta aba; as "
+                     "contagens acima referem-se à base completa.")
+
     aba = livro.create_sheet(f"{10 + ordem}_BASE_{sigla}"[:31])
     contagem = qualidade.contagem_por_classificacao()
     subtitulo = (
@@ -450,7 +521,7 @@ def _aba_base(livro: Workbook, resultado: ResultadoExecucao, sigla: str,
         f"{qualidade.escore_global} de 100 | verdes: {contagem[VERDE]}, "
         f"amarelas: {contagem[AMARELO]}, vermelhas: {contagem[VERMELHO]}. "
         f"As colunas nativas são preservadas sem alteração; as colunas "
-        f"analíticas foram acrescentadas ao final.")
+        f"analíticas foram acrescentadas ao final.{restricao}")
 
     primeira = _escrever_quadro(
         aba, completo, titulo=f"Base {sigla} — registros e análise",
@@ -462,16 +533,18 @@ def _aba_base(livro: Workbook, resultado: ResultadoExecucao, sigla: str,
                   "BASES_RELACIONADAS": 40,
                   "OBSERVACOES_COMPLEMENTARES": 45})
 
-    # Pintura das linhas conforme a classificação.
+    # Pintura das linhas conforme a classificação. A lista de classificações é
+    # extraída de uma vez: consultar o quadro linha a linha, nesta escala,
+    # custaria mais do que a própria pintura.
     n_colunas = len(completo.columns)
-    for deslocamento, linha in enumerate(completo.index):
-        classificacao = completo.at[linha, "CLASSIFICACAO"]
+    classificacoes = completo["CLASSIFICACAO"].tolist()
+    for deslocamento, classificacao in enumerate(classificacoes):
         preenchimento = PREENCHIMENTO.get(classificacao)
         if not preenchimento:
             continue
-        numero_linha = primeira + deslocamento
-        for coluna in range(1, n_colunas + 1):
-            aba.cell(row=numero_linha, column=coluna).fill = preenchimento
+        linha_da_aba = aba[primeira + deslocamento]
+        for celula in linha_da_aba[:n_colunas]:
+            celula.fill = preenchimento
 
 
 def _pseudonimizar(quadro: pd.DataFrame, mapeamento: dict[str, str],
