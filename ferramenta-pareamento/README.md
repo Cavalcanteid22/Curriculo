@@ -134,19 +134,21 @@ A ferramenta foi construída para bases anuais completas. A leitura é feita por
 blocos, o leitor DBF opera por fluxo e o pareamento usa blocagem, de modo que a
 memória permanece em patamar compatível com estações de trabalho comuns.
 
-Ordens de grandeza observadas em teste com 135 mil registros distribuídos em
-três bases (61 mil no SINAN, 26 mil no SIM, 48 mil no SINASC), em máquina
-modesta:
+Medição em 135.162 registros distribuídos em três bases — 61.200 no SINAN,
+26.242 no SIM e 47.720 no SINASC —, em máquina modesta:
 
-| Etapa | Tempo aproximado |
+| Etapa | Tempo medido |
 |---|---|
-| Leitura e qualificação das três bases | menos de 1 minuto |
-| Pareamento (três relacionamentos) | 3 a 5 minutos |
-| Geração da planilha e do relatório | 3 a 6 minutos |
+| Leitura e qualificação das três bases | 50 segundos |
+| Pareamento (três relacionamentos) | 2 minutos e 30 segundos |
+| Geração da planilha e do relatório | 3 minutos e 20 segundos |
+| **Total** | **7 minutos** |
 
-O maior custo está na escrita das abas das bases, proporcional ao número de
-células. Para bases anuais completas, recomenda-se a opção **“incluir apenas
-registros com pendência”** (`--apenas-pendencias` na linha de comando): as abas
+Consumo máximo de memória: 1,2 GB. Planilha resultante: 48 MB, com 28 abas, as
+três bases íntegras registro a registro e as linhas pintadas.
+
+Para bases anuais completas, há a opção **“incluir apenas registros com
+pendência”** (`--apenas-pendencias` na linha de comando): as abas das bases
 passam a conter somente os registros amarelos e vermelhos, reduzindo o arquivo
 a cerca de um quinto. Nada se perde para o trabalho de correção — os registros
 verdes são, por definição, os que nada exigem —, e a aba assinala a restrição
@@ -155,6 +157,13 @@ no próprio subtítulo, mantendo as contagens referidas à base completa.
 Se a estação dispuser de pouca memória, a opção `--limite N` lê apenas os
 primeiros N registros de cada base, o que permite verificar a configuração
 antes da execução completa.
+
+> **Nota de manutenção.** A geração da planilha já chegou a levar duas horas e
+> meia nessa mesma base. A causa era a indexação de linha do openpyxl
+> (`aba[n]`), que recalcula a largura da planilha a cada chamada e resulta em
+> custo quadrático. O acesso por célula (`aba.cell(...)`) tem custo constante.
+> Quem for alterar o módulo `planilha.py` deve evitar a primeira forma em
+> qualquer laço por linha.
 
 ---
 
