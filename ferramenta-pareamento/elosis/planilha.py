@@ -163,6 +163,7 @@ def _escrever_quadro(aba: Worksheet, linhas: list[dict] | pd.DataFrame,
     if alinhar_tudo:
         for linha_planilha in aba.iter_rows(min_row=primeira_linha,
                                             max_row=ultima_linha,
+                                            min_col=1,
                                             max_col=len(colunas)):
             for indice, celula in enumerate(linha_planilha, start=1):
                 celula.alignment = (ALINHAMENTO_QUEBRA
@@ -533,18 +534,23 @@ def _aba_base(livro: Workbook, resultado: ResultadoExecucao, sigla: str,
                   "BASES_RELACIONADAS": 40,
                   "OBSERVACOES_COMPLEMENTARES": 45})
 
-    # Pintura das linhas conforme a classificação. A lista de classificações é
-    # extraída de uma vez: consultar o quadro linha a linha, nesta escala,
-    # custaria mais do que a própria pintura.
+    # Pintura das linhas conforme a classificação.
+    #
+    # O acesso é feito por `aba.cell(...)`, e não por `aba[n]`. A indexação de
+    # linha do openpyxl recalcula a largura da planilha a cada chamada,
+    # percorrendo todas as células já escritas: o custo cresce com o quadrado
+    # do número de linhas. Numa base anual completa isso significava mais de
+    # uma hora por aba — o suficiente para inviabilizar o produto na escala
+    # para a qual ele foi feito.
     n_colunas = len(completo.columns)
     classificacoes = completo["CLASSIFICACAO"].tolist()
     for deslocamento, classificacao in enumerate(classificacoes):
         preenchimento = PREENCHIMENTO.get(classificacao)
         if not preenchimento:
             continue
-        linha_da_aba = aba[primeira + deslocamento]
-        for celula in linha_da_aba[:n_colunas]:
-            celula.fill = preenchimento
+        numero_linha = primeira + deslocamento
+        for coluna in range(1, n_colunas + 1):
+            aba.cell(row=numero_linha, column=coluna).fill = preenchimento
 
 
 def _pseudonimizar(quadro: pd.DataFrame, mapeamento: dict[str, str],
