@@ -1,0 +1,19 @@
+# ELO-SIS — dependências
+#
+# Todas são bibliotecas de processamento local. Nenhuma realiza comunicação em
+# rede durante a execução da ferramenta, e o modo cofre bloqueia tecnicamente
+# qualquer tentativa nesse sentido.
+
+pandas>=1.5
+numpy>=1.23
+openpyxl>=3.1
+python-docx>=0.8.11
+matplotlib>=3.6
+
+# Opcional: melhora a extração de tabelas de arquivos PDF.
+# A ferramenta funciona sem ela, com extração mais limitada.
+# pdfplumber>=0.10
+
+# Opcional: leitura de planilhas no formato antigo .xls (Excel 97-2003).
+# Arquivos .xlsx não precisam desta biblioteca.
+# xlrd>=2.0
